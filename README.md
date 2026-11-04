@@ -28,7 +28,7 @@ The terminal has an always-visible **Forex Majors & JPY Crosses** board for EUR/
 Forex Factory's free exports contain **no `actual` field at all** (verified in both the JSON and XML feeds), so a released event used to freeze on `WAIT 46% confidence` forever. Two steps fix that:
 
 - **Actual backfill.** `scripts/fetch-calendar.mjs` also reads the public TradingView economic calendar (`https://economic-calendar.tradingview.com/events`, no API key, but it returns HTTP 403 unless `user-agent` + `origin` + `referer` are sent, and `country=` is ignored so rows are filtered by `currency`). Forex Factory remains the primary list: only an empty `Actual` is ever written, importance/times/titles stay from Forex Factory, and TradingView's own importance is ignored. Matching is minute-rounded with a 5-minute tolerance plus head-noun title agreement, so "Spanish Services PMI" lines up with "S&P Global Services PMI" but a Belgian print can never be written onto a Euro-area row. Scale is only applied when the shared reference value proves a 10^n factor (e.g. Austrian "Unemployed persons" 314.5 vs 306600), percent suffixes from Forex Factory are re-applied, and anything ambiguous or unscaled is refused instead of guessed. `calendar.json` is rewritten only when at least one value was filled, and any TradingView failure falls back silently to the old calendar so the 15-minute cron never breaks.
-- **Price reaction.** Some series (all S&P Global PMIs) simply have no published actual anywhere. For those, direction is measured from the 270 Yahoo 1-minute bars already stored in `data/markets.json`: the last close at or before the release versus the last close 15–45 minutes after it, written to `data/reaction.json` for releases in the last 6 hours and held for at most 45 minutes in the browser.
+- **Price reaction.** Some series (all S&P Global PMIs) simply have no published actual anywhere. For those, direction is measured from the 270 Yahoo 1-minute bars already stored in `data/markets.json`: the last close at or before the release versus the last close 15–45 minutes after it, written to `data/reaction.json` for releases in the last 6 hours and held for at most 45 minutes in the browser. `NAS100`/`US500` cannot be measured from their own bars — Yahoo only publishes `^NDX`/`^GSPC` 1-minute history inside the regular session (13:30–21:00 UTC), so `MARKET_SYMBOLS` carries `reactionFrom: 'NQ=F'`/`'ES=F'` and `fetchReactionBars()` pulls the ~23h futures series as a backup. An asset's own bars still win; the backup is only used when they do not cover the release, and the result is labelled `via: 'NQ=F'` so the card can state where the bar came from. `data/markets.json` keeps its old shape — `pairs['NAS100'].yahoo` is still `^NDX`.
 
 Direction is then resolved as a ladder, and the label always names the basis actually used:
 
@@ -37,6 +37,16 @@ Direction is then resolved as a ladder, and the label always names the basis act
 A released event inside the 6-hour window keeps its slot on the pair board (badge `BUY/SELL · POST-NEWS` with `valid s/d <expiry>`), an unresolved one is shown as `NO ACTUAL DATA` instead of a synthetic percentage — the confidence meter prints `—` whenever there is no computed surprise. Own-event edge (Forecast vs Previous, or a real Actual) is allowed for **every** impact level including Forex Factory "Low"; only the neighbour-borrowing fallback in `preNewsBias()` and the gold/USD boards stay at importance 2+. Reaction and momentum directions are asset-relative (the pair's own price rose) and are therefore never re-mapped through `mapPairBias()`.
 
 The **Nasdaq 100 & S&P 500** board (`NAS100`, `US500`) follows the same USD catalyst: BUY means risk-on/stronger index, SELL means risk-off/weaker index. Risk template is NAS100 1%/2% and US500 0.75%/1.5%. Prices come from Yahoo Finance via `data/indices.json` (refreshed by GitHub Actions), with a live CORS-proxy fallback in the browser.
+
+### Entry order di board Gold, Crypto & Index
+
+All three boards resolve direction through the same ladder as the pair board, and all three print `Entry/SL/TP` rather than only a straddle:
+
+- **Gold** (`goldBoardState`) now reads the pre-release bias too. When `preNewsBias()` finds a Forecast-vs-Previous edge it emits `BUY · MARKET` / `SELL · MARKET` with 0.5% risk / 1.0% reward, and the two straddle stops stay listed underneath with `Straddle OCO tetap tersedia bila arah tidak diambil.` Without an edge the card is exactly the old straddle-only view. After the release the 1-minute reaction is attempted whenever `analyze()` returns no direction — not only when the Actual is missing — so a flat print (`Actual sesuai perkiraan`) can still be traded off the bar move.
+- **Crypto** (`cryptoBoardState`) had no direction logic at all before: `cryptoBoardHtml()` only printed the price, the 24h change and the risk template. It now shares `nextUsdCatalyst()` with the index board and runs the ladder per asset (`reactionFor(e, 'BTC/USD')`, `momentumFor(e, 'crypto', pair)`), with `CRYPTO_PAIRS` as the single source for the 1%/2% and 1.5%/3% templates. `renderCryptoBoard()` is part of `render()`, so the board repaints when the calendar or `data/reaction.json` changes instead of only when Binance answers.
+- **Index** cards no longer print a fake `+0.00%` inside the badge — `momPct` is initialised to `null`, and `Number(null) === 0` used to pass the finiteness check. A reaction measured from the futures backup is labelled, e.g. `Reaksi harga +0.24% dalam 40 mnt pasca-rilis — Actual tidak dipublikasikan (bar NQ=F)`.
+
+Gold and crypto bias directions come from `analyze()`/`preNewsBias()` (USD language) and are mapped with `mapPairBias()`; reaction and momentum directions are asset-relative and are used as-is. `data/reaction.json` shape: `{ generatedAt, events: { "<Date>|<Event>": { releasedAt, pairs: { "<asset>": { baseClose, lastClose, movePct, dir, minutes, via? } } } } }`.
 
 ### Sumber harga forex
 
@@ -62,7 +72,7 @@ A static file can only be as fresh as the 15-minute cron, so the pair board no l
 
 `data/crypto.json` is written as well for convenience: `{ generatedAt, source, pairs: { "BTC/USD": number, "ETH/USD": number } }`.
 
-`data/reaction.json` is the post-release price reaction derived from those 1-minute bars: `{ generatedAt, events: { "<Date>|<Event>": { releasedAt, pairs: { "EUR/USD": { baseClose, lastClose, movePct, dir, minutes } } } } }`, keyed exactly like the pre-news store so the page can look it up with the same `Date|Event` key.
+`data/reaction.json` is the post-release price reaction derived from those 1-minute bars, keyed exactly like the pre-news store so the page can look it up with the same `Date|Event` key (shape documented in “Entry order di board Gold, Crypto & Index”).
 
 ### Local MT5 broker bid/ask
 

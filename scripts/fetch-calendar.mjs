@@ -746,12 +746,35 @@ const MARKET_SYMBOLS = [
   { pair: 'XAU/USD', yahoo: 'GC=F' },
   { pair: 'BTC/USD', yahoo: 'BTC-USD' },
   { pair: 'ETH/USD', yahoo: 'ETH-USD' },
-  { pair: 'NAS100', yahoo: '^NDX' },
-  { pair: 'US500', yahoo: '^GSPC' }
+  { pair: 'NAS100', yahoo: '^NDX', reactionFrom: 'NQ=F' },
+  { pair: 'US500', yahoo: '^GSPC', reactionFrom: 'ES=F' }
 ];
 const MARKETS_FILE = 'data/markets.json';
 const CRYPTO_FILE = 'data/crypto.json';
 const MARKET_BARS = 270;
+
+// Bar 1 menit ^NDX/^GSPC hanya tersedia 13:30–21:00 UTC, jadi rilis pada sesi Asia/Eropa
+// tidak pernah bisa diukur dari indeks spot. Futures-nya (NQ=F/ES=F) jalan hampir 24 jam
+// dan persentase geraknya sama, jadi reaksi pasca-rilis indeks diukur dari sana.
+const REACTION_BAR_SOURCES = MARKET_SYMBOLS
+  .filter(cfg => cfg.reactionFrom)
+  .map(cfg => ({ pair: cfg.pair, yahoo: cfg.reactionFrom }));
+
+export async function fetchReactionBars(sources = REACTION_BAR_SOURCES, { fetchImpl = fetch } = {}) {
+  const bars = {};
+  await Promise.all(sources.map(async cfg => {
+    const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(cfg.yahoo)}?interval=1m&range=5d`;
+    try {
+      const r = await fetchImpl(url, { headers: { 'user-agent': 'Mozilla/5.0' } });
+      if (!r || !r.ok) throw new Error(`HTTP ${r && r.status}`);
+      const rows = barsFromYahoo(await r.json());
+      if (rows && rows.bars && rows.bars.length) bars[cfg.pair] = { bars: rows.bars, via: cfg.yahoo };
+    } catch (e) {
+      console.error('Gagal mengambil bar reaksi', cfg.pair, e.message || e);
+    }
+  }));
+  return bars;
+}
 
 function finiteNumber(value) {
   const n = Number(value);
@@ -896,7 +919,7 @@ export function reactionFromBars(bars, releaseMs, {
   };
 }
 
-export function buildReactionPayload(events, markets, now = Date.now(), holdMs = REACTION_HOLD_MS) {
+export function buildReactionPayload(events, markets, now = Date.now(), holdMs = REACTION_HOLD_MS, extraBars = {}) {
   const pairs = markets && markets.pairs;
   if (!pairs) return { generatedAt: null, events: {} };
   const keyed = {};
@@ -905,8 +928,15 @@ export function buildReactionPayload(events, markets, now = Date.now(), holdMs =
     if (!Number.isFinite(releasedAt) || releasedAt > now || now - releasedAt > holdMs) continue;
     const reaction = {};
     for (const [pair, cfg] of Object.entries(pairs)) {
-      const measured = reactionFromBars(cfg && cfg.bars, releasedAt);
-      if (measured) reaction[pair] = measured;
+      // Bar milik sendiri diprioritaskan; sumber cadangan (mis. NQ=F untuk NAS100)
+      // hanya dipakai kalau bar sendiri tidak menutupi rilis.
+      const sources = [cfg, extraBars && extraBars[pair]];
+      for (const source of sources) {
+        const measured = reactionFromBars(source && source.bars, releasedAt);
+        if (!measured) continue;
+        reaction[pair] = source !== cfg && source.via ? { ...measured, via: source.via } : measured;
+        break;
+      }
     }
     if (Object.keys(reaction).length) {
       keyed[`${event.Date}|${event.Event}`] = { releasedAt: new Date(releasedAt).toISOString(), pairs: reaction };
@@ -919,7 +949,8 @@ export async function main() {
   const events = await fetchCalendar();
   const [price, forexData, cryptoData, indices] = await Promise.all([fetchMarket(), fetchForex(), fetchCrypto(), fetchIndices()]);
   const markets = await fetchMarkets({ price, forexData, cryptoData });
-  const reaction = buildReactionPayload(events, markets);
+  const extraBars = await fetchReactionBars();
+  const reaction = buildReactionPayload(events, markets, Date.now(), REACTION_HOLD_MS, extraBars);
   await fs.writeFile(REACTION_FILE, JSON.stringify(reaction, null, 2));
   console.log('Reaksi harga pasca-rilis tersimpan:', Object.keys(reaction.events).length, 'event.');
   const forex = forexData && forexData.rates;

@@ -7,7 +7,8 @@ import {
   mergeActuals,
   fetchTradingViewActuals,
   reactionFromBars,
-  buildReactionPayload
+  buildReactionPayload,
+  fetchReactionBars
 } from '../scripts/fetch-calendar.mjs';
 
 const RELEASE_ISO = '2026-11-04T08:00:00.000Z';
@@ -205,6 +206,77 @@ const barSeries = points => points.map(([minute, close]) => ({ k: Math.round((RE
   assert.deepEqual(keys, ['2026-11-04T03:00:00-05:00|Spanish Services PMI']);
   assert.equal(payload.events[keys[0]].pairs['EUR/USD'].dir, 'long');
   assert.equal(buildReactionPayload([ff()], {}, NOW).generatedAt, null);
+}
+
+// Bar 1 menit ^NDX/^GSPC berhenti 21:00 UTC, jadi reaksi indeks diukur dari futures.
+{
+  const staleIndexBars = barSeries([[-13 * 60, 28100], [-12 * 60, 28120]]); // terakhir kemarin
+  const markets = { pairs: { NAS100: { bars: staleIndexBars }, 'EUR/USD': { bars: barSeries([[-20, 1.1240], [-2, 1.1242], [16, 1.1256], [45, 1.1260]]) } } };
+  const ownOnly = buildReactionPayload([ff()], markets, NOW).events['2026-11-04T03:00:00-05:00|Spanish Services PMI'];
+  assert.deepEqual(Object.keys(ownOnly.pairs), ['EUR/USD'], 'indeks tanpa bar yang menutupi rilis memang tidak diukur');
+
+  const futuresBars = { bars: barSeries([[-20, 28100], [-2, 28105], [16, 28180], [45, 28190]]), via: 'NQ=F' };
+  const withFutures = buildReactionPayload([ff()], markets, NOW, undefined, { NAS100: futuresBars });
+  const measured = withFutures.events['2026-11-04T03:00:00-05:00|Spanish Services PMI'].pairs.NAS100;
+  assert.equal(measured.dir, 'long', 'NQ=F menutupi rilis yang tidak bisa dilihat ^NDX');
+  assert.equal(measured.via, 'NQ=F', 'sumber bar harus tercatat supaya UI tidak mengaku indeks spot');
+  assert.ok(!('via' in ownOnly.pairs['EUR/USD']), 'pair yang terukur dari bar sendiri tidak dapat via');
+
+  // Bar milik sendiri yang sudah baik tidak boleh ditimpa oleh sumber cadangan.
+  const both = buildReactionPayload([ff()], markets, NOW, undefined, { 'EUR/USD': { bars: barSeries([[-2, 2.0], [20, 2.2]]), via: 'XXX' } });
+  const fx = both.events['2026-11-04T03:00:00-05:00|Spanish Services PMI'].pairs['EUR/USD'];
+  assert.equal(fx.baseClose, 1.1242, 'sumber utama tetap bar pair itu sendiri');
+  assert.ok(!('via' in fx));
+
+  // Sumber cadangan yang gagal mengukur (tidak ada bar pasca-settle) jatuh ke bar sendiri.
+  const useless = buildReactionPayload([ff()], markets, NOW, undefined, { NAS100: { bars: barSeries([[-5, 28100]]), via: 'NQ=F' } });
+  assert.ok(!('NAS100' in useless.events['2026-11-04T03:00:00-05:00|Spanish Services PMI'].pairs));
+}
+
+// fetchReactionBars: Yahoo payload 1 menit → { pair: { bars, via } }, kegagalan tidak melempar.
+async function reactionBars(fetchImpl) {
+  const errors = [];
+  const original = console.error;
+  console.error = (...a) => errors.push(a.join(' '));
+  try {
+    return { bars: await fetchReactionBars([{ pair: 'NAS100', yahoo: 'NQ=F' }], { fetchImpl }), errors };
+  } finally {
+    console.error = original;
+  }
+}
+
+const yahooChart = points => {
+  const closes = points.map(([, c]) => c);
+  return {
+    chart: {
+      result: [{
+        meta: { regularMarketPrice: closes[closes.length - 1] },
+        timestamp: points.map(([minute, c]) => Math.floor((RELEASE_MS + minute * 60000) / 1000) + (c ? 0 : 0)),
+        indicators: { quote: [{ open: closes, high: closes, low: closes, close: closes }] }
+      }]
+    }
+  };
+};
+
+{
+  const { bars, errors } = await reactionBars(async () => ({ ok: true, status: 200, json: async () => yahooChart([[-20, 28100], [20, 28180]]) }));
+  assert.equal(errors.length, 0);
+  assert.equal(bars.NAS100.via, 'NQ=F');
+  assert.equal(bars.NAS100.bars.length, 2);
+  assert.equal(bars.NAS100.bars[0].c, 28100);
+}
+{
+  const { bars, errors } = await reactionBars(async () => ({ ok: false, status: 500, json: async () => ({}) }));
+  assert.deepEqual(bars, {}, 'Yahoo mati harus menghasilkan reaksi kosong, bukan error');
+  assert.ok(errors.length, 'kegagalan dicatat');
+}
+{
+  const { bars } = await reactionBars(async () => { throw new Error('socket hang up'); });
+  assert.deepEqual(bars, {});
+}
+{
+  const { bars } = await reactionBars(async () => ({ ok: true, status: 200, json: async () => ({ chart: { result: [] } }) }));
+  assert.deepEqual(bars, {}, 'payload tanpa bar tidak boleh masuk sebagai reaksi');
 }
 
 console.log('Passed calendar actual-backfill + price reaction tests');

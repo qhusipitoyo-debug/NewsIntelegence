@@ -64,6 +64,11 @@
     .crypto-card .price { font: 800 22px Manrope; margin: 4px 0 2px; }
     .crypto-card .meta { color: var(--muted); font-size: 11px; }
     .crypto-card .meta .sep { opacity: .5; margin: 0 3px; }
+    .crypto-card.buy { border-left-color: var(--green); }
+    .crypto-card.sell { border-left-color: var(--red); }
+    .crypto-card.wait { border-left-color: var(--amber); }
+    .crypto-card .levels { margin-top: 6px; }
+    .crypto-card .fx-badge { margin-left: 6px; }
     .forex-board { margin-top: 18px; border-radius: 26px; padding: 18px 22px; display: grid; grid-template-columns: minmax(210px, .85fr) 2fr; gap: 18px; align-items: center; }
     .forex-board h3 { font: 800 19px Manrope; margin: 4px 0 3px; letter-spacing: -.4px; }
     .forex-board p { margin: 0; color: var(--muted); font-size: 12px; max-width: 340px; }
@@ -128,7 +133,7 @@
     <div>
       <div class="eyebrow">Gold watch</div>
       <h3>XAU/USD</h3>
-      <p>Live gold levels from the active USD catalyst: straddle OCO before the release, momentum BUY/SELL after it. Non-USD event cards keep gold hidden.</p>
+      <p>Live gold levels from the active USD catalyst: directional BUY/SELL from the Forecast-vs-Previous bias before the release, Actual or 1-minute price reaction after it. Straddle OCO stays listed as the fallback when no direction is confirmed.</p>
     </div>
     <div class="mb-body" id="goldBoardBody"></div>
   </section>
@@ -136,7 +141,7 @@
     <div>
       <div class="eyebrow">Crypto watch</div>
       <h3>BTC/USD &amp; ETH/USD</h3>
-      <p>Always-on crypto prices, independent of the event currency. BUY/SELL signals still come from post-news momentum on USD events; risk template BTC 1%/2%, ETH 1.5%/3%.</p>
+      <p>Always-on crypto prices, independent of the event currency. BUY/SELL comes from the same ladder as the pair board — Actual vs Forecast, then the 1-minute reaction, then pre-release momentum on USD events; risk template BTC 1%/2%, ETH 1.5%/3%.</p>
     </div>
     <div class="crypto-grid" id="cryptoGrid"></div>
   </section>
@@ -188,6 +193,11 @@ const FOREX_PAIRS = [...FOREX_MAJORS, ...FOREX_CROSSES];
 const INDICES = [
     { symbol: 'NAS100', name: 'Nasdaq 100', yahoo: '^NDX', slPct: 1.0, tpPct: 2.0 },
     { symbol: 'US500', name: 'S&P 500', yahoo: '^GSPC', slPct: 0.75, tpPct: 1.5 }
+];
+
+const CRYPTO_PAIRS = [
+    { pair: 'BTC/USD', name: 'Bitcoin', color: '#f7931a', slPct: 1.0, tpPct: 2.0 },
+    { pair: 'ETH/USD', name: 'Ethereum', color: '#627eea', slPct: 1.5, tpPct: 3.0 }
 ];
 
 let events = [], filter = 'all', timer;
@@ -343,7 +353,7 @@ function reactionFor(e, pair) {
     if (!Number.isFinite(movePct)) return null;
     const dir = hit.dir === 'long' || hit.dir === 'short' ? hit.dir : null;
     const minutes = Number(hit.minutes);
-    return { dir, movePct, minutes: Number.isFinite(minutes) ? minutes : null };
+    return { dir, movePct, minutes: Number.isFinite(minutes) ? minutes : null, via: hit.via ? String(hit.via) : null };
 }
 
 function moveNote(label, changePct, minutes) {
@@ -664,18 +674,36 @@ function goldBoardState(now = Date.now()) {
 
     if (pick.t > now) {
         const buffer = price * 0.0015;
-        return {
+        const straddle = {
             status: 'pre',
             event: label(pick),
             buy: { entry: price + buffer, sl: price + buffer - buffer * 2, tp: price + buffer + buffer * 4 },
             sell: { entry: price - buffer, sl: price - buffer + buffer * 2, tp: price - buffer - buffer * 4 }
+        };
+        // Pre-news pun emas bisa diarahkan: Forecast vs Previous adalah satu-satunya
+        // informasi arah sebelum Actual tercetak. Straddle tetap ikut dikirim supaya
+        // level OCO tidak hilang saat trader memilih menunggu rilis.
+        const bias = preNewsBias(pick.e);
+        const dir = bias ? mapPairBias('XAU/USD', bias.dir, pick.e.Country) : null;
+        if (!dir) return straddle;
+        const riskPct = 0.5, rewardPct = 1.0;
+        return {
+            ...straddle,
+            phase: 'pre',
+            dir,
+            levels: {
+                entry: price,
+                sl: dir === 'long' ? price * (1 - riskPct / 100) : price * (1 + riskPct / 100),
+                tp: dir === 'long' ? price * (1 + rewardPct / 100) : price * (1 - rewardPct / 100)
+            },
+            note: `Bias pra-rilis — Forecast ${bias.forecast} vs Previous ${bias.previous}${bias.source ? ' • ' + bias.source : ''}`
         };
     }
     if (now < pick.t + NEWS_SETTLE_MS) return { status: 'live', event: label(pick) };
 
     const a = analyze(pick.e);
     const directed = a.dir === 'long' || a.dir === 'short';
-    const reaction = !directed && a.noData ? reactionFor(pick.e, 'XAU/USD') : null;
+    const reaction = !directed ? reactionFor(pick.e, 'XAU/USD') : null;
     const mom = directed || (reaction && reaction.dir) ? null : momentumFor(pick.e, 'gold');
     const dir = directed
         ? a.dir
@@ -684,7 +712,7 @@ function goldBoardState(now = Date.now()) {
     const note = directed
         ? `Post-news ${a.comparedTo}`
         : (reaction && reaction.dir
-            ? `${moveNote('Reaksi emas', reaction.movePct, reaction.minutes)} — Actual tidak dipublikasikan`
+            ? `${moveNote('Reaksi emas', reaction.movePct, reaction.minutes)} — ${a.noData ? 'Actual tidak dipublikasikan' : 'Actual sesuai perkiraan'}${reaction.via ? ` (bar ${reaction.via})` : ''}`
             : (mom && mom.dir ? `Post-news momentum ${mom.changePct >= 0 ? '+' : ''}${mom.changePct.toFixed(2)}% dari harga pra-rilis` : null));
     const validUntil = fmtDate(postNewsExpiry(pick.e)) + ' ' + fmtTime(postNewsExpiry(pick.e));
 
@@ -721,7 +749,13 @@ function goldBoardHtml(price, state) {
 
     if (st.status === 'live') return html + `<div class="mb-meta">⏳ Rilis berlangsung — sinyal tampil setelah impact terkonfirmasi.</div>`;
     if (st.status === 'pre' && st.buy && st.sell) {
-        return html + `<div class="mb-levels">${lv('buy', 'BUY STOP', st.buy)}${lv('sell', 'SELL STOP', st.sell)}</div><div class="mb-meta">Straddle OCO — jika satu arah tersentuh, batalkan arah lainnya.</div>`;
+        const armed = st.dir && st.levels
+            ? lv(st.dir === 'long' ? 'buy' : 'sell', (st.dir === 'long' ? 'BUY' : 'SELL') + ' · MARKET', st.levels)
+            : '';
+        const meta = st.dir
+            ? `${st.note || 'Bias pra-rilis Forecast vs Previous'} • Straddle OCO tetap tersedia bila arah tidak diambil.`
+            : 'Straddle OCO — jika satu arah tersentuh, batalkan arah lainnya.';
+        return html + `<div class="mb-levels">${armed}${lv('buy', 'BUY STOP', st.buy)}${lv('sell', 'SELL STOP', st.sell)}</div><div class="mb-meta">${meta}</div>`;
     }
     if (st.status === 'post' && st.dir && st.levels) {
         const long = st.dir === 'long';
@@ -739,27 +773,115 @@ function renderGoldBoard() {
     if (body) body.innerHTML = goldBoardHtml(LIVE_PRICE, goldBoardState());
 }
 
-function cryptoBoardHtml(rates, change) {
-    const pairs = [
-        ['BTC/USD', 'Bitcoin', '#f7931a', 1.0, 2.0],
-        ['ETH/USD', 'Ethereum', '#627eea', 1.5, 3.0]
-    ];
+// Board crypto memakai tangga arah yang sama dengan board pair: Actual vs
+// Forecast/Previous, lalu reaksi harga 1 menit, lalu momentum pra-rilis.
+function cryptoBoardState(now = Date.now()) {
+    const items = CRYPTO_PAIRS.map(cfg => ({
+        pair: cfg.pair,
+        name: cfg.name,
+        slPct: cfg.slPct,
+        tpPct: cfg.tpPct,
+        price: Number(CRYPTO_RATES[cfg.pair]),
+        changePct: Number(CRYPTO_CHANGE[cfg.pair]),
+        dir: null,
+        momPct: null
+    }));
+    const { pick, upcoming, label } = nextUsdCatalyst(now);
+    if (!pick) return { status: 'idle', items, event: '', next: upcoming ? label : '', note: '' };
+
+    const phase = newsPhase(pick.e);
+    if (phase === 'live') return { status: 'live', items, event: label, next: '', note: '' };
+
+    const a = analyze(pick.e);
+    let dir = (a.dir === 'long' || a.dir === 'short') ? a.dir : null;
+    let note = dir ? a.comparedTo : '';
+    const bias = dir ? null : preNewsBias(pick.e);
+    if (bias) {
+        note = `Forecast ${bias.forecast} vs Previous ${bias.previous}${bias.source ? ' • ' + bias.source : ''}`;
+    }
+
+    items.forEach(it => {
+        const usdDir = dir || (bias && bias.dir) || null;
+        // analyze/preNewsBias berbicara dalam bahasa USD; reaksi dan momentum sudah per-aset.
+        if (usdDir) it.dir = mapPairBias(it.pair, usdDir, pick.e.Country);
+        if (phase !== 'post' || it.dir) return;
+        const reaction = reactionFor(pick.e, it.pair);
+        if (reaction && reaction.dir) {
+            it.dir = reaction.dir;
+            it.momPct = reaction.movePct;
+            it.note = `${moveNote('Reaksi harga', reaction.movePct, reaction.minutes)} — ${a.noData ? 'Actual tidak dipublikasikan' : 'Actual sesuai perkiraan'}`;
+            return;
+        }
+        const mom = momentumFor(pick.e, 'crypto', it.pair);
+        if (mom && mom.dir) {
+            it.dir = mom.dir;
+            it.momPct = mom.changePct;
+            it.note = `Momentum ${mom.changePct >= 0 ? '+' : ''}${mom.changePct.toFixed(2)}% dari harga pra-rilis`;
+            return;
+        }
+        it.note = 'NO ACTUAL DATA — arah belum terkonfirmasi';
+    });
+
+    return {
+        status: 'active',
+        phase,
+        items,
+        event: label,
+        note,
+        next: upcoming ? label : '',
+        validUntil: phase === 'post' ? fmtDate(postNewsExpiry(pick.e)) + ' ' + fmtTime(postNewsExpiry(pick.e)) : label
+    };
+}
+
+function cryptoBoardHtml(rates, change, state) {
+    const table = CRYPTO_PAIRS;
     const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const cards = pairs.map(([pair, name, color, slPct, tpPct]) => {
-        const rate = Number(rates && rates[pair]);
+    const st = state && Array.isArray(state.items) ? state : null;
+    const byPair = {};
+    if (st) st.items.forEach(it => { byPair[String(it.pair).toUpperCase()] = it; });
+    const cards = table.map(cfg => {
+        const { pair, name, color, slPct, tpPct } = cfg;
+        const it = st ? byPair[pair] : null;
+        const rate = Number(it ? it.price : (rates && rates[pair]));
         if (!Number.isFinite(rate) || rate <= 0) return '';
-        const chg = Number(change && change[pair]);
+        const chg = Number(it ? it.changePct : (change && change[pair]));
         const chgHtml = Number.isFinite(chg)
             ? `<span style="color:${chg >= 0 ? 'var(--green)' : 'var(--red)'}">${chg >= 0 ? '▲ +' : '▼ '}${chg.toFixed(2)}% 24h</span>`
             : '<span>24h change n/a</span>';
-        return `<div class="crypto-card" style="border-left-color:${color}"><div class="pair"><span>${pair}</span><small>${name}</small></div><div class="price">$${fmt(rate)}</div><div class="meta">${chgHtml}<span class="sep">•</span>SL/TP ${slPct}% / ${tpPct}%</div></div>`;
+        if (!st) {
+            return `<div class="crypto-card" style="border-left-color:${color}"><div class="pair"><span>${pair}</span><small>${name}</small></div><div class="price">$${fmt(rate)}</div><div class="meta">${chgHtml}<span class="sep">•</span>SL/TP ${slPct}% / ${tpPct}%</div></div>`;
+        }
+        const dir = it.dir === 'long' ? 'buy' : it.dir === 'short' ? 'sell' : 'wait';
+        const label = dir === 'buy' ? 'BUY' : dir === 'sell' ? 'SELL' : 'WAIT';
+        const badge = `<span class="fx-badge ${dir}">${label}${dir === 'wait' ? '' : (st.phase === 'post' ? ' · POST-NEWS' : ' · MARKET')}</span>`;
+        let levels;
+        if (dir === 'wait') {
+            const buffer = slPct / 2;
+            levels = `<div class="levels idx-levels"><span>BUY &gt; ${fmt(rate * (1 + buffer / 100))}</span><span>SELL &lt; ${fmt(rate * (1 - buffer / 100))}</span></div>`;
+        } else {
+            const long = dir === 'buy';
+            const sl = long ? rate * (1 - slPct / 100) : rate * (1 + slPct / 100);
+            const tp = long ? rate * (1 + tpPct / 100) : rate * (1 - tpPct / 100);
+            levels = `<div class="levels idx-levels"><span>Entry ${fmt(rate)}</span><span>SL ${fmt(sl)}</span><span>TP ${fmt(tp)}</span><span>R:R 1:2</span></div>`;
+        }
+        const itemNote = it.note || st.note;
+        return `<div class="crypto-card ${dir}">
+            <div class="pair"><span>${esc(pair)}</span><small>${esc(name)}</small>${badge}</div>
+            <div class="price">$${fmt(rate)}</div>
+            <div class="meta">${chgHtml}<span class="sep">•</span>SL/TP ${slPct}% / ${tpPct}%</div>
+            ${levels}
+            <div class="idx-event">${esc(st.event || 'Tidak ada katalis USD aktif')}</div>
+            ${itemNote ? `<div class="idx-note">${esc(itemNote)}</div>` : ''}
+            ${st.status === 'live' ? '<div class="idx-note">⏳ Rilis berlangsung — tunggu impact terkonfirmasi.</div>' : ''}
+            ${st.phase === 'post' && st.validUntil ? `<div class="idx-note">Post-news • valid s/d ${esc(st.validUntil)}</div>` : ''}
+        </div>`;
     }).filter(Boolean).join('');
     return cards || '<div class="crypto-card"><div class="pair"><span>BTC/USD · ETH/USD</span></div><div class="meta">Menunggu harga crypto…</div></div>';
 }
 
 function renderCryptoBoard() {
     const grid = $('#cryptoGrid');
-    if (grid) grid.innerHTML = cryptoBoardHtml(CRYPTO_RATES, CRYPTO_CHANGE);
+    if (grid) grid.innerHTML = cryptoBoardHtml(CRYPTO_RATES, CRYPTO_CHANGE, cryptoBoardState());
 }
 
 // Rilis terakhir yang masih berada dalam jendela pasca-news menang atas event
@@ -983,7 +1105,7 @@ function indicesBoardState(now = Date.now()) {
             if (reaction && reaction.dir) {
                 it.dir = reaction.dir;
                 it.momPct = reaction.movePct;
-                it.note = `${moveNote('Reaksi harga', reaction.movePct, reaction.minutes)} — Actual tidak dipublikasikan`;
+                it.note = `${moveNote('Reaksi harga', reaction.movePct, reaction.minutes)} — Actual tidak dipublikasikan${reaction.via ? ` (bar ${reaction.via})` : ''}`;
                 return;
             }
             const mom = momentumFor(pick.e, 'index', it.symbol);
@@ -1028,11 +1150,11 @@ function indicesBoardHtml(state) {
             levels = `<div class="idx-levels"><span>BUY &gt; ${fmt(price * (1 + buffer / 100))}</span><span>SELL &lt; ${fmt(price * (1 - buffer / 100))}</span></div>`;
         }
         const chg = Number(it.changePct);
-        const mom = Number(it.momPct);
+        const mom = it.momPct === null || it.momPct === undefined ? null : Number(it.momPct);
         const changeHtml = Number.isFinite(chg)
             ? `<span style="color:${chg >= 0 ? 'var(--green)' : 'var(--red)'}">${chg >= 0 ? '▲ +' : '▼ '}${chg.toFixed(2)}%</span>`
             : '';
-        const momHtml = Number.isFinite(mom) ? ` <small style="color:var(--muted);">${mom >= 0 ? '+' : ''}${mom.toFixed(2)}%</small>` : '';
+        const momHtml = mom !== null && Number.isFinite(mom) ? ` <small style="color:var(--muted);">${mom >= 0 ? '+' : ''}${mom.toFixed(2)}%</small>` : '';
         const eventLine = st.event ? `<div class="idx-event">${esc(st.event)}</div>` : '<div class="idx-event">Tidak ada katalis USD aktif</div>';
         const itemNote = it.note || st.note;
         const noteLine = itemNote ? `<div class="idx-note">${esc(itemNote)}</div>` : '';
@@ -1707,6 +1829,7 @@ function render() {
     updateCountdown(next);
     renderGoldBoard();
     renderForexBoard();
+    renderCryptoBoard();
     renderIndicesBoard();
 }
 
