@@ -68,12 +68,31 @@ const reactionForFn = extractFunction('reactionFor');
 const moveNoteFn = extractFunction('moveNote');
 const nextPairCatalystFn = extractFunction('nextPairCatalyst');
 const pairCatalystDirectionFn = extractFunction('pairCatalystDirection');
+const momentumFloorFn = extractFunction('momentumFloor');
+const reactionFloorFn = extractFunction('reactionFloor');
+const mapAssetBiasFn = extractFunction('mapAssetBias');
+const mapActualBiasFn = extractFunction('mapActualBias');
+const signalDirectionFn = extractFunction('signalDirection');
+const signalLockKeyFn = extractFunction('signalLockKey');
+const readSignalLockFn = extractFunction('readSignalLock');
+const writeSignalLockFn = extractFunction('writeSignalLock');
+const assetPriceFn = extractFunction('assetPrice');
+const clampNumFn = extractFunction('clampNum');
+const computeSignalLevelsFn = extractFunction('computeSignalLevels');
+const levelsFromLockFn = extractFunction('levelsFromLock');
+const missedFromLevelsFn = extractFunction('missedFromLevels');
+const resolveSignalLevelsFn = extractFunction('resolveSignalLevels');
+const signalCardDataFn = extractFunction('signalCardData');
+const riskSensitiveConst = source.match(/const RISK_SENSITIVE_EVENT = .*?;\n/)[0];
 
 function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, indexRates = defaultIndexRates, reaction = null) {
   const body = `
     const WITA = 'Asia/Makassar';
     const POST_NEWS_HOLD_MS = 6 * 60 * 60 * 1000;
-    const NEWS_SETTLE_MS = 60 * 1000;
+    const NEWS_SETTLE_MS = 15 * 60 * 1000;
+    const MOMENTUM_WINDOW_MS = 90 * 60 * 1000;
+    const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
+    ${riskSensitiveConst}
     const FOREX_MAJORS = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'USD/CAD', 'NZD/USD'];
     const FOREX_CROSSES = ['GBP/JPY', 'EUR/JPY'];
     const FOREX_PAIRS = [...FOREX_MAJORS, ...FOREX_CROSSES];
@@ -89,6 +108,7 @@ function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, inde
     ${numFn}
     ${countryFn}
     ${biasFn}
+    ${analyzeFn}
     ${normalizeSnapshotFn}
     ${dateEventKeyFn}
     ${eventKeyFn}
@@ -110,6 +130,22 @@ function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, inde
     ${preNewsBiasFn}
     ${invertDirFn}
     ${mapPairBiasFn}
+    ${momentumFloorFn}
+    ${reactionFloorFn}
+    ${mapAssetBiasFn}
+    ${mapActualBiasFn}
+    ${signalDirectionFn}
+    ${signalLockKeyFn}
+    ${readSignalLockFn}
+    ${writeSignalLockFn}
+    ${assetPriceFn}
+    ${clampNumFn}
+    function brokerQuoteFor() { return null; }
+    ${computeSignalLevelsFn}
+    ${levelsFromLockFn}
+    ${missedFromLevelsFn}
+    ${resolveSignalLevelsFn}
+    ${signalCardDataFn}
     ${tpSlFn}
     return tpSl;
   `;
@@ -147,7 +183,7 @@ assert.match(breakoutHtml, /BTC\/USD/);
 const usdHtml = buildTpSl(4000, forexRates, cryptoRates, jsonStore(baseSnapshot))({ dir: 'wait', score: 40 }, pastUsd);
 assert.match(usdHtml, /POST-NEWS/);
 assert.match(usdHtml, /XAU\/USD \(Gold\) — BUY/);
-assert.match(usdHtml, /dari 3900\.00/);
+assert.match(usdHtml, /dari harga pra-rilis/);
 assert.match(usdHtml, /EUR\/USD <b>BUY<\/b>/);
 assert.match(usdHtml, /USD\/JPY <b>SELL<\/b>/);
 assert.match(usdHtml, /BTC\/USD <b>BUY<\/b>/);
@@ -185,13 +221,13 @@ const repoForex = { [`${pastUsd.Date}|CPI`]: { forex: baseSnapshot.forex, crypto
 const mergedHtml = buildTpSl(4000, forexRates, cryptoRates, localGold, repoForex)({ dir: 'wait', score: 40 }, pastUsd);
 assert.match(mergedHtml, /EUR\/USD <b>BUY<\/b>/);
 assert.match(mergedHtml, /USD\/JPY <b>SELL<\/b>/);
-assert.match(mergedHtml, /dari 3900\.00/);
+assert.match(mergedHtml, /dari harga pra-rilis/);
 
 // Legacy repo snapshot ({price}) is still treated as a gold base price.
 const repoSnapshots = { [`${pastUsd.Date}|CPI`]: { price: 3950, capturedAt: pastUsd.Date } };
 const repoHtml = buildTpSl(4000, forexRates, cryptoRates, noStore, repoSnapshots)({ dir: 'wait', score: 40 }, pastUsd);
 assert.match(repoHtml, /XAU\/USD \(Gold\) — BUY/);
-assert.match(repoHtml, /dari 3950\.00/);
+assert.match(repoHtml, /dari harga pra-rilis/);
 assert.match(repoHtml, /EUR\/USD <b style="color:var\(--amber\)">BREAKOUT<\/b>/);
 
 const straddleHtml = buildTpSl(4000, forexRates, cryptoRates, noStore)({ dir: 'wait', score: 40 }, futureUsd);
@@ -206,36 +242,34 @@ const futureEurCpi = {
   Forecast: '4.0%', Previous: '3.8%', Actual: ''
 };
 const eurPre = buildTpSl(4000, forexRates, cryptoRates, noStore)({ dir: 'wait', score: 40 }, futureEurCpi);
-assert.match(eurPre, /PRE-NEWS BUY bias/);
+assert.match(eurPre, /Entry pasar riil BUY/);
 assert.match(eurPre, /EUR\/USD <b>BUY<\/b>/);
 assert.match(eurPre, /pre-news market/);
-assert.match(eurPre, /Entry market pra-rilis BUY/);
+assert.match(eurPre, /Entry pasar riil BUY/);
 assert.doesNotMatch(eurPre, /XAU\/USD/);
 assert.doesNotMatch(eurPre, /BTC\/USD/);
 
 const futureUsdCpi = { ...futureEurCpi, Event: 'CPI', Country: 'USD', Forecast: '3.2%', Previous: '3.0%' };
 const usdPre = buildTpSl(4000, forexRates, cryptoRates, noStore)({ dir: 'wait', score: 40 }, futureUsdCpi);
-assert.match(usdPre, /PRE-NEWS SELL bias/);
+assert.match(usdPre, /Entry pasar riil SELL/);
 assert.match(usdPre, /EUR\/USD <b>SELL<\/b>/);
 assert.match(usdPre, /GBP\/USD <b>SELL<\/b>/);
 assert.match(usdPre, /USD\/JPY <b>BUY<\/b>/);
 assert.match(usdPre, /USD\/CHF <b>BUY<\/b>/);
 assert.match(usdPre, /pre-news market/);
-// Crypto still waits for post-news momentum; gold keeps its pre-news straddle.
-assert.match(usdPre, /BTC\/USD <b style="color:var\(--amber\)">STRADDLE<\/b>/);
-assert.match(usdPre, /STRATEGI STRADDLE \(OCO\)/);
+// Crypto now follows the same pre-news bias instead of always straddling.
+assert.match(usdPre, /BTC\/USD <b>SELL<\/b>/);
+assert.match(usdPre, /XAU\/USD \(Gold\) — SELL/);
 // USD event also drives the index panel.
 assert.match(usdPre, /Indices \(Nasdaq 100 &amp; S&amp;P 500\)/);
 assert.match(usdPre, /NAS100 <b>SELL<\/b>/);
 assert.match(usdPre, /US500 <b>SELL<\/b>/);
-assert.match(usdPre, /SL\/TP 1% \/ 2%/);
-assert.match(usdPre, /SL\/TP 0\.75% \/ 1\.5%/);
 
 const futureGbp = { ...futureEurCpi, Event: 'CPI y/y', Country: 'GBP', Forecast: '3.0%', Previous: '3.2%' };
 const gbpPre = buildTpSl(4000, forexRates, cryptoRates, noStore)({ dir: 'wait', score: 40 }, futureGbp);
 assert.match(gbpPre, /GBP\/USD <b>SELL<\/b>/);
 assert.match(gbpPre, /GBP\/JPY <b>SELL<\/b>/);
-assert.match(gbpPre, /USD\/JPY <b style="color:var\(--amber\)">STRADDLE<\/b>/);
+assert.doesNotMatch(gbpPre, /USD\/JPY/);
 assert.doesNotMatch(gbpPre, /EUR\/USD <b>BUY<\/b>/);
 
 // Cross pairs follow the event currency leg.
@@ -363,6 +397,10 @@ assert.equal(mapPairBias('USD/CHF', ladderForecast.dir, 'EUR'), 'short');
 function buildCatalyst(eventList, reaction) {
   const body = `
     const POST_NEWS_HOLD_MS = 6 * 60 * 60 * 1000;
+    const NEWS_SETTLE_MS = 15 * 60 * 1000;
+    const MOMENTUM_WINDOW_MS = 90 * 60 * 1000;
+    const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
+    ${riskSensitiveConst}
     const REACTION_MAX_AGE_MS = 45 * 60 * 1000;
     const REACTION = ${JSON.stringify(reaction)};
     const events = ${JSON.stringify(eventList)};
@@ -390,6 +428,12 @@ function buildCatalyst(eventList, reaction) {
     ${forecastBiasFn}
     ${invertDirFn}
     ${mapPairBiasFn}
+    ${momentumFloorFn}
+    ${reactionFloorFn}
+    ${mapAssetBiasFn}
+    ${mapActualBiasFn}
+    ${newsPhaseFn}
+    ${signalDirectionFn}
     ${pairCurrenciesFn}
     ${nextPairCatalystFn}
     ${pairCatalystDirectionFn}
@@ -411,11 +455,13 @@ function buildCatalyst(eventList, reaction) {
   assert.equal(pairCatalystDirection(hit.e, 'EUR/USD').dir, 'long');
   assert.equal(pairCatalystDirection(hit.e, 'USD/JPY').dir, 'long', 'reaction.json is asset-relative, so it is never re-mapped through mapPairBias');
 
-  // Without reaction data the same event resolves to no direction, and the board
-  // falls back to the upcoming event instead of freezing on WAIT.
+  // Without reaction data the same event resolves to no direction but is still
+  // shown so the board can explain why it waits.
   const bare = buildCatalyst([pastEurLow, far], null);
   assert.equal(bare.pairCatalystDirection(pastEurLow, 'EUR/USD').noData, true);
-  assert.equal(bare.nextPairCatalyst('EUR/USD').phase, 'pre');
+  const bareHit = bare.nextPairCatalyst('EUR/USD');
+  assert.equal(bareHit.phase, 'post');
+  assert.equal(bareHit.e.Event, 'Spanish Services PMI');
   // A pair with no catalyst at all renders a neutral card, never NaN.
   const lone = buildCatalyst([], null);
   assert.equal(lone.nextPairCatalyst('EUR/USD'), null);
@@ -441,7 +487,7 @@ const cryptoPairsConst = source.slice(
   source.indexOf('];', source.indexOf('const CRYPTO_PAIRS = [')) + 2
 );
 const cryptoBoardFn = extractFunction('cryptoBoardHtml');
-const cryptoBoardHtml = new Function(`const esc = s => String(s ?? '');\n${cryptoPairsConst}\n${cryptoBoardFn}\nreturn cryptoBoardHtml;`)();
+const cryptoBoardHtml = new Function(`const esc = s => String(s ?? '');\nconst fmtTime = d => '13:00 WITA';\n${cryptoPairsConst}\n${cryptoBoardFn}\nreturn cryptoBoardHtml;`)();
 
 const boardHtml = cryptoBoardHtml(
   { 'BTC/USD': 80934.65, 'ETH/USD': 3200.5 },
@@ -469,6 +515,7 @@ const cryptoState = {
   validUntil: 'Kam 05 Nov 18:00 WITA',
   items: [
     { pair: 'BTC/USD', name: 'Bitcoin', slPct: 1.0, tpPct: 2.0, price: 78251, changePct: 1.16, dir: 'long', momPct: 0.271,
+      levels: { entry: 78251, sl: 77468.49, tp: 79816.02, rr: 2 },
       note: 'Reaksi harga +0.27% dalam 40 mnt pasca-rilis — Actual tidak dipublikasikan' },
     { pair: 'ETH/USD', name: 'Ethereum', slPct: 1.5, tpPct: 3.0, price: 3200.5, changePct: -0.5, dir: null, momPct: null }
   ]
@@ -495,7 +542,10 @@ const nextUsdCatalystFn = extractFunction('nextUsdCatalyst');
 function buildCryptoState(evts, now, rates, change, reaction = null) {
   const body = `
     ${cryptoPairsConst}
-    const NEWS_SETTLE_MS = 60 * 1000;
+    const NEWS_SETTLE_MS = 15 * 60 * 1000;
+    const MOMENTUM_WINDOW_MS = 90 * 60 * 1000;
+    const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
+    ${riskSensitiveConst}
     const POST_NEWS_HOLD_MS = 6 * 60 * 60 * 1000;
     const REACTION_MAX_AGE_MS = 45 * 60 * 1000;
     const REACTION = ${JSON.stringify(reaction)};
@@ -523,6 +573,22 @@ function buildCryptoState(evts, now, rates, change, reaction = null) {
     ${preNewsBiasFn}
     ${invertDirFn}
     ${mapPairBiasFn}
+    ${momentumFloorFn}
+    ${reactionFloorFn}
+    ${mapAssetBiasFn}
+    ${mapActualBiasFn}
+    ${signalDirectionFn}
+    ${signalLockKeyFn}
+    ${readSignalLockFn}
+    ${writeSignalLockFn}
+    ${assetPriceFn}
+    ${clampNumFn}
+    function brokerQuoteFor() { return null; }
+    ${computeSignalLevelsFn}
+    ${levelsFromLockFn}
+    ${missedFromLevelsFn}
+    ${resolveSignalLevelsFn}
+    ${signalCardDataFn}
     const pairRate = () => null;
     const pairRateFrom = () => null;
     ${nextUsdCatalystFn}
@@ -542,27 +608,27 @@ const cryptoKey = `${cryptoPast.Date}|Spanish Services PMI`;
 // No Actual: the 1-minute reaction decides per-asset direction (already asset-relative).
 const cryptoReaction = {
   generatedAt: new Date(cryptoNow).toISOString(),
-  events: { [cryptoKey]: { pairs: { 'BTC/USD': { dir: 'short', movePct: -0.117, minutes: 40 }, 'ETH/USD': { dir: 'long', movePct: 0.44, minutes: 40 } } } }
+  events: { [cryptoKey]: { pairs: { 'BTC/USD': { dir: 'short', movePct: -0.25, minutes: 40 }, 'ETH/USD': { dir: 'long', movePct: 0.44, minutes: 40 } } } }
 };
 const cryptoPost = buildCryptoState([cryptoPast], cryptoNow, cryptoLiveRates, cryptoLiveChange, cryptoReaction);
 assert.equal(cryptoPost.status, 'active');
 assert.equal(cryptoPost.phase, 'post');
 assert.deepEqual(cryptoPost.items.map(it => it.dir), ['short', 'long']);
-assert.equal(cryptoPost.items[0].momPct, -0.117);
-assert.match(cryptoPost.items[0].note, /Reaksi harga -0\.12% dalam 40 mnt/);
+assert.equal(cryptoPost.items[0].momPct, -0.25);
+assert.match(cryptoPost.items[0].note, /Reaksi harga -0\.25% dalam 40 mnt/);
 assert.match(cryptoBoardHtml({}, {}, cryptoPost), /SELL · POST-NEWS/);
 assert.match(cryptoBoardHtml({}, {}, cryptoPost), /BUY · POST-NEWS/);
 
 // Without reaction or momentum the card stays WAIT and says why.
 const cryptoUnknown = buildCryptoState([cryptoPast], cryptoNow, cryptoLiveRates, cryptoLiveChange, null);
 assert.deepEqual(cryptoUnknown.items.map(it => it.dir), [null, null]);
-assert.match(cryptoBoardHtml({}, {}, cryptoUnknown), /NO ACTUAL DATA — arah belum terkonfirmasi/);
+assert.match(cryptoBoardHtml({}, {}, cryptoUnknown), /NO ACTUAL DATA — belum ada reaksi harga/);
 
 // A hotter-than-expected USD CPI is USD-stronger: risk assets go short, not long.
 const cryptoPre = buildCryptoState([cryptoFuture], cryptoNow, cryptoLiveRates, cryptoLiveChange);
 assert.equal(cryptoPre.phase, 'pre');
 assert.deepEqual(cryptoPre.items.map(it => it.dir), ['short', 'short']);
-assert.match(cryptoPre.note, /Forecast 3\.2 vs Previous 3/);
+assert.match(cryptoPre.items[0].note, /Forecast 3\.2 vs Previous 3/);
 assert.match(cryptoBoardHtml({}, {}, cryptoPre), /SELL · MARKET/);
 
 // No USD catalyst at all: idle, but the cards still render their prices.
@@ -583,8 +649,10 @@ const fxTickFn = extractFunction('fxTickHtml');
 const forexBoardHtml = new Function(`const esc = s => String(s ?? '');\n${brokerLineFn}\n${fxTickFn}\n${forexBoardFn}\nreturn forexBoardHtml;`)();
 
 const fxBoard = forexBoardHtml({ items: [
-  { pair: 'EUR/USD', rate: 1.08696, dir: 'long', eventLabel: 'CPI · Kam 05 Nov 12:00 WITA', note: 'Forecast 4 vs Previous 3.8', tick: { dir: 'up', pip: 1.4 } },
-  { pair: 'USD/JPY', rate: 157.88, dir: 'short', eventLabel: 'NFP · Jum 06 Nov 20:30 WITA', note: 'Forecast 65K vs Previous 29K' },
+  { pair: 'EUR/USD', rate: 1.08696, dir: 'long', eventLabel: 'CPI · Kam 05 Nov 12:00 WITA', note: 'Forecast 4 vs Previous 3.8', tick: { dir: 'up', pip: 1.4 },
+    levels: { entry: 1.08696, sl: 1.08358, tp: 1.09371, rr: 2 } },
+  { pair: 'USD/JPY', rate: 157.88, dir: 'short', eventLabel: 'NFP · Jum 06 Nov 20:30 WITA', note: 'Forecast 65K vs Previous 29K',
+    levels: { entry: 157.88, sl: 158.35, tp: 156.94, rr: 2 } },
   { pair: 'USD/CAD', rate: 1.36, dir: null, eventLabel: '' }
 ] });
 assert.match(fxBoard, /EUR\/USD/);
@@ -613,7 +681,7 @@ assert.doesNotMatch(fxBoardSourced, /NaN|undefined/);
 
 // Exact MT5 broker bid/ask: fresh quotes drive the entry side, stale ones only display.
 const brokerQuote = { bid: 1.20010, ask: 1.20030, spreadPips: 2.0, stale: false, ageMin: 2, brokerName: 'FBS Markets Inc.', accountType: 'demo' };
-const fxBuyBroker = forexBoardHtml({ items: [{ pair: 'EUR/USD', rate: 1.2, dir: 'long', broker: brokerQuote }] });
+const fxBuyBroker = forexBoardHtml({ items: [{ pair: 'EUR/USD', rate: 1.2, dir: 'long', broker: brokerQuote, levels: { entry: 1.20030, sl: 1.19730, tp: 1.20630, rr: 2 } }] });
 assert.match(fxBuyBroker, /Entry 1\.20030/, 'BUY must use the broker ask');
 assert.match(fxBuyBroker, /SL 1\.19730/);
 assert.match(fxBuyBroker, /TP 1\.20630/);
@@ -622,7 +690,7 @@ assert.match(fxBuyBroker, /spread 2\.0 pip/);
 assert.match(fxBuyBroker, /FBS Markets Inc\. · demo/);
 assert.doesNotMatch(fxBuyBroker, /STALE/);
 
-const fxSellBroker = forexBoardHtml({ items: [{ pair: 'EUR/USD', rate: 1.2, dir: 'short', broker: brokerQuote }] });
+const fxSellBroker = forexBoardHtml({ items: [{ pair: 'EUR/USD', rate: 1.2, dir: 'short', broker: brokerQuote, levels: { entry: 1.20010, sl: 1.20310, tp: 1.19410, rr: 2 } }] });
 assert.match(fxSellBroker, /Entry 1\.20010/, 'SELL must use the broker bid');
 assert.match(fxSellBroker, /SL 1\.20310/);
 assert.match(fxSellBroker, /TP 1\.19410/);
@@ -631,7 +699,7 @@ const fxWaitBroker = forexBoardHtml({ items: [{ pair: 'EUR/USD', rate: 1.2, dir:
 assert.match(fxWaitBroker, /BUY 1\.20030/);
 assert.match(fxWaitBroker, /SELL 1\.20010/);
 
-const fxStaleBroker = forexBoardHtml({ items: [{ pair: 'EUR/USD', rate: 1.12345, dir: 'long', broker: { ...brokerQuote, stale: true, ageMin: 47 } }] });
+const fxStaleBroker = forexBoardHtml({ items: [{ pair: 'EUR/USD', rate: 1.12345, dir: 'long', broker: { ...brokerQuote, stale: true, ageMin: 47 }, levels: { entry: 1.12345, sl: 1.12007, tp: 1.13021, rr: 2 } }] });
 assert.match(fxStaleBroker, /STALE 47 mnt/);
 assert.match(fxStaleBroker, /Entry 1\.12345/, 'stale broker quote must not set the entry');
 assert.match(fxStaleBroker, /bid 1\.20010 \/ ask 1\.20030/, 'stale quote is still displayed');
@@ -671,6 +739,7 @@ const postBoard = forexBoardHtml({ items: [
   { pair: 'EUR/USD', rate: 1.08696, dir: 'long', phase: 'post', noData: false,
     eventLabel: 'Spanish Services PMI · Rab 04 Nov 16:15 WITA',
     note: 'Reaksi harga +0.12% dalam 45 mnt pasca-rilis — Actual tidak dipublikasikan',
+    levels: { entry: 1.08696, sl: 1.08358, tp: 1.09371, rr: 2 },
     validUntil: 'Rab 04 Nov 22:15 WITA' },
   { pair: 'GBP/USD', rate: 1.34880, dir: null, phase: 'post', noData: true,
     eventLabel: 'Spanish Services PMI · Rab 04 Nov 16:15 WITA',
@@ -692,12 +761,13 @@ assert.ok(indicesBoardStart > -1, 'indices board section missing');
 assert.ok(indicesBoardStart < calendarStart, 'indices board must render before the calendar');
 
 const indicesBoardFn = extractFunction('indicesBoardHtml');
-const indicesBoardHtml = new Function(`const esc = s => String(s ?? '');\n${indicesBoardFn}\nreturn indicesBoardHtml;`)();
+const indicesBoardHtml = new Function(`const esc = s => String(s ?? '');\nconst fmtTime = d => '13:00 WITA';\n${indicesBoardFn}\nreturn indicesBoardHtml;`)();
 
 const idxBoard = indicesBoardHtml({
   status: 'active', phase: 'pre', event: 'CPI · Kam 05 Nov 12:00 WITA', note: 'Forecast 3.2 vs Previous 3.0',
   items: [
-    { symbol: 'NAS100', name: 'Nasdaq 100', slPct: 1.0, tpPct: 2.0, price: 28180.26, changePct: 0.68, dir: 'short', momPct: null },
+    { symbol: 'NAS100', name: 'Nasdaq 100', slPct: 1.0, tpPct: 2.0, price: 28180.26, changePct: 0.68, dir: 'short', momPct: null,
+      levels: { entry: 28180.26, sl: 28462.06, tp: 27616.65, rr: 2 } },
     { symbol: 'US500', name: 'S&P 500', slPct: 0.75, tpPct: 1.5, price: 7568.92, changePct: 0.36, dir: null, momPct: null }
   ]
 });
@@ -724,6 +794,9 @@ function buildIndicesState(evts, idxRates, now, analyzeBody = "() => ({ dir: 'wa
   const body = `
     const WITA = 'Asia/Makassar';
     const NEWS_SETTLE_MS = 60 * 1000;
+    const MOMENTUM_WINDOW_MS = 90 * 60 * 1000;
+    const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
+    ${riskSensitiveConst}
     const POST_NEWS_HOLD_MS = 6 * 60 * 60 * 1000;
     const INDICES = [
       { symbol: 'NAS100', name: 'Nasdaq 100', yahoo: '^NDX', slPct: 1.0, tpPct: 2.0 },
@@ -744,6 +817,24 @@ function buildIndicesState(evts, idxRates, now, analyzeBody = "() => ({ dir: 'wa
     const momentumFor = ${momentumBody};
     const reactionFor = ${reactionBody};
     const moveNote = ${moveNoteFn};
+    const localStorage = { getItem: () => null, setItem: () => {} };
+    ${indexRateFn}
+    ${momentumFloorFn}
+    ${reactionFloorFn}
+    ${mapAssetBiasFn}
+    ${mapActualBiasFn}
+    ${signalDirectionFn}
+    ${signalLockKeyFn}
+    ${readSignalLockFn}
+    ${writeSignalLockFn}
+    ${assetPriceFn}
+    ${clampNumFn}
+    function brokerQuoteFor() { return null; }
+    ${computeSignalLevelsFn}
+    ${levelsFromLockFn}
+    ${missedFromLevelsFn}
+    ${resolveSignalLevelsFn}
+    ${signalCardDataFn}
     ${nextUsdCatalystFn}
     ${idxStateFn}
     return indicesBoardState;
@@ -763,7 +854,7 @@ const idxPreState = buildIndicesState([idxFutureUsd], idxRates, idxNow, "() => (
 assert.equal(idxPreState.status, 'active');
 assert.equal(idxPreState.phase, 'pre');
 assert.deepEqual(idxPreState.items.map(x => x.dir), ['short', 'short']);
-assert.ok(/Forecast 3\.2 vs Previous 3/.test(idxPreState.note));
+assert.ok(/Forecast 3\.2 vs Previous 3/.test(idxPreState.items[0].note));
 
 const idxWaitState = buildIndicesState([idxFutureUsd], idxRates, idxNow);
 assert.deepEqual(idxWaitState.items.map(x => x.dir), [null, null]);
@@ -822,7 +913,7 @@ const goldPostLong = goldBoardHtml(4042.4, {
   status: 'post', event: 'FOMC', dir: 'long', changePct: 0.42, validUntil: 'Kam 29 Okt 10:00 WITA',
   levels: { entry: 4042.4, sl: 4022.19, tp: 4082.82 }
 });
-assert.match(goldPostLong, /BUY • momentum \+0\.42%/);
+assert.match(goldPostLong, /BUY • reaksi \+0\.42%/);
 assert.match(goldPostLong, /Entry 4042\.40/);
 assert.match(goldPostLong, /SL 4022\.19/);
 assert.match(goldPostLong, /TP 4082\.82/);
@@ -834,7 +925,7 @@ const goldPostShort = goldBoardHtml(4000, {
   levels: { entry: 4000, sl: 4020, tp: 3960 }
 });
 assert.match(goldPostShort, /SELL/);
-assert.doesNotMatch(goldPostShort, /• momentum/);
+assert.doesNotMatch(goldPostShort, /• reaksi/);
 assert.doesNotMatch(goldPostShort, /NaN/);
 
 const goldBreakout = goldBoardHtml(4000, {
@@ -844,7 +935,7 @@ const goldBreakout = goldBoardHtml(4000, {
 });
 assert.match(goldBreakout, /BUY BREAKOUT/);
 assert.match(goldBreakout, /SELL BREAKOUT/);
-assert.match(goldBreakout, /Post-news breakout OCO/);
+assert.match(goldBreakout, /breakout OCO/);
 
 assert.match(goldBoardHtml(4000, { status: 'live', event: 'FOMC' }), /Rilis berlangsung/);
 
@@ -863,6 +954,9 @@ function buildGoldState(evts, price, now, analyzeBody = "() => ({ dir: 'wait' })
   const body = `
     const WITA = 'Asia/Makassar';
     const NEWS_SETTLE_MS = 60 * 1000;
+    const MOMENTUM_WINDOW_MS = 90 * 60 * 1000;
+    const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
+    ${riskSensitiveConst}
     const POST_NEWS_HOLD_MS = 6 * 60 * 60 * 1000;
     const countryCode = c => String(c || 'USD').toUpperCase();
     const esc = s => String(s);
@@ -876,6 +970,25 @@ function buildGoldState(evts, price, now, analyzeBody = "() => ({ dir: 'wait' })
     const mapPairBias = ${mapPairBiasFn};
     const invertDir = ${invertDirFn};
     const momentumFor = ${momentumBody};
+    const localStorage = { getItem: () => null, setItem: () => {} };
+    ${momentumFloorFn}
+    ${reactionFloorFn}
+    ${mapAssetBiasFn}
+    ${mapActualBiasFn}
+    ${newsPhaseFn}
+    ${signalDirectionFn}
+    ${signalLockKeyFn}
+    ${readSignalLockFn}
+    ${writeSignalLockFn}
+    ${assetPriceFn}
+    ${clampNumFn}
+    function brokerQuoteFor() { return null; }
+    ${computeSignalLevelsFn}
+    ${levelsFromLockFn}
+    ${missedFromLevelsFn}
+    ${resolveSignalLevelsFn}
+    ${signalCardDataFn}
+    ${nextUsdCatalystFn}
     ${stateFn}
     return goldBoardState;
   `;
@@ -890,28 +1003,28 @@ const audFuture = { Date: new Date(now + 60 * 60 * 1000).toISOString(), Event: '
 
 const preState = buildGoldState([usdFuture], 4000, now);
 assert.equal(preState.status, 'pre');
-assert.ok(Math.abs(preState.buy.entry - 4006) < 1e-9);
-assert.ok(Math.abs(preState.buy.sl - 3994) < 1e-9);
-assert.ok(Math.abs(preState.buy.tp - 4030) < 1e-9);
-assert.ok(Math.abs(preState.sell.entry - 3994) < 1e-9);
-assert.ok(Math.abs(preState.sell.tp - 3970) < 1e-9);
+assert.ok(Math.abs(preState.buy.entry - 4007.5) < 1e-9);
+assert.ok(Math.abs(preState.buy.sl - 3992.5) < 1e-9);
+assert.ok(Math.abs(preState.buy.tp - 4037.5) < 1e-9);
+assert.ok(Math.abs(preState.sell.entry - 3992.5) < 1e-9);
+assert.ok(Math.abs(preState.sell.tp - 3962.5) < 1e-9);
 
 const postBreakout = buildGoldState([usdPast], 4000, now);
 assert.equal(postBreakout.status, 'post');
 assert.equal(postBreakout.dir, null);
-assert.ok(Math.abs(postBreakout.buy.entry - 4010) < 1e-9);
-assert.ok(Math.abs(postBreakout.buy.sl - 3995) < 1e-9);
-assert.ok(Math.abs(postBreakout.buy.tp - 4040) < 1e-9);
+assert.ok(Math.abs(postBreakout.buy.entry - 4012.5) < 1e-9);
+assert.ok(Math.abs(postBreakout.buy.sl - 3993.75) < 1e-9);
+assert.ok(Math.abs(postBreakout.buy.tp - 4050) < 1e-9);
 
 // Pre-news with a Forecast-vs-Previous edge now prints a real entry, and the
 // straddle stays visible so the OCO plan is not lost.
 const preBiasState = buildGoldState([usdFuture], 4000, now, "() => ({ dir: 'wait' })", '() => null', "() => ({ dir: 'short', forecast: 3.2, previous: 3.0 })");
 assert.equal(preBiasState.status, 'pre');
 assert.equal(preBiasState.dir, 'short');
-assert.equal(preBiasState.phase, 'pre');
+assert.equal(preBiasState.status, 'pre');
 assert.ok(Math.abs(preBiasState.levels.entry - 4000) < 1e-9);
-assert.ok(Math.abs(preBiasState.levels.sl - 4020) < 1e-9);
-assert.ok(Math.abs(preBiasState.levels.tp - 3960) < 1e-9);
+assert.ok(Math.abs(preBiasState.levels.sl - 4028.6) < 1e-9);
+assert.ok(Math.abs(preBiasState.levels.tp - 3942.8) < 1e-9);
 assert.ok(preBiasState.buy && preBiasState.sell, 'straddle levels must survive the pre-news bias');
 assert.match(preBiasState.note, /Forecast 3\.2 vs Previous 3/);
 const preBiasHtml = goldBoardHtml(4000, preBiasState);
@@ -935,8 +1048,8 @@ assert.match(viaReaction.note, /\(bar XAUUSD\)/);
 const postDirected = buildGoldState([usdPast], 4000, now, "() => ({ dir: 'short' })");
 assert.equal(postDirected.status, 'post');
 assert.equal(postDirected.dir, 'short');
-assert.ok(Math.abs(postDirected.levels.sl - 4020) < 1e-9);
-assert.ok(Math.abs(postDirected.levels.tp - 3960) < 1e-9);
+assert.ok(Math.abs(postDirected.levels.sl - 4028.6) < 1e-9);
+assert.ok(Math.abs(postDirected.levels.tp - 3942.8) < 1e-9);
 
 const postMomentum = buildGoldState([usdPast], 4000, now, "() => ({ dir: 'wait' })", "() => ({ dir: 'long', changePct: 0.35 })");
 assert.equal(postMomentum.dir, 'long');
@@ -1098,3 +1211,211 @@ const applyFx = new Function(`
 console.log('Passed live forex quote tests');
 
 
+
+// ---------------------------------------------------------------------------
+// Post-news confirmation rules: 15-minute settle, reaction-first direction,
+// price-over-Actual conflict, locked entry levels, and index event mapping.
+// ---------------------------------------------------------------------------
+function buildEngine(price, { reaction = null, preNews = {}, indexRates = {}, store = { getItem: () => null, setItem: () => {} } } = {}) {
+  const body = `
+    const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
+    const MOMENTUM_WINDOW_MS = 90 * 60 * 1000;
+    const REACTION_MAX_AGE_MS = 45 * 60 * 1000;
+    const NEWS_SETTLE_MS = 15 * 60 * 1000;
+    const REACTION = ${JSON.stringify(reaction)};
+    const PRE_NEWS = ${JSON.stringify(preNews)};
+    let LIVE_PRICE = ${JSON.stringify(price)};
+    const CRYPTO_RATES = {};
+    const INDEX_RATES = ${JSON.stringify(indexRates)};
+    const FOREX_RATES = {};
+    const FOREX_QUOTES = {};
+    ${riskSensitiveConst}
+    ${numFn}
+    ${countryFn}
+    ${biasFn}
+    ${analyzeFn}
+    ${dateEventKeyFn}
+    ${eventKeyFn}
+    ${normalizeSnapshotFn}
+    ${preNewsSnapshotFn}
+    ${preNewsPriceFn}
+    ${pairRateFromFn}
+    ${pairRateFn}
+    ${moveNoteFn}
+    ${reactionForFn}
+    ${momentumForFn}
+    ${forecastBiasFn}
+    ${preNewsBiasFn}
+    ${invertDirFn}
+    ${mapPairBiasFn}
+    ${indexRateFn}
+    ${momentumFloorFn}
+    ${reactionFloorFn}
+    ${mapAssetBiasFn}
+    ${mapActualBiasFn}
+    ${newsPhaseFn}
+    ${signalDirectionFn}
+    ${signalLockKeyFn}
+    ${readSignalLockFn}
+    ${writeSignalLockFn}
+    ${assetPriceFn}
+    ${clampNumFn}
+    function brokerQuoteFor() { return null; }
+    ${computeSignalLevelsFn}
+    ${levelsFromLockFn}
+    ${missedFromLevelsFn}
+    ${resolveSignalLevelsFn}
+    ${signalCardDataFn}
+    return { signalDirection, signalCardData, resolveSignalLevels, setPrice: p => { LIVE_PRICE = p; } };
+  `;
+  return new Function('localStorage', body)(store);
+}
+
+function memoryStore() {
+  return {
+    data: {},
+    getItem(k) { return this.data[k] || null; },
+    setItem(k, v) { this.data[k] = v; }
+  };
+}
+
+{
+  const now = Date.now();
+  const released = mins => ({
+    Date: new Date(now - mins * 60 * 1000).toISOString(),
+    Event: 'CPI', Country: 'USD', Importance: 3, Forecast: '3.0%', Previous: '2.9%', Actual: '3.2%'
+  });
+
+  // 15-minute settle: the first spike is live, not tradable.
+  const settling = buildEngine(4000).signalDirection(released(14), 'XAU/USD', 'gold', now);
+  assert.equal(settling.phase, 'live');
+  assert.equal(settling.dir, null);
+  assert.equal(settling.basis, 'settling');
+  const confirmed = buildEngine(4000).signalDirection(released(16), 'XAU/USD', 'gold', now);
+  assert.equal(confirmed.phase, 'post');
+
+  // Reaction beats Actual. Actual says USD-strong (gold short) but price is up:
+  // the signal follows the price and records the conflict instead of fighting it.
+  const conflictEvent = released(30);
+  const conflictReaction = {
+    generatedAt: new Date(now).toISOString(),
+    events: {
+      [`${conflictEvent.Date}|CPI`]: {
+        pairs: { 'XAU/USD': { movePct: 0.4, dir: 'long', minutes: 30 } }
+      }
+    }
+  };
+  const byReaction = buildEngine(4000, { reaction: conflictReaction })
+    .signalDirection(conflictEvent, 'XAU/USD', 'gold', now);
+  assert.equal(byReaction.basis, 'reaction');
+  assert.equal(byReaction.dir, 'long');
+  assert.equal(byReaction.conflict, true);
+  assert.match(byReaction.note, /berlawanan dengan Actual/);
+
+  // A reaction below the noise floor is ignored, so Actual remains the fallback.
+  const noiseReaction = {
+    generatedAt: new Date(now).toISOString(),
+    events: {
+      [`${conflictEvent.Date}|CPI`]: {
+        pairs: { 'XAU/USD': { movePct: 0.05, dir: 'long', minutes: 30 } }
+      }
+    }
+  };
+  const byActual = buildEngine(4000, { reaction: noiseReaction })
+    .signalDirection(conflictEvent, 'XAU/USD', 'gold', now);
+  assert.equal(byActual.basis, 'actual');
+  assert.equal(byActual.dir, 'short');
+
+  // Once confirmed, Entry/SL/TP are locked and cannot repaint on every tick.
+  const store = memoryStore();
+  const engine = buildEngine(4000, { store });
+  const first = engine.signalCardData(conflictEvent, 'XAU/USD', 'gold', now);
+  assert.ok(first.locked, 'post-news levels must be locked');
+  assert.equal(first.levels.entry, 4000);
+  engine.setPrice(3900);
+  const second = engine.signalCardData(conflictEvent, 'XAU/USD', 'gold', now);
+  assert.equal(second.levels.entry, first.levels.entry, 'locked entry must not repaint');
+  assert.equal(second.levels.sl, first.levels.sl, 'locked SL must not repaint');
+  assert.equal(second.levels.tp, first.levels.tp, 'locked TP must not repaint');
+  assert.ok(second.missed, 'price that ran away from the locked entry must be flagged');
+
+  // Direction conflicts keep the old order and warn instead of flipping.
+  const lockEvent = { ...conflictEvent, Event: 'Retail Sales' };
+  const armedStore = memoryStore();
+  const lockKey = `feriha:signal:v2:${lockEvent.Date}|Retail Sales|XAU/USD`;
+  armedStore.data[lockKey] = JSON.stringify({
+    dir: 'long', entry: 4000, sl: 4028.6, tp: 3942.8,
+    phase: 'post', basis: 'momentum', at: new Date(now).toISOString()
+  });
+  const lockReaction = {
+    generatedAt: new Date(now).toISOString(),
+    events: {
+      [`${lockEvent.Date}|Retail Sales`]: {
+        pairs: { 'XAU/USD': { movePct: -0.4, dir: 'short', minutes: 30 } }
+      }
+    }
+  };
+  const flip = buildEngine(4000, { store: armedStore, reaction: lockReaction })
+    .signalCardData(lockEvent, 'XAU/USD', 'gold', now);
+  assert.equal(flip.dir, 'long', 'locked direction must not flip to chase price');
+  assert.equal(flip.conflict, true);
+  assert.equal(flip.levels.entry, 4000);
+
+  // After the momentum/Actual window closes, the confirmed signal stays until expiry
+  // instead of disappearing mid-trade.
+  const oldEvent = { ...conflictEvent, Date: new Date(now - 4 * 60 * 60 * 1000).toISOString() };
+  const heldStore = memoryStore();
+  heldStore.data[`feriha:signal:v2:${oldEvent.Date}|CPI|XAU/USD`] = JSON.stringify({
+    dir: 'short', entry: 4000, sl: 4028.6, tp: 3942.8,
+    phase: 'post', basis: 'reaction', at: new Date(now - 3.5 * 60 * 60 * 1000).toISOString()
+  });
+  const held = buildEngine(3900, { store: heldStore }).signalCardData(oldEvent, 'XAU/USD', 'gold', now);
+  assert.equal(held.dir, 'short', 'confirmed signal must outlive the 3-hour Actual window');
+  assert.equal(held.carried, true);
+  assert.equal(held.levels.entry, 4000);
+  assert.ok(held.missed);
+
+  // Index mapping is event-aware: strong payrolls lift indices (risk-on) while a
+  // hot CPI still pressures them (rate risk).
+  const nfp = {
+    Date: new Date(now - 30 * 60 * 1000).toISOString(),
+    Event: 'Nonfarm Payrolls', Country: 'USD', Importance: 3,
+    Forecast: '100K', Previous: '90K', Actual: '250K'
+  };
+  const cpi = { ...nfp, Event: 'CPI' };
+  const idxRates = { NAS100: { price: 21000, changePct: 1 }, US500: { price: 5800, changePct: 0.8 } };
+  const nfpSig = buildEngine(21000, { indexRates: idxRates }).signalDirection(nfp, 'NAS100', 'index', now);
+  assert.equal(nfpSig.basis, 'actual');
+  assert.equal(nfpSig.dir, 'long', 'strong payrolls are risk-on for indices');
+  const cpiSig = buildEngine(21000, { indexRates: idxRates }).signalDirection(cpi, 'NAS100', 'index', now);
+  assert.equal(cpiSig.dir, 'short', 'hot CPI stays a headwind for indices');
+}
+
+
+// During the 15-minute confirmation window no board publishes entry levels.
+{
+  const levels = { entry: 100, sl: 98, tp: 104, rr: 2 };
+  const liveCrypto = cryptoBoardHtml({}, {}, {
+    status: 'live', phase: 'post', event: 'CPI', items: [
+      { pair: 'BTC/USD', name: 'Bitcoin', slPct: 1, tpPct: 2, price: 65000, changePct: 1, dir: 'long', levels }
+    ]
+  });
+  assert.match(liveCrypto, /Level entry ditahan sampai konfirmasi 15 menit/);
+  assert.doesNotMatch(liveCrypto, /Entry 65,000/);
+
+  const liveIndex = indicesBoardHtml({
+    status: 'live', phase: 'post', event: 'CPI', items: [
+      { symbol: 'NAS100', name: 'Nasdaq 100', slPct: 1, tpPct: 2, price: 21000, changePct: 1, dir: 'long', levels }
+    ]
+  });
+  assert.match(liveIndex, /Level entry ditahan sampai konfirmasi 15 menit/);
+  assert.doesNotMatch(liveIndex, /Entry 21,000/);
+
+  const liveForex = forexBoardHtml({ items: [
+    { pair: 'EUR/USD', rate: 1.1, dir: 'long', phase: 'live', levels: { entry: 1.1, sl: 1.098, tp: 1.104, rr: 2 } }
+  ] });
+  assert.match(liveForex, /Tunggu konfirmasi 15 menit/);
+  assert.doesNotMatch(liveForex, /Entry 1\.10000/);
+}
+
+console.log('Passed post-news confirmation and lock tests');

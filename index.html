@@ -215,6 +215,10 @@ let INDEX_CHANGE = {};
 let PRE_NEWS = {};
 let REACTION = null;
 const REACTION_MAX_AGE_MS = 45 * 60 * 1000;
+// Entry/SL/TP yang sudah dikonfirmasi disimpan per event+aset supaya tidak berubah
+// setiap tick. Level yang bergerak-gerak membuat order tidak pernah cocok dengan
+// harga yang dilihat saat entry.
+const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
 window.applyLiveXauPrice = function (price) {
     const p = Number(price);
     if (!Number.isFinite(p) || p <= 0) return;
@@ -227,7 +231,10 @@ const fmtDate = d => new Intl.DateTimeFormat('en-IN', { timeZone: WITA, weekday:
 const fmtTime = d => new Intl.DateTimeFormat('en-IN', { timeZone: WITA, hour: '2-digit', minute: '2-digit', hour12: false }).format(d) + ' WITA';
 
 const POST_NEWS_HOLD_MS = 6 * 60 * 60 * 1000;
-const NEWS_SETTLE_MS = 60 * 1000;
+// Jangan entry di spike pertama. Spread masih lebar dan arah 1 menit belum stabil.
+// Sinyal post-news baru dipublikasikan setelah 15 menit konfirmasi.
+const NEWS_SETTLE_MS = 15 * 60 * 1000;
+const MOMENTUM_WINDOW_MS = 90 * 60 * 1000;
 
 function dateEventKey(e) {
     return String(e.Date) + '|' + String(e.Event);
@@ -314,6 +321,15 @@ function newsPhase(e) {
     return 'post';
 }
 
+function momentumFloor(kind, pair) {
+    // Noise floor per aset: 0.1% di EUR/USD hanya 11 pip, sedangkan 0.1% di emas
+    // cuma ~$4. Tanpa batas ini, pergerakan kecil pasca-rilis dianggap arah.
+    if (kind === 'gold') return 0.15;
+    if (kind === 'crypto') return 0.25;
+    if (kind === 'index') return 0.12;
+    return /JPY$/i.test(String(pair)) ? 0.10 : 0.07;
+}
+
 function momentumFor(e, kind, pair) {
     const snap = preNewsSnapshot(e);
     if (!snap) return null;
@@ -333,7 +349,7 @@ function momentumFor(e, kind, pair) {
     }
     if (!Number.isFinite(base) || base <= 0 || !Number.isFinite(cur) || cur <= 0) return null;
     const changePct = (cur - base) / base * 100;
-    return { dir: Math.abs(changePct) < 0.1 ? null : (changePct > 0 ? 'long' : 'short'), changePct, base };
+    return { dir: Math.abs(changePct) < momentumFloor(kind, pair) ? null : (changePct > 0 ? 'long' : 'short'), changePct, base };
 }
 
 function postNewsMomentum(e) {
@@ -343,6 +359,17 @@ function postNewsMomentum(e) {
 // Reaksi harga pasca-rilis yang dihitung workflow dari bar 1 menit (data/reaction.json).
 // `dir` di sini sudah per-aset: 'long' = harga aset itu sendiri naik setelah rilis,
 // jadi TIDAK boleh dilewatkan mapPairBias.
+function reactionFloor(pair) {
+    // Reaksi di bawah ambang ini hanyalah noise spread, bukan arah.
+    const key = String(pair).toUpperCase();
+    if (key === 'XAU/USD') return 0.12;
+    if (key === 'BTC/USD') return 0.18;
+    if (key === 'ETH/USD') return 0.22;
+    if (key === 'NAS100') return 0.12;
+    if (key === 'US500') return 0.10;
+    return /JPY$/.test(key) ? 0.08 : 0.06;
+}
+
 function reactionFor(e, pair) {
     const entry = REACTION && REACTION.events ? REACTION.events[dateEventKey(e)] : null;
     const hit = entry && entry.pairs ? entry.pairs[pair] : null;
@@ -351,9 +378,13 @@ function reactionFor(e, pair) {
     if (!Number.isFinite(generatedAt) || Date.now() - generatedAt > REACTION_MAX_AGE_MS) return null;
     const movePct = Number(hit.movePct);
     if (!Number.isFinite(movePct)) return null;
-    const dir = hit.dir === 'long' || hit.dir === 'short' ? hit.dir : null;
     const minutes = Number(hit.minutes);
-    return { dir, movePct, minutes: Number.isFinite(minutes) ? minutes : null, via: hit.via ? String(hit.via) : null };
+    const measuredMinutes = Number.isFinite(minutes) ? minutes : null;
+    let dir = hit.dir === 'long' || hit.dir === 'short' ? hit.dir : (movePct > 0 ? 'long' : 'short');
+    if (Math.abs(movePct) < reactionFloor(pair)) dir = null;
+    // Pengukuran < 10 menit masih bagian dari spike, bukan arah yang bisa dipakai.
+    if (measuredMinutes !== null && measuredMinutes < 10) dir = null;
+    return { dir, movePct, minutes: measuredMinutes, via: hit.via ? String(hit.via) : null };
 }
 
 function moveNote(label, changePct, minutes) {
@@ -383,7 +414,7 @@ function eventAssets(e) {
 function focusPair(e) {
     const c = countryCode(e.Country);
     if (c === 'USD') return { kind: 'gold', pair: 'XAU/USD' };
-    const pair = ({ AUD: 'AUD/USD', EUR: 'EUR/USD', GBP: 'GBP/USD', JPY: 'USD/JPY', CHF: 'USD/CHF', CAD: 'USD/CAD' })[c];
+    const pair = ({ AUD: 'AUD/USD', EUR: 'EUR/USD', GBP: 'GBP/USD', JPY: 'USD/JPY', CHF: 'USD/CHF', CAD: 'USD/CAD', NZD: 'NZD/USD' })[c];
     return pair ? { kind: 'forex', pair } : { kind: 'none', pair: '' };
 }
 
@@ -656,82 +687,45 @@ function brokerSourceText(now = Date.now()) {
 }
 
 function goldBoardState(now = Date.now()) {
-    const usd = events
-        .filter(e => countryCode(e.Country) === 'USD' && (+e.Importance || 1) >= 2)
-        .map(e => ({ e, t: new Date(e.Date).getTime() }))
-        .filter(x => Number.isFinite(x.t))
-        .sort((a, b) => a.t - b.t);
-    const label = x => esc(`${x.e.Event} · ${fmtDate(new Date(x.e.Date))} ${fmtTime(new Date(x.e.Date))}`);
-    const upcoming = usd.find(x => x.t > now);
-    const idle = { status: 'idle', next: upcoming ? label(upcoming) : '' };
+    const { pick, upcoming, label } = nextUsdCatalyst(now);
+    const idle = { status: 'idle', next: upcoming ? label : '' };
 
     const price = Number(LIVE_PRICE);
     if (!Number.isFinite(price) || price <= 0) return { status: 'loading' };
-
-    const released = usd.filter(x => x.t <= now && now <= postNewsExpiry(x.e).getTime());
-    const pick = released.length ? released[released.length - 1] : upcoming;
     if (!pick) return idle;
 
-    if (pick.t > now) {
-        const buffer = price * 0.0015;
-        const straddle = {
-            status: 'pre',
-            event: label(pick),
-            buy: { entry: price + buffer, sl: price + buffer - buffer * 2, tp: price + buffer + buffer * 4 },
-            sell: { entry: price - buffer, sl: price - buffer + buffer * 2, tp: price - buffer - buffer * 4 }
-        };
-        // Pre-news pun emas bisa diarahkan: Forecast vs Previous adalah satu-satunya
-        // informasi arah sebelum Actual tercetak. Straddle tetap ikut dikirim supaya
-        // level OCO tidak hilang saat trader memilih menunggu rilis.
-        const bias = preNewsBias(pick.e);
-        const dir = bias ? mapPairBias('XAU/USD', bias.dir, pick.e.Country) : null;
-        if (!dir) return straddle;
-        const riskPct = 0.5, rewardPct = 1.0;
+    const impact = +pick.e.Importance || 1;
+    const phase = newsPhase(pick.e);
+    if (phase === 'live') return { status: 'live', event: label };
+
+    if (phase === 'pre') {
+        // Straddle tetap level pending (memang harus bergerak mengikuti harga),
+        // sedangkan entry market memakai engine yang sama dengan kartu event.
+        const buffer = price * (0.0015 * (1 + 0.25 * Math.max(0, impact - 2)));
+        const buy = { entry: price + buffer, sl: price + buffer - buffer * 2, tp: price + buffer + buffer * 4 };
+        const sell = { entry: price - buffer, sl: price - buffer + buffer * 2, tp: price - buffer - buffer * 4 };
+        const data = signalCardData(pick.e, 'XAU/USD', 'gold', now);
+        if (!data.dir || !data.levels) return { status: 'pre', event: label, buy, sell, note: data.note };
         return {
-            ...straddle,
-            phase: 'pre',
-            dir,
-            levels: {
-                entry: price,
-                sl: dir === 'long' ? price * (1 - riskPct / 100) : price * (1 + riskPct / 100),
-                tp: dir === 'long' ? price * (1 + rewardPct / 100) : price * (1 - rewardPct / 100)
-            },
-            note: `Bias pra-rilis — Forecast ${bias.forecast} vs Previous ${bias.previous}${bias.source ? ' • ' + bias.source : ''}`
+            status: 'pre', event: label, dir: data.dir, levels: data.levels,
+            note: data.note, buy, sell, locked: data.locked, lockedAt: data.lockedAt, missed: data.missed
         };
     }
-    if (now < pick.t + NEWS_SETTLE_MS) return { status: 'live', event: label(pick) };
 
-    const a = analyze(pick.e);
-    const directed = a.dir === 'long' || a.dir === 'short';
-    const reaction = !directed ? reactionFor(pick.e, 'XAU/USD') : null;
-    const mom = directed || (reaction && reaction.dir) ? null : momentumFor(pick.e, 'gold');
-    const dir = directed
-        ? a.dir
-        : (reaction && reaction.dir ? reaction.dir : (mom && mom.dir ? mom.dir : null));
-    const changePct = reaction && reaction.dir ? reaction.movePct : (mom ? mom.changePct : null);
-    const note = directed
-        ? `Post-news ${a.comparedTo}`
-        : (reaction && reaction.dir
-            ? `${moveNote('Reaksi emas', reaction.movePct, reaction.minutes)} — ${a.noData ? 'Actual tidak dipublikasikan' : 'Actual sesuai perkiraan'}${reaction.via ? ` (bar ${reaction.via})` : ''}`
-            : (mom && mom.dir ? `Post-news momentum ${mom.changePct >= 0 ? '+' : ''}${mom.changePct.toFixed(2)}% dari harga pra-rilis` : null));
     const validUntil = fmtDate(postNewsExpiry(pick.e)) + ' ' + fmtTime(postNewsExpiry(pick.e));
-
-    if (dir) {
-        const riskPct = 0.5, rewardPct = 1.0;
+    const data = signalCardData(pick.e, 'XAU/USD', 'gold', now);
+    if (data.dir && data.levels) {
         return {
-            status: 'post', event: label(pick), dir, changePct, validUntil, note,
-            levels: {
-                entry: price,
-                sl: dir === 'long' ? price * (1 - riskPct / 100) : price * (1 + riskPct / 100),
-                tp: dir === 'long' ? price * (1 + rewardPct / 100) : price * (1 - rewardPct / 100)
-            }
+            status: 'post', event: label, dir: data.dir, changePct: data.movePct, validUntil,
+            note: data.note, levels: data.levels, locked: data.locked, lockedAt: data.lockedAt,
+            conflict: data.conflict, missed: data.missed
         };
     }
 
-    const buffer = price * 0.0025;
+    const buffer = price * (0.0025 * (1 + 0.25 * Math.max(0, impact - 2)));
     return {
-        status: 'post', event: label(pick), dir: null, changePct, validUntil,
-        note: a.noData ? 'NO ACTUAL DATA — arah belum terkonfirmasi' : null,
+        status: 'post', event: label, dir: null, changePct: data.movePct, validUntil,
+        note: data.note || 'Arah belum terkonfirmasi — tunggu reaksi harga.',
         buy: { entry: price + buffer, sl: price + buffer - buffer * 1.5, tp: price + buffer + buffer * 3 },
         sell: { entry: price - buffer, sl: price - buffer + buffer * 1.5, tp: price - buffer - buffer * 3 }
     };
@@ -746,8 +740,12 @@ function goldBoardHtml(price, state) {
     if (!Number.isFinite(p) || p <= 0) return html + `<div class="mb-meta">Menunggu harga gold live…</div>`;
     if (st.event) html += `<div class="mb-meta">${st.event}</div>`;
     const lv = (cls, title, o) => `<div class="mb-level ${cls}"><b>${title}</b><span>Entry ${f(o.entry)}</span><span>SL ${f(o.sl)}</span><span>TP ${f(o.tp)}</span></div>`;
+    const lockNote = st.locked && st.lockedAt ? ` • entry terkunci ${fmtTime(new Date(st.lockedAt))}` : '';
+    const warn = st.conflict
+        ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama, jangan flip mengejar harga.</div>`
+        : (st.missed ? `<div class="warning-badge">⚠️ Entry sudah terlewat — jangan kejar harga, tunggu pullback ke entry.</div>` : '');
 
-    if (st.status === 'live') return html + `<div class="mb-meta">⏳ Rilis berlangsung — sinyal tampil setelah impact terkonfirmasi.</div>`;
+    if (st.status === 'live') return html + `<div class="mb-meta">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit sebelum entry.</div>`;
     if (st.status === 'pre' && st.buy && st.sell) {
         const armed = st.dir && st.levels
             ? lv(st.dir === 'long' ? 'buy' : 'sell', (st.dir === 'long' ? 'BUY' : 'SELL') + ' · MARKET', st.levels)
@@ -755,15 +753,15 @@ function goldBoardHtml(price, state) {
         const meta = st.dir
             ? `${st.note || 'Bias pra-rilis Forecast vs Previous'} • Straddle OCO tetap tersedia bila arah tidak diambil.`
             : 'Straddle OCO — jika satu arah tersentuh, batalkan arah lainnya.';
-        return html + `<div class="mb-levels">${armed}${lv('buy', 'BUY STOP', st.buy)}${lv('sell', 'SELL STOP', st.sell)}</div><div class="mb-meta">${meta}</div>`;
+        return html + warn + `<div class="mb-levels">${armed}${lv('buy', 'BUY STOP', st.buy)}${lv('sell', 'SELL STOP', st.sell)}</div><div class="mb-meta">${meta}</div>`;
     }
     if (st.status === 'post' && st.dir && st.levels) {
         const long = st.dir === 'long';
-        const mom = st.changePct == null ? '' : ` • momentum ${st.changePct >= 0 ? '+' : ''}${Number(st.changePct).toFixed(2)}%`;
-        return html + `<div class="mb-levels">${lv(long ? 'buy' : 'sell', (long ? 'BUY' : 'SELL') + mom, st.levels)}</div><div class="mb-meta">${st.note || 'Post-news momentum'} • valid s/d ${st.validUntil || '6 jam setelah rilis'}</div>`;
+        const mom = st.changePct == null ? '' : ` • reaksi ${st.changePct >= 0 ? '+' : ''}${Number(st.changePct).toFixed(2)}%`;
+        return html + warn + `<div class="mb-levels">${lv(long ? 'buy' : 'sell', (long ? 'BUY' : 'SELL') + mom, st.levels)}</div><div class="mb-meta">${st.note || 'Post-news terkonfirmasi'}${lockNote} • R:R 1:${st.levels.rr || 2} • valid s/d ${st.validUntil || '6 jam setelah rilis'}</div>`;
     }
     if (st.status === 'post' && st.buy && st.sell) {
-        return html + `<div class="mb-levels">${lv('buy', 'BUY BREAKOUT', st.buy)}${lv('sell', 'SELL BREAKOUT', st.sell)}</div><div class="mb-meta">Post-news breakout OCO • valid s/d ${st.validUntil || '6 jam setelah rilis'}</div>`;
+        return html + `<div class="mb-levels">${lv('buy', 'BUY BREAKOUT', st.buy)}${lv('sell', 'SELL BREAKOUT', st.sell)}</div><div class="mb-meta">${st.note || 'Arah belum terkonfirmasi'} • breakout OCO valid s/d ${st.validUntil || '6 jam setelah rilis'}</div>`;
     }
     return html + `<div class="mb-meta">Tidak ada katalis USD aktif. ${st.next ? 'Berikutnya: ' + st.next : 'Tunggu kalender berikutnya.'}</div>`;
 }
@@ -784,7 +782,12 @@ function cryptoBoardState(now = Date.now()) {
         price: Number(CRYPTO_RATES[cfg.pair]),
         changePct: Number(CRYPTO_CHANGE[cfg.pair]),
         dir: null,
-        momPct: null
+        momPct: null,
+        levels: null,
+        note: '',
+        locked: false,
+        conflict: false,
+        missed: false
     }));
     const { pick, upcoming, label } = nextUsdCatalyst(now);
     if (!pick) return { status: 'idle', items, event: '', next: upcoming ? label : '', note: '' };
@@ -792,34 +795,17 @@ function cryptoBoardState(now = Date.now()) {
     const phase = newsPhase(pick.e);
     if (phase === 'live') return { status: 'live', items, event: label, next: '', note: '' };
 
-    const a = analyze(pick.e);
-    let dir = (a.dir === 'long' || a.dir === 'short') ? a.dir : null;
-    let note = dir ? a.comparedTo : '';
-    const bias = dir ? null : preNewsBias(pick.e);
-    if (bias) {
-        note = `Forecast ${bias.forecast} vs Previous ${bias.previous}${bias.source ? ' • ' + bias.source : ''}`;
-    }
-
     items.forEach(it => {
-        const usdDir = dir || (bias && bias.dir) || null;
-        // analyze/preNewsBias berbicara dalam bahasa USD; reaksi dan momentum sudah per-aset.
-        if (usdDir) it.dir = mapPairBias(it.pair, usdDir, pick.e.Country);
-        if (phase !== 'post' || it.dir) return;
-        const reaction = reactionFor(pick.e, it.pair);
-        if (reaction && reaction.dir) {
-            it.dir = reaction.dir;
-            it.momPct = reaction.movePct;
-            it.note = `${moveNote('Reaksi harga', reaction.movePct, reaction.minutes)} — ${a.noData ? 'Actual tidak dipublikasikan' : 'Actual sesuai perkiraan'}`;
-            return;
-        }
-        const mom = momentumFor(pick.e, 'crypto', it.pair);
-        if (mom && mom.dir) {
-            it.dir = mom.dir;
-            it.momPct = mom.changePct;
-            it.note = `Momentum ${mom.changePct >= 0 ? '+' : ''}${mom.changePct.toFixed(2)}% dari harga pra-rilis`;
-            return;
-        }
-        it.note = 'NO ACTUAL DATA — arah belum terkonfirmasi';
+        const data = signalCardData(pick.e, it.pair, 'crypto', now);
+        it.dir = data.dir;
+        it.levels = data.levels;
+        it.momPct = data.movePct;
+        it.note = data.note || '';
+        it.locked = data.locked;
+        it.lockedAt = data.lockedAt;
+        it.conflict = data.conflict;
+        it.missed = data.missed;
+        it.basis = data.basis;
     });
 
     return {
@@ -827,7 +813,7 @@ function cryptoBoardState(now = Date.now()) {
         phase,
         items,
         event: label,
-        note,
+        note: '',
         next: upcoming ? label : '',
         validUntil: phase === 'post' ? fmtDate(postNewsExpiry(pick.e)) + ' ' + fmtTime(postNewsExpiry(pick.e)) : label
     };
@@ -854,25 +840,29 @@ function cryptoBoardHtml(rates, change, state) {
         const dir = it.dir === 'long' ? 'buy' : it.dir === 'short' ? 'sell' : 'wait';
         const label = dir === 'buy' ? 'BUY' : dir === 'sell' ? 'SELL' : 'WAIT';
         const badge = `<span class="fx-badge ${dir}">${label}${dir === 'wait' ? '' : (st.phase === 'post' ? ' · POST-NEWS' : ' · MARKET')}</span>`;
+        const lockNote = it.locked && it.lockedAt ? ` • entry terkunci ${fmtTime(new Date(it.lockedAt))}` : '';
+        const warn = it.conflict
+            ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>`
+            : (it.missed ? `<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>` : '');
         let levels;
-        if (dir === 'wait') {
+        if (st.status === 'live') {
+            levels = `<div class="idx-note">⏳ Level entry ditahan sampai konfirmasi 15 menit.</div>`;
+        } else if (dir !== 'wait' && it.levels) {
+            levels = `<div class="levels idx-levels"><span>Entry ${fmt(it.levels.entry)}</span><span>SL ${fmt(it.levels.sl)}</span><span>TP ${fmt(it.levels.tp)}</span><span>R:R 1:${it.levels.rr || 2}</span></div>`;
+        } else {
             const buffer = slPct / 2;
             levels = `<div class="levels idx-levels"><span>BUY &gt; ${fmt(rate * (1 + buffer / 100))}</span><span>SELL &lt; ${fmt(rate * (1 - buffer / 100))}</span></div>`;
-        } else {
-            const long = dir === 'buy';
-            const sl = long ? rate * (1 - slPct / 100) : rate * (1 + slPct / 100);
-            const tp = long ? rate * (1 + tpPct / 100) : rate * (1 - tpPct / 100);
-            levels = `<div class="levels idx-levels"><span>Entry ${fmt(rate)}</span><span>SL ${fmt(sl)}</span><span>TP ${fmt(tp)}</span><span>R:R 1:2</span></div>`;
         }
         const itemNote = it.note || st.note;
         return `<div class="crypto-card ${dir}">
             <div class="pair"><span>${esc(pair)}</span><small>${esc(name)}</small>${badge}</div>
             <div class="price">$${fmt(rate)}</div>
             <div class="meta">${chgHtml}<span class="sep">•</span>SL/TP ${slPct}% / ${tpPct}%</div>
+            ${warn}
             ${levels}
             <div class="idx-event">${esc(st.event || 'Tidak ada katalis USD aktif')}</div>
-            ${itemNote ? `<div class="idx-note">${esc(itemNote)}</div>` : ''}
-            ${st.status === 'live' ? '<div class="idx-note">⏳ Rilis berlangsung — tunggu impact terkonfirmasi.</div>' : ''}
+            ${itemNote ? `<div class="idx-note">${esc(itemNote)}${lockNote}</div>` : ''}
+            ${st.status === 'live' ? '<div class="idx-note">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit.</div>' : ''}
             ${st.phase === 'post' && st.validUntil ? `<div class="idx-note">Post-news • valid s/d ${esc(st.validUntil)}</div>` : ''}
         </div>`;
     }).filter(Boolean).join('');
@@ -885,22 +875,10 @@ function renderCryptoBoard() {
 }
 
 // Rilis terakhir yang masih berada dalam jendela pasca-news menang atas event
-// berikutnya; tanpa ini board pair selalu melompat ke katalis jauh dan WAIT.
+// berikutnya; board pair harus menampilkan katalis yang sama dengan kartu event.
 function pairCatalystDirection(e, pair) {
-    const a = analyze(e);
-    if (a.dir === 'long' || a.dir === 'short') {
-        return { dir: mapPairBias(pair, a.dir, e.Country), basis: a.basis, note: a.comparedTo };
-    }
-    if (!a.noData) return { dir: null, basis: a.basis, note: a.reason };
-    const reaction = reactionFor(e, pair);
-    if (reaction && reaction.dir) {
-        return { dir: reaction.dir, basis: 'reaction', note: `${moveNote('Reaksi harga', reaction.movePct, reaction.minutes)} — Actual tidak dipublikasikan` };
-    }
-    const mom = momentumFor(e, 'forex', pair);
-    if (mom && mom.dir) {
-        return { dir: mom.dir, basis: 'momentum', note: `Momentum ${mom.changePct >= 0 ? '+' : ''}${mom.changePct.toFixed(2)}% dari harga pra-rilis — Actual tidak dipublikasikan` };
-    }
-    return { dir: null, noData: true, basis: 'no-actual', note: 'NO ACTUAL DATA — arah belum terkonfirmasi' };
+    const sig = signalDirection(e, pair, 'forex');
+    return { dir: sig.dir, basis: sig.basis, note: sig.note, noData: sig.basis === 'no-actual' || sig.basis === 'settling' };
 }
 
 function nextPairCatalyst(pair, now = Date.now()) {
@@ -908,22 +886,12 @@ function nextPairCatalyst(pair, now = Date.now()) {
     const pool = events
         .filter(e => (+e.Importance || 1) >= 1 && currencies.includes(countryCode(e.Country)))
         .map(e => ({ e, t: new Date(e.Date).getTime() }))
-        .filter(x => Number.isFinite(x.t));
-    const released = pool
-        .filter(x => x.t <= now && now <= x.t + POST_NEWS_HOLD_MS)
-        .sort((a, b) => a.t - b.t)
-        .filter(x => pairCatalystDirection(x.e, pair).dir)
-        .pop();
-    if (released) return { ...released, phase: 'post' };
-    const upcoming = pool.filter(x => x.t > now).sort((a, b) => a.t - b.t)[0];
-    if (upcoming) return { ...upcoming, phase: 'pre' };
-    // Tidak ada katalis mendatang: tetap tampilkan rilis terakhir di jendela pasca-news
-    // supaya kartu menjelaskan kenapa arahnya belum terkonfirmasi.
-    const stale = pool
-        .filter(x => x.t <= now && now <= x.t + POST_NEWS_HOLD_MS)
-        .sort((a, b) => a.t - b.t)
-        .pop();
-    return stale ? { ...stale, phase: 'post' } : null;
+        .filter(x => Number.isFinite(x.t))
+        .sort((a, b) => a.t - b.t);
+    const recent = pool.filter(x => x.t <= now && now <= x.t + POST_NEWS_HOLD_MS);
+    if (recent.length) return { ...recent[recent.length - 1], phase: 'post' };
+    const upcoming = pool.find(x => x.t > now);
+    return upcoming ? { ...upcoming, phase: 'pre' } : null;
 }
 
 function forexSourceText(meta) {
@@ -951,26 +919,27 @@ function forexBoardState(now = Date.now()) {
         const rate = pairRate(pair);
         const next = nextPairCatalyst(pair, now);
         let dir = null, note = '', eventLabel = '', phase = '', validUntil = '', noData = false;
+        let levels = null, locked = false, lockedAt = null, missed = false, conflict = false, basis = '';
         if (next) {
             eventLabel = `${next.e.Event} · ${fmtDate(new Date(next.e.Date))} ${fmtTime(new Date(next.e.Date))}`;
-            if (next.phase === 'post') {
-                const resolved = pairCatalystDirection(next.e, pair);
-                dir = resolved.dir;
-                noData = Boolean(resolved.noData);
-                note = resolved.note;
-                validUntil = `${fmtDate(postNewsExpiry(next.e))} ${fmtTime(postNewsExpiry(next.e))}`;
-            } else {
-                const bias = preNewsBias(next.e);
-                if (bias) dir = mapPairBias(pair, bias.dir, next.e.Country);
-                note = bias
-                    ? `Forecast ${bias.forecast} vs Previous ${bias.previous}${bias.source ? ' • ' + bias.source : ''}`
-                    : 'Forecast vs Previous flat — wait for the release';
-            }
             phase = next.phase;
+            const data = signalCardData(next.e, pair, 'forex', now);
+            dir = data.dir;
+            levels = data.levels;
+            note = data.note || '';
+            locked = data.locked;
+            lockedAt = data.lockedAt;
+            missed = data.missed;
+            conflict = data.conflict;
+            basis = data.basis;
+            phase = data.phase || next.phase;
+            noData = !dir && (basis === 'no-actual' || basis === 'settling');
+            if (phase === 'post') validUntil = `${fmtDate(postNewsExpiry(next.e))} ${fmtTime(postNewsExpiry(next.e))}`;
         }
         const quote = FOREX_QUOTES[pair] || null;
         return {
             pair, rate, dir, note, eventLabel, phase, validUntil, noData,
+            levels, locked, lockedAt, missed, conflict, basis,
             source: quote && quote.source,
             tick: FOREX_TICK[pair] || null,
             crossCheckPct: quote && quote.crossCheckPct,
@@ -1017,32 +986,33 @@ function forexBoardHtml(state) {
         }
         const isJpyStyle = rate > 10;
         const dec = isJpyStyle ? 3 : 5;
-        const slDist = isJpyStyle ? 0.30 : 0.0030;
-        const tpDist = isJpyStyle ? 0.60 : 0.0060;
         const dir = it.dir === 'long' ? 'buy' : it.dir === 'short' ? 'sell' : 'wait';
         const label = dir === 'buy' ? 'BUY' : dir === 'sell' ? 'SELL' : 'WAIT';
         const suffix = dir === 'wait' ? '' : (it.phase === 'post' ? ' · POST-NEWS' : ' · MARKET');
         const broker = it.broker && !it.broker.stale ? it.broker : null;
+        const lockNote = it.locked && it.lockedAt ? ` • entry terkunci ${fmtTime(new Date(it.lockedAt))}` : '';
         let levels;
-        if (dir === 'buy' || dir === 'sell') {
-            const isLong = dir === 'buy';
-            const entry = broker ? (isLong ? Number(broker.ask) : Number(broker.bid)) : rate;
-            const sl = isLong ? entry - slDist : entry + slDist;
-            const tp = isLong ? entry + tpDist : entry - tpDist;
-            levels = `<div class="fx-levels"><span>Entry ${fmt(entry, dec)}</span><span>SL ${fmt(sl, dec)}</span><span>TP ${fmt(tp, dec)}</span></div>`;
+        if (it.phase === 'live') {
+            levels = `<div class="fx-levels"><span>⏳ Tunggu konfirmasi 15 menit</span></div>`;
+        } else if ((dir === 'buy' || dir === 'sell') && it.levels) {
+            levels = `<div class="fx-levels"><span>Entry ${fmt(it.levels.entry, dec)}</span><span>SL ${fmt(it.levels.sl, dec)}</span><span>TP ${fmt(it.levels.tp, dec)}</span><span>R:R 1:2</span></div>`;
         } else {
             const buffer = isJpyStyle ? 0.15 : 0.0015;
             const buyRef = broker ? Number(broker.ask) : rate + buffer;
             const sellRef = broker ? Number(broker.bid) : rate - buffer;
             levels = `<div class="fx-levels"><span>BUY ${fmt(buyRef, dec)}</span><span>SELL ${fmt(sellRef, dec)}</span></div>`;
         }
+        const warn = it.conflict
+            ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>`
+            : (it.missed ? `<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>` : '');
         return `<div class="fx-card ${dir}">
             <div class="pair"><span>${esc(it.pair)}</span><span class="fx-badge ${dir}">${label}${suffix}</span></div>
             <div class="fx-price">${fmt(rate, dec)}${fxTickHtml(it.tick)}</div>
             ${brokerLineHtml(it.broker)}
+            ${warn}
             ${levels}
             <div class="fx-event">${it.eventLabel ? esc(it.eventLabel) : 'Tidak ada katalis aktif'}</div>
-            ${it.note ? `<div class="fx-note">${esc(it.note)}${it.phase === 'post' && it.validUntil ? ` • valid s/d ${esc(it.validUntil)}` : ''}</div>` : ''}
+            ${it.note ? `<div class="fx-note">${esc(it.note)}${lockNote}${it.phase === 'post' && it.validUntil ? ` • valid s/d ${esc(it.validUntil)}` : ''}</div>` : ''}
         </div>`;
     }).join('');
 }
@@ -1081,7 +1051,12 @@ function indicesBoardState(now = Date.now()) {
             price: Number(rate.price),
             changePct: Number(rate.changePct),
             dir: null,
-            momPct: null
+            momPct: null,
+            levels: null,
+            note: '',
+            locked: false,
+            conflict: false,
+            missed: false
         };
     });
     const { pick, upcoming, label } = nextUsdCatalyst(now);
@@ -1090,31 +1065,17 @@ function indicesBoardState(now = Date.now()) {
     const phase = newsPhase(pick.e);
     if (phase === 'live') return { status: 'live', items, event: label, next: '', note: '' };
 
-    const a = analyze(pick.e);
-    let dir = (a.dir === 'long' || a.dir === 'short') ? a.dir : null;
-    let note = dir ? a.comparedTo : '';
-    const bias = dir ? null : preNewsBias(pick.e);
-    if (bias) {
-        note = `Forecast ${bias.forecast} vs Previous ${bias.previous}${bias.source ? ' • ' + bias.source : ''}`;
-    }
-
     items.forEach(it => {
-        it.dir = dir || (bias && bias.dir) || null;
-        if (phase === 'post') {
-            const reaction = a.noData ? reactionFor(pick.e, it.symbol) : null;
-            if (reaction && reaction.dir) {
-                it.dir = reaction.dir;
-                it.momPct = reaction.movePct;
-                it.note = `${moveNote('Reaksi harga', reaction.movePct, reaction.minutes)} — Actual tidak dipublikasikan${reaction.via ? ` (bar ${reaction.via})` : ''}`;
-                return;
-            }
-            const mom = momentumFor(pick.e, 'index', it.symbol);
-            if (mom && mom.dir) {
-                it.dir = mom.dir;
-                it.momPct = mom.changePct;
-                it.note = `Momentum ${mom.changePct >= 0 ? '+' : ''}${mom.changePct.toFixed(2)}% dari harga pra-rilis`;
-            }
-        }
+        const data = signalCardData(pick.e, it.symbol, 'index', now);
+        it.dir = data.dir;
+        it.levels = data.levels;
+        it.momPct = data.movePct;
+        it.note = data.note || '';
+        it.locked = data.locked;
+        it.lockedAt = data.lockedAt;
+        it.conflict = data.conflict;
+        it.missed = data.missed;
+        it.basis = data.basis;
     });
 
     return {
@@ -1122,7 +1083,7 @@ function indicesBoardState(now = Date.now()) {
         phase,
         items,
         event: label,
-        note,
+        note: '',
         next: upcoming ? label : '',
         validUntil: phase === 'post' ? fmtDate(postNewsExpiry(pick.e)) + ' ' + fmtTime(postNewsExpiry(pick.e)) : label
     };
@@ -1140,11 +1101,10 @@ function indicesBoardHtml(state) {
         const dir = it.dir === 'long' ? 'buy' : it.dir === 'short' ? 'sell' : 'wait';
         const label = dir === 'buy' ? 'BUY' : dir === 'sell' ? 'SELL' : 'WAIT';
         let levels;
-        if (dir === 'buy' || dir === 'sell') {
-            const isLong = dir === 'buy';
-            const sl = isLong ? price * (1 - it.slPct / 100) : price * (1 + it.slPct / 100);
-            const tp = isLong ? price * (1 + it.tpPct / 100) : price * (1 - it.tpPct / 100);
-            levels = `<div class="idx-levels"><span>Entry ${fmt(price)}</span><span>SL ${fmt(sl)}</span><span>TP ${fmt(tp)}</span><span>R:R 1:2</span></div>`;
+        if (it.phase === 'live' || st.status === 'live') {
+            levels = `<div class="idx-note">⏳ Level entry ditahan sampai konfirmasi 15 menit.</div>`;
+        } else if ((dir === 'buy' || dir === 'sell') && it.levels) {
+            levels = `<div class="idx-levels"><span>Entry ${fmt(it.levels.entry)}</span><span>SL ${fmt(it.levels.sl)}</span><span>TP ${fmt(it.levels.tp)}</span><span>R:R 1:2</span></div>`;
         } else {
             const buffer = it.slPct / 2;
             levels = `<div class="idx-levels"><span>BUY &gt; ${fmt(price * (1 + buffer / 100))}</span><span>SELL &lt; ${fmt(price * (1 - buffer / 100))}</span></div>`;
@@ -1157,13 +1117,18 @@ function indicesBoardHtml(state) {
         const momHtml = mom !== null && Number.isFinite(mom) ? ` <small style="color:var(--muted);">${mom >= 0 ? '+' : ''}${mom.toFixed(2)}%</small>` : '';
         const eventLine = st.event ? `<div class="idx-event">${esc(st.event)}</div>` : '<div class="idx-event">Tidak ada katalis USD aktif</div>';
         const itemNote = it.note || st.note;
-        const noteLine = itemNote ? `<div class="idx-note">${esc(itemNote)}</div>` : '';
-        const liveLine = st.status === 'live' ? '<div class="idx-note">⏳ Rilis berlangsung — tunggu impact terkonfirmasi.</div>' : '';
+        const lockNote = it.locked && it.lockedAt ? ` • entry terkunci ${fmtTime(new Date(it.lockedAt))}` : '';
+        const noteLine = itemNote ? `<div class="idx-note">${esc(itemNote)}${lockNote}</div>` : '';
+        const warn = it.conflict
+            ? '<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>'
+            : (it.missed ? '<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>' : '');
+        const liveLine = st.status === 'live' ? '<div class="idx-note">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit.</div>' : '';
         const postLine = st.phase === 'post' && st.validUntil ? `<div class="idx-note">Post-news • valid s/d ${esc(st.validUntil)}</div>` : '';
         return `<div class="idx-card ${dir}">
             <div class="pair"><span>${esc(it.symbol)}</span><small>${esc(it.name)}</small><span class="fx-badge ${dir}">${label}${dir === 'wait' ? '' : (st.phase === 'post' ? ' · POST-NEWS' : ' · MARKET')}${momHtml}</span></div>
             <div class="idx-price">${fmt(price)}</div>
             <div class="idx-levels">${changeHtml ? `<span>${changeHtml}</span>` : ''}<span>SL/TP ${it.slPct}% / ${it.tpPct}%</span></div>
+            ${warn}
             ${levels}
             ${eventLine}
             ${noteLine}
@@ -1404,6 +1369,268 @@ function analyze(e) {
     };
 }
 
+// ---------------------------------------------------------------------------
+// Unified signal engine (dipakai oleh kartu event DAN semua board)
+//
+// Urutan arah pasca-rilis:
+//   1. Reaksi harga 1 menit yang sudah melewati noise floor (paling penting).
+//   2. Momentum pra-rilis -> sekarang, hanya dalam 90 menit pertama.
+//   3. Actual vs Forecast/Previous, hanya kalau tidak ada data harga.
+//   4. WAIT.
+//
+// Actual yang berlawanan dengan harga TIDAK dipakai untuk melawan pasar. Kalau
+// keduanya bertabrakan, sinyal mengikuti harga dan catatan menjelaskan konflik.
+// ---------------------------------------------------------------------------
+const RISK_SENSITIVE_EVENT = /nonfarm|non-farm|nfp|payroll|gdp|retail sales|pmi|ism|adp|employment|durable goods|consumer confidence|consumer sentiment|unemployment|jobless|claims|industrial production/i;
+
+function mapAssetBias(kind, asset, dir, e) {
+    if (dir !== 'long' && dir !== 'short') return null;
+    const country = e && e.Country;
+    if (kind === 'forex') return mapPairBias(asset, dir, country);
+    if (kind === 'index') {
+        // Sama seperti Actual: data pertumbuhan/tenaga kerja yang kuat = risk-on,
+        // jadi indeks naik walaupun bahasa emas/USD-nya "short".
+        const name = (e && (e.Event || e.Category)) || '';
+        if (RISK_SENSITIVE_EVENT.test(name)) return invertDir(dir);
+        return dir;
+    }
+    return dir;
+}
+
+// "dir" dari analyze() adalah bahasa emas/USD: long = USD lemah / non-USD kuat.
+// Indeks butuh pemetaan tambahan karena data pertumbuhan yang kuat itu risk-on
+// (indeks naik) meskipun USD menguat dan emas turun.
+function mapActualBias(kind, asset, dir, e) {
+    if (dir !== 'long' && dir !== 'short') return null;
+    if (kind === 'forex') return mapPairBias(asset, dir, e.Country);
+    if (kind === 'index') {
+        const name = (e.Event || e.Category || '');
+        if (RISK_SENSITIVE_EVENT.test(name)) return invertDir(dir);
+        return dir;
+    }
+    return dir;
+}
+
+function signalDirection(e, asset, kind, now = Date.now()) {
+    const phase = newsPhase(e);
+    if (phase === 'pre') {
+        const bias = preNewsBias(e);
+        const dir = bias ? mapAssetBias(kind, asset, bias.dir, e) : null;
+        return {
+            phase, dir, basis: bias ? 'forecast' : 'none', movePct: null, minutes: null,
+            note: bias
+                ? `Bias pra-rilis Forecast ${bias.forecast} vs Previous ${bias.previous}${bias.source ? ' • ' + bias.source : ''}`
+                : 'Forecast vs Previous flat — tunggu rilis'
+        };
+    }
+    if (phase === 'live') {
+        return { phase, dir: null, basis: 'settling', note: 'Rilis berlangsung — tunggu konfirmasi 15 menit sebelum entry.' };
+    }
+
+    const a = analyze(e);
+    const actualDir = (a.dir === 'long' || a.dir === 'short') ? mapActualBias(kind, asset, a.dir, e) : null;
+    const reaction = reactionFor(e, asset);
+    const reactionDir = reaction && reaction.dir ? reaction.dir : null;
+    const releasedAt = new Date(e.Date).getTime();
+    const ageMin = Number.isFinite(releasedAt) ? (now - releasedAt) / 60000 : Infinity;
+    const mom = ageMin <= MOMENTUM_WINDOW_MS / 60000 ? momentumFor(e, kind, asset) : null;
+    const momentumDir = mom && mom.dir ? mom.dir : null;
+    const priceDir = reactionDir || momentumDir;
+
+    if (priceDir) {
+        // Momentum saja harus 1.5x lebih besar dari noise floor; kalau tidak,
+        // itu retracement kecil yang akan berbalik.
+        const strongMomentum = !reactionDir && mom && Math.abs(mom.changePct) >= momentumFloor(kind, asset) * 1.5;
+        if (reactionDir || strongMomentum) {
+            const conflict = Boolean(actualDir && actualDir !== priceDir);
+            return {
+                phase, dir: priceDir,
+                basis: reactionDir ? 'reaction' : 'momentum',
+                movePct: reactionDir ? reaction.movePct : mom.changePct,
+                minutes: reaction ? reaction.minutes : null,
+                actualDir, conflict,
+                note: reactionDir
+                    ? `${moveNote('Reaksi harga', reaction.movePct, reaction.minutes)}${a.noData ? ' — Actual tidak dipublikasikan' : (a.basis === 'flat' ? ' — Actual sesuai perkiraan' : '')}${reaction.via ? ` (bar ${reaction.via})` : ''}${conflict ? ' — berlawanan dengan Actual, sinyal mengikuti harga' : ''}`
+                    : `Momentum ${mom.changePct >= 0 ? '+' : ''}${mom.changePct.toFixed(2)}% dari harga pra-rilis${conflict ? ' — berlawanan dengan Actual, sinyal mengikuti harga' : ''}`
+            };
+        }
+    }
+
+    // Actual hanya dipakai bila tidak ada arah harga sama sekali, dan hanya untuk
+    // event medium/high impact dalam 3 jam pertama.
+    if (actualDir && (+e.Importance || 1) >= 2 && ageMin <= 180) {
+        return {
+            phase, dir: actualDir, basis: 'actual', movePct: null, minutes: null,
+            actualDir, note: a.comparedTo || a.reason || 'Arah dari Actual vs Forecast'
+        };
+    }
+
+    return {
+        phase, dir: null,
+        basis: a.noData ? 'no-actual' : (a.basis || 'wait'),
+        movePct: null, minutes: null,
+        note: a.noData
+            ? 'NO ACTUAL DATA — belum ada reaksi harga yang bisa dikonfirmasi.'
+            : `${a.reason || 'Arah belum terkonfirmasi'} Tunggu reaksi harga 15 menit pertama.`
+    };
+}
+
+function signalLockKey(e, asset) {
+    return SIGNAL_LOCK_PREFIX + dateEventKey(e) + '|' + String(asset).toUpperCase();
+}
+
+function readSignalLock(e, asset) {
+    try {
+        const raw = localStorage.getItem(signalLockKey(e, asset));
+        if (!raw) return null;
+        const j = JSON.parse(raw);
+        if (!j || (j.dir !== 'long' && j.dir !== 'short')) return null;
+        const entry = Number(j.entry), sl = Number(j.sl), tp = Number(j.tp);
+        if (![entry, sl, tp].every(n => Number.isFinite(n) && n > 0)) return null;
+        return { ...j, entry, sl, tp };
+    } catch { return null; }
+}
+
+function writeSignalLock(e, asset, payload) {
+    try { localStorage.setItem(signalLockKey(e, asset), JSON.stringify(payload)); } catch {}
+}
+
+function assetPrice(kind, asset) {
+    if (kind === 'gold') {
+        const p = Number(LIVE_PRICE);
+        return Number.isFinite(p) && p > 0 ? p : null;
+    }
+    if (kind === 'crypto') {
+        const p = Number(CRYPTO_RATES[asset]);
+        return Number.isFinite(p) && p > 0 ? p : null;
+    }
+    if (kind === 'index') return indexRate(asset);
+    const p = pairRate(asset);
+    return Number.isFinite(p) && p > 0 ? p : null;
+}
+
+function clampNum(v, lo, hi) {
+    return Math.min(hi, Math.max(lo, Number(v)));
+}
+
+// SL/TP adaptif: makin tinggi impact dan makin besar reaksi, makin lebar stop.
+// Tujuannya supaya stop tidak berada di dalam noise spread pasca-rilis.
+function computeSignalLevels(kind, asset, dir, price, e, signal) {
+    const impact = +e.Importance || 1;
+    const vol = Math.abs(Number(signal && signal.movePct) || 0);
+    const isBuy = dir === 'long';
+
+    if (kind === 'forex') {
+        const b = brokerQuoteFor(asset);
+        const entry = b ? (isBuy ? b.ask : b.bid) : price;
+        const pip = entry > 10 ? 0.01 : 0.0001;
+        const basePips = /JPY$/i.test(asset) ? (/\/JPY$/.test(asset) && !/^USD/.test(asset) ? 35 : 30) : 25;
+        const volPips = vol / 100 * entry / pip;
+        const stopPips = clampNum(basePips * (1 + 0.35 * Math.max(0, impact - 2)) + 0.6 * volPips, basePips, basePips * 3);
+        const stop = stopPips * pip;
+        const sl = isBuy ? entry - stop : entry + stop;
+        const tp = isBuy ? entry + stop * 2 : entry - stop * 2;
+        const dec = entry > 10 ? 3 : 5;
+        return { entry, sl, tp, stopPips: Number(stopPips.toFixed(1)), riskPct: null, rr: 2, dec, broker: b ? b.brokerName : null };
+    }
+
+    const base = kind === 'gold' ? 0.55
+        : kind === 'crypto' ? (asset === 'BTC/USD' ? 1.2 : 1.5)
+        : (asset === 'NAS100' ? 0.8 : 0.6);
+    const riskPct = clampNum(base * (1 + 0.30 * Math.max(0, impact - 2)) + 0.45 * vol, base, base * 3);
+    const sl = isBuy ? price * (1 - riskPct / 100) : price * (1 + riskPct / 100);
+    const tp = isBuy ? price * (1 + riskPct * 2 / 100) : price * (1 - riskPct * 2 / 100);
+    return { entry: price, sl, tp, stopPips: null, riskPct: Number(riskPct.toFixed(2)), rr: 2, dec: null, broker: null };
+}
+
+function levelsFromLock(lock, kind) {
+    return {
+        entry: lock.entry, sl: lock.sl, tp: lock.tp, rr: 2, kind,
+        dec: lock.dec || null, stopPips: lock.stopPips || null, riskPct: lock.riskPct ?? null
+    };
+}
+
+function missedFromLevels(levels, dir, price) {
+    const risk = Math.abs(Number(levels.sl) - Number(levels.entry));
+    if (!(risk > 0)) return false;
+    const beyond = dir === 'long' ? (price - levels.entry) : (levels.entry - price);
+    return beyond > risk * 0.8;
+}
+
+function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
+    const price = assetPrice(kind, asset);
+    if (!signal || !price) return { ...signal, price: price || null, levels: null, locked: false };
+
+    // Arah bisa hilang setelah jendela momentum/Actual lewat, tetapi sinyal yang
+    // sudah dikonfirmasi tetap berlaku sampai POST_NEWS_HOLD_MS habis. Tanpa ini
+    // level bisa hilang-timbul dan entry yang sudah terpasang jadi tidak cocok.
+    if (!signal.dir) {
+        const held = readSignalLock(e, asset);
+        if (held && held.phase === 'post' && signal.phase === 'post') {
+            const levels = levelsFromLock(held, kind);
+            return {
+                ...signal,
+                dir: held.dir,
+                price,
+                levels,
+                locked: true,
+                lockedAt: held.at || null,
+                conflict: false,
+                missed: missedFromLevels(levels, held.dir, price),
+                carried: true,
+                note: 'Sinyal pasca-rilis yang sudah terkonfirmasi tetap aktif sampai batas validitas.'
+            };
+        }
+        return { ...signal, price, levels: null, locked: false };
+    }
+
+    let lock = readSignalLock(e, asset);
+    // Hanya sinyal pasca-rilis yang dikunci. Bias pra-rilis adalah entry pasar
+    // yang harus mengikuti harga terakhir sampai rilis, bukan order pending.
+    const canLock = signal.phase === 'post';
+    // Fase pra -> pasca rilis adalah skenario baru. Actual -> reaksi juga boleh
+    // diganti karena reaksi harga lebih baru dan lebih dapat dipercaya.
+    const replace = lock && (lock.phase !== signal.phase || (lock.basis === 'actual' && signal.basis === 'reaction'));
+    let conflict = false;
+    let levels = null;
+
+    if (lock && !replace && lock.dir !== signal.dir) {
+        // Jangan flip arah dan mengejar harga. Level lama tetap ditampilkan dengan
+        // peringatan supaya order yang sudah terpasang bisa dibatalkan.
+        conflict = true;
+        levels = levelsFromLock(lock, kind);
+    } else if (lock && !replace) {
+        levels = levelsFromLock(lock, kind);
+    } else {
+        levels = computeSignalLevels(kind, asset, signal.dir, price, e, signal);
+        if (canLock) {
+            lock = {
+                ...levels, dir: signal.dir, phase: signal.phase, basis: signal.basis,
+                movePct: signal.movePct ?? null, at: new Date(now).toISOString()
+            };
+            writeSignalLock(e, asset, lock);
+        } else {
+            lock = null;
+        }
+    }
+
+    const lockedDir = conflict ? lock.dir : signal.dir;
+    return {
+        ...signal,
+        dir: lockedDir,
+        price,
+        levels,
+        locked: Boolean(lock && lock.at),
+        lockedAt: lock && lock.at ? lock.at : null,
+        conflict,
+        missed: missedFromLevels(levels, lockedDir, price)
+    };
+}
+
+function signalCardData(e, asset, kind, now = Date.now()) {
+    return resolveSignalLevels(e, asset, kind, signalDirection(e, asset, kind, now), now);
+}
+
 function normalize(e) {
     return { ...e, Date: e.Date || e.date, Event: e.Event || e.event || e.Category || 'Economic release', Country: countryCode(e.Country || e.country), Importance: +e.Importance || +e.importance || 1, Forecast: e.Forecast || e.forecast || e.TEForecast || '', Previous: e.Previous || e.previous || '', Actual: e.Actual || e.actual || '' };
 }
@@ -1427,270 +1654,230 @@ function pairRate(pair) {
 }
 
 function tpSl(a, e) {
-    if (!LIVE_PRICE) return '';
-    const directed = a.dir === 'long' || a.dir === 'short';
+    const hasAnyPrice = Boolean(LIVE_PRICE) || Object.keys(FOREX_RATES).length > 0 || Object.keys(CRYPTO_RATES).length > 0 || Object.keys(INDEX_RATES).length > 0;
+    if (!hasAnyPrice) return '';
+
     const impact = +e.Importance || 1;
-    const phaseNow = newsPhase(e);
-    const gateFocus = focusPair(e);
-    const gateReaction = phaseNow === 'post' && !directed ? reactionFor(e, gateFocus.pair) : null;
-    const gateMomentum = phaseNow === 'post' && !directed && !(gateReaction && gateReaction.dir) ? momentumFor(e, gateFocus.kind, gateFocus.pair) : null;
-    const gatePreBias = phaseNow === 'pre' && !directed ? preNewsBias(e) : null;
-    if (!directed && impact < 2 && !(gateReaction && gateReaction.dir) && !(gateMomentum && gateMomentum.dir) && !gatePreBias) return '';
-
-    const phase = phaseNow;
-    const isPre = phase === 'pre';
-    const isPost = phase === 'post';
-    const actionOf = d => d === 'long' ? 'BUY' : 'SELL';
-    const f = n => n.toFixed(2);
-
-    if (phase === 'live') {
-        return `<div class="tpsl" style="display:flex; flex-direction:column; gap:10px;">
-            <div class="expired-badge">⏳ Rilis berlangsung — sinyal BUY/SELL tampil setelah impact terkonfirmasi.</div>
-            <div class="validity">📡 Harga saat ini: ${f(LIVE_PRICE)}</div>
-        </div>`;
-    }
-
-    if (isPost && Date.now() > postNewsExpiry(e).getTime()) {
-        return `<div class="tpsl" style="display:flex; flex-direction:column; gap:10px;">
-            <div class="expired-badge">⌛ Sinyal pasca-news kedaluwarsa (lebih dari 6 jam). Tunggu katalis berikutnya.</div>
-            <div class="validity">📡 Harga saat ini: ${f(LIVE_PRICE)}</div>
-        </div>`;
-    }
-
+    const phase = newsPhase(e);
     const assets = eventAssets(e);
-    const preFxBias = isPre && !directed ? preNewsBias(e) : null;
-    const goldMom = isPost && !directed && assets.gold ? momentumFor(e, 'gold') : null;
-    const goldReaction = isPost && !directed && assets.gold && !(goldMom && goldMom.dir) ? reactionFor(e, 'XAU/USD') : null;
-    const goldDir = (goldMom && goldMom.dir) || (goldReaction && goldReaction.dir) || null;
-    const bias = directed ? a.dir : goldDir;
+    const focus = focusPair(e);
+    const now = Date.now();
+    const focusData = focus.kind !== 'none' ? signalCardData(e, focus.pair, focus.kind, now) : null;
+
+    // Event low-impact hanya dapat level kalau arahnya sudah dikonfirmasi harga.
+    if (impact < 2 && !(focusData && focusData.dir)) return '';
+
+    const actionOf = d => d === 'long' ? 'BUY' : d === 'short' ? 'SELL' : 'WAIT';
+    const f = n => Number(n).toFixed(2);
     const validUntil = fmtDate(new Date(e.Date)) + ' pukul ' + fmtTime(new Date(e.Date));
     const postValidUntil = fmtDate(postNewsExpiry(e)) + ' ' + fmtTime(postNewsExpiry(e));
+    const basisText = basis => ({
+        reaction: 'reaksi harga 1 menit',
+        momentum: 'momentum pra-rilis',
+        actual: 'Actual vs Forecast',
+        forecast: 'Forecast vs Previous',
+        settling: 'menunggu konfirmasi',
+        'no-actual': 'Actual tidak tersedia'
+    }[basis] || 'konfirmasi harga');
+    const noteOf = (d, extra = '') => {
+        const bits = [d && d.note ? d.note : '', extra];
+        if (d && d.locked && d.lockedAt) bits.push(`entry terkunci ${fmtTime(new Date(d.lockedAt))}`);
+        if (d && d.conflict) bits.push('arah berbalik — batalkan order lama');
+        if (d && d.missed) bits.push('entry terlewat — tunggu pullback');
+        return bits.filter(Boolean).join(' • ');
+    };
+
+    if (phase === 'post' && now > postNewsExpiry(e).getTime()) {
+        return `<div class="tpsl" style="display:flex; flex-direction:column; gap:10px;">
+            <div class="expired-badge">⌛ Sinyal pasca-news kedaluwarsa (lebih dari 6 jam). Tunggu katalis berikutnya.</div>
+            <div class="validity">📡 Harga saat ini: ${LIVE_PRICE ? f(LIVE_PRICE) : '—'}</div>
+        </div>`;
+    }
+    if (phase === 'live') {
+        return `<div class="tpsl" style="display:flex; flex-direction:column; gap:10px;">
+            <div class="expired-badge">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit. Entry di spike pertama adalah penyebab utama SL kena.</div>
+            <div class="validity">📡 Harga saat ini: ${LIVE_PRICE ? f(LIVE_PRICE) : '—'}</div>
+        </div>`;
+    }
 
     let html = `<div class="tpsl" style="display:flex; flex-direction:column; gap:10px;">`;
 
-    if (isPost) {
-        html += directed
-            ? `<div class="postnews-badge">✅ POST-NEWS ${actionOf(bias)} • arah dari Actual vs Forecast • valid s/d ${postValidUntil}</div>`
-            : `<div class="postnews-badge">✅ POST-NEWS — arah per pair dari reaksi harga 1 menit / momentum pra-rilis • valid s/d ${postValidUntil}</div>`;
-    } else if (bias) {
-        html += `<div class="validity">⚠️ Entry pasar riil ${actionOf(bias)} — valid hingga ${validUntil}</div>`;
+    if (phase === 'post') {
+        html += focusData && focusData.dir
+            ? `<div class="postnews-badge">✅ POST-NEWS ${actionOf(focusData.dir)} • arah dari ${basisText(focusData.basis)} • valid s/d ${postValidUntil}</div>`
+            : `<div class="postnews-badge">⏳ POST-NEWS — arah belum terkonfirmasi. Level breakout OCO ditampilkan sampai reaksi harga jelas.</div>`;
+    } else if (focusData && focusData.dir) {
+        html += `<div class="validity">⚠️ Entry pasar riil ${actionOf(focusData.dir)} — valid hingga ${validUntil}</div>`;
     }
 
-    if (assets.gold && bias) {
-        const riskPct = 0.5, rewardPct = 1.0;
-        const entry = LIVE_PRICE;
-        const sl = bias === 'long' ? entry * (1 - riskPct / 100) : entry * (1 + riskPct / 100);
-        const tp = bias === 'long' ? entry * (1 + rewardPct / 100) : entry * (1 - rewardPct / 100);
+    // ---- GOLD -------------------------------------------------------------
+    if (assets.gold) {
+        const d = signalCardData(e, 'XAU/USD', 'gold', now);
+        if (d.dir && d.levels) {
+            const move = d.movePct == null ? '' : ` • reaksi ${d.movePct >= 0 ? '+' : ''}${Number(d.movePct).toFixed(2)}%`;
+            html += `<div style="display:flex; gap:14px; flex-wrap:wrap; background:rgba(43,157,181,.10); border:1px dashed rgba(114,212,228,.35); border-radius:14px; padding:12px 14px;">`;
+            html += `<span style="color:#72d4e4; font-weight:bold; width:100%;">XAU/USD (Gold) — ${actionOf(d.dir)}${move}</span>`;
+            html += `<span><b>Entry</b> ${f(d.levels.entry)}</span><span><b>SL</b> ${f(d.levels.sl)}</span><span><b>TP</b> ${f(d.levels.tp)}</span><span><b>R:R</b> 1:${d.levels.rr || 2}.0</span>`;
+            html += `<span style="width:100%;color:var(--muted);font-size:11px;">${esc(noteOf(d, phase === 'post' ? `valid s/d ${postValidUntil}` : ''))}</span>`;
+            html += `</div>`;
+        } else if (phase === 'pre') {
+            const buffer = LIVE_PRICE * (0.0015 * (1 + 0.25 * Math.max(0, impact - 2)));
+            const buyStop = LIVE_PRICE + buffer;
+            const sellStop = LIVE_PRICE - buffer;
+            const slDist = buffer * 2.0;
+            const tpDist = buffer * 4.0;
+            const buySL = buyStop - slDist, buyTP = buyStop + tpDist;
+            const sellSL = sellStop + slDist, sellTP = sellStop - tpDist;
 
-        const goldNote = goldMom ? ` • momentum ${goldMom.changePct >= 0 ? '+' : ''}${goldMom.changePct.toFixed(2)}% dari ${f(goldMom.base)}`
-            : goldReaction ? ` • ${moveNote('reaksi', goldReaction.movePct, goldReaction.minutes)}` : '';
-        html += `<div style="display:flex; gap:14px; flex-wrap:wrap;">`;
-        html += `<span style="color:#72d4e4; font-weight:bold; width:100%;">XAU/USD (Gold) — ${actionOf(bias)}${goldNote}</span>`;
-        html += `<span><b>Entry</b> ${f(entry)}</span><span><b>SL</b> ${f(sl)}</span><span><b>TP</b> ${f(tp)}</span><span><b>R:R</b> 1:2.0</span>`;
-        html += `</div>`;
-    } else if (assets.gold && isPre) {
-        const buffer = LIVE_PRICE * 0.0015;
-        const buyStop = LIVE_PRICE + buffer;
-        const sellStop = LIVE_PRICE - buffer;
-        const slDist = buffer * 2.0;
-        const tpDist = buffer * 4.0;
-
-        const buySL = buyStop - slDist;
-        const buyTP = buyStop + tpDist;
-        const sellSL = sellStop + slDist;
-        const sellTP = sellStop - tpDist;
-
-        if (impact >= 3) {
-            html += `<div class="warning-badge">⚠️ HIGH IMPACT NEWS: Spread akan melebar. Gunakan Pending Order!</div>`;
+            if (impact >= 3) html += `<div class="warning-badge">⚠️ HIGH IMPACT NEWS: Spread akan melebar. Gunakan Pending Order!</div>`;
+            html += `<div class="validity">📡 Harga saat ini: ${f(LIVE_PRICE)} — Siapkan order 5 menit sebelum rilis (${validUntil})</div>`;
+            html += `<div class="exec-box">
+                <h5>STRATEGI STRADDLE (OCO)</h5>
+                <div class="exec-grid">
+                    <div class="exec-card buy">
+                        <b>BUY STOP (LONG)</b>
+                        <div class="val">Entry: ${f(buyStop)}</div>
+                        <div class="val" style="color:var(--red)">SL: ${f(buySL)}</div>
+                        <div class="val" style="color:var(--green)">TP: ${f(buyTP)}</div>
+                    </div>
+                    <div class="exec-card sell">
+                        <b>SELL STOP (SHORT)</b>
+                        <div class="val">Entry: ${f(sellStop)}</div>
+                        <div class="val" style="color:var(--red)">SL: ${f(sellSL)}</div>
+                        <div class="val" style="color:var(--green)">TP: ${f(sellTP)}</div>
+                    </div>
+                </div>
+                <div class="oco-note">*OCO: Jika salah satu order tersentuh, batalkan order lainnya.</div>
+            </div>`;
+        } else {
+            const buffer = LIVE_PRICE * (0.0025 * (1 + 0.25 * Math.max(0, impact - 2)));
+            const slDist = buffer * 1.5, tpDist = buffer * 3.0;
+            const buyEntry = LIVE_PRICE + buffer, sellEntry = LIVE_PRICE - buffer;
+            if (impact >= 3) html += `<div class="warning-badge">⚠️ HIGH IMPACT NEWS: Spread melebar — tunggu candle konfirmasi.</div>`;
+            html += `<div class="exec-box">
+                <h5>POST-NEWS BREAKOUT (OCO)</h5>
+                <div class="exec-grid">
+                    <div class="exec-card buy">
+                        <b>BUY</b>
+                        <div class="val">Entry: ${f(buyEntry)}</div>
+                        <div class="val" style="color:var(--red)">SL: ${f(buyEntry - slDist)}</div>
+                        <div class="val" style="color:var(--green)">TP: ${f(buyEntry + tpDist)}</div>
+                    </div>
+                    <div class="exec-card sell">
+                        <b>SELL</b>
+                        <div class="val">Entry: ${f(sellEntry)}</div>
+                        <div class="val" style="color:var(--red)">SL: ${f(sellEntry + slDist)}</div>
+                        <div class="val" style="color:var(--green)">TP: ${f(sellEntry - tpDist)}</div>
+                    </div>
+                </div>
+                <div class="oco-note">*OCO: Jika salah satu arah tersentuh, batalkan arah lainnya.</div>
+            </div>`;
         }
-
-        html += `<div class="validity">📡 Harga saat ini: ${f(LIVE_PRICE)} — Siapkan order 5 menit sebelum rilis (${validUntil})</div>`;
-
-        html += `<div class="exec-box">
-            <h5>STRATEGI STRADDLE (OCO)</h5>
-            <div class="exec-grid">
-                <div class="exec-card buy">
-                    <b>BUY STOP (LONG)</b>
-                    <div class="val">Entry: ${f(buyStop)}</div>
-                    <div class="val" style="color:var(--red)">SL: ${f(buySL)}</div>
-                    <div class="val" style="color:var(--green)">TP: ${f(buyTP)}</div>
-                </div>
-                <div class="exec-card sell">
-                    <b>SELL STOP (SHORT)</b>
-                    <div class="val">Entry: ${f(sellStop)}</div>
-                    <div class="val" style="color:var(--red)">SL: ${f(sellSL)}</div>
-                    <div class="val" style="color:var(--green)">TP: ${f(sellTP)}</div>
-                </div>
-            </div>
-            <div class="oco-note">*OCO: Jika salah satu order tersentuh, batalkan order lainnya.</div>
-        </div>`;
-    } else if (assets.gold) {
-        const buffer = LIVE_PRICE * 0.0025;
-        const slDist = buffer * 1.5;
-        const tpDist = buffer * 3.0;
-        const buyEntry = LIVE_PRICE + buffer;
-        const sellEntry = LIVE_PRICE - buffer;
-
-        if (impact >= 3) {
-            html += `<div class="warning-badge">⚠️ HIGH IMPACT NEWS: Spread melebar — tunggu candle konfirmasi.</div>`;
-        }
-
-        html += `<div class="exec-box">
-            <h5>POST-NEWS BREAKOUT (OCO)</h5>
-            <div class="exec-grid">
-                <div class="exec-card buy">
-                    <b>BUY</b>
-                    <div class="val">Entry: ${f(buyEntry)}</div>
-                    <div class="val" style="color:var(--red)">SL: ${f(buyEntry - slDist)}</div>
-                    <div class="val" style="color:var(--green)">TP: ${f(buyEntry + tpDist)}</div>
-                </div>
-                <div class="exec-card sell">
-                    <b>SELL</b>
-                    <div class="val">Entry: ${f(sellEntry)}</div>
-                    <div class="val" style="color:var(--red)">SL: ${f(sellEntry + slDist)}</div>
-                    <div class="val" style="color:var(--green)">TP: ${f(sellEntry - tpDist)}</div>
-                </div>
-            </div>
-            <div class="oco-note">*OCO: Jika salah satu arah tersentuh, batalkan arah lainnya.</div>
-        </div>`;
     }
 
+    // ---- FOREX ------------------------------------------------------------
     if (Object.keys(FOREX_RATES).length > 0) {
-        const forexPairs = FOREX_PAIRS;
-        const fxStatus = directed
-            ? `(${actionOf(a.dir)} • USD ${a.dir === 'long' ? 'Melemah' : 'Menguat'})`
-            : isPost ? '(Reaksi & momentum per pair)'
-            : preFxBias ? `(PRE-NEWS ${actionOf(preFxBias.dir)} bias)`
-            : '(Straddle Level)';
+        const fxStatus = focusData && focusData.dir
+            ? `(${actionOf(focusData.dir)} • ${basisText(focusData.basis)})`
+            : phase === 'post' ? '(menunggu konfirmasi harga)' : '(straddle level)';
         html += `<div class="forex-container"><span style="color:#72d4e4; font-weight:bold; width:100%;">Forex Majors ${fxStatus}</span>`;
-        if (isPre && preFxBias) {
-            html += `<div class="validity">⚡ Entry market pra-rilis ${actionOf(preFxBias.dir)} — Forecast ${preFxBias.forecast} vs Previous ${preFxBias.previous}${preFxBias.source ? ' (' + esc(preFxBias.source) + ')' : ''} • berlaku s/d ${validUntil}</div>`;
-        }
-        forexPairs.forEach(pair => {
+        assets.forex.forEach(pair => {
             const rate = pairRate(pair);
             if (!rate) return;
-            const isJpyStyle = rate > 10;
-            const slDist = isJpyStyle ? 0.30 : 0.0030;
-            const tpDist = isJpyStyle ? 0.60 : 0.0060;
-            const dec = isJpyStyle ? 3 : 5;
-            const pipMultiplier = isJpyStyle ? 100 : 10000;
+            const isJpy = rate > 10;
+            const dec = isJpy ? 3 : 5;
+            const d = signalCardData(e, pair, 'forex', now);
 
-            const pairMom = isPost && !directed && assets.forex.includes(pair) ? momentumFor(e, 'forex', pair) : null;
-            const pairReaction = isPost && !directed && assets.forex.includes(pair) && !(pairMom && pairMom.dir) ? reactionFor(e, pair) : null;
-            const pairPreBias = isPre && !directed && assets.forex.includes(pair) && preFxBias ? mapPairBias(pair, preFxBias.dir, e.Country) : null;
-            const pairBias = directed
-                ? (assets.forex.includes(pair) ? mapPairBias(pair, a.dir, e.Country) : null)
-                : ((pairMom && pairMom.dir) || (pairReaction && pairReaction.dir) || pairPreBias);
-
-            if (pairBias) {
-                const isLongPair = pairBias === 'long';
-                const fxSl = isLongPair ? rate - slDist : rate + slDist;
-                const fxTp = isLongPair ? rate + tpDist : rate - tpDist;
-                const cls = isLongPair ? 'long' : 'short';
-                const momNote = pairMom ? ` <small style="color:var(--muted);">${pairMom.changePct >= 0 ? '+' : ''}${pairMom.changePct.toFixed(2)}%</small>`
-                    : pairReaction ? ` <small style="color:var(--muted);">${moveNote('reaksi', pairReaction.movePct, pairReaction.minutes)}</small>` : '';
-                const preNote = pairPreBias && !pairMom && !pairReaction ? ' <small style="color:var(--amber);">pre-news market</small>' : '';
-                html += `<div class="forex-card ${cls}"><div>${pair} <b>${isLongPair ? 'BUY' : 'SELL'}</b>${momNote}${preNote}</div><div class="val">Entry: ${rate.toFixed(dec)}</div><div class="val" style="color:var(--red)">SL: ${fxSl.toFixed(dec)}</div><div class="val" style="color:var(--green)">TP: ${fxTp.toFixed(dec)}</div></div>`;
+            if (d.dir && d.levels) {
+                const lv = d.levels;
+                const ldec = Number.isFinite(Number(lv.dec)) ? Number(lv.dec) : dec;
+                const cls = d.dir;
+                const basisNote = d.basis === 'forecast' ? ' <small style="color:var(--amber);">pre-news market</small>' : '';
+                const extra = phase === 'post' ? `valid s/d ${postValidUntil}` : '';
+                html += `<div class="forex-card ${cls}"><div>${pair} <b>${actionOf(d.dir)}</b>${basisNote}</div><div class="val">Entry: ${Number(lv.entry).toFixed(ldec)}</div><div class="val" style="color:var(--red)">SL: ${Number(lv.sl).toFixed(ldec)}</div><div class="val" style="color:var(--green)">TP: ${Number(lv.tp).toFixed(ldec)}</div><div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
                 return;
             }
 
-            const buffer = isJpyStyle ? 0.15 : 0.0015;
-            const buyEntry = rate + buffer;
-            const sellEntry = rate - buffer;
-            const buySl = buyEntry - slDist;
-            const buyTp = buyEntry + tpDist;
-            const sellSl = sellEntry + slDist;
-            const sellTp = sellEntry - tpDist;
-            const label = isPre ? 'STRADDLE' : 'BREAKOUT';
+            const slPips = (isJpy ? 30 : 25) * (1 + 0.35 * Math.max(0, impact - 2));
+            const tpPips = slPips * 2;
+            const pip = isJpy ? 0.01 : 0.0001;
+            const slDist = slPips * pip, tpDist = tpPips * pip;
+            const broker = brokerQuoteFor(pair);
+            const fresh = broker && !broker.stale ? broker : null;
+            const buyEntry = fresh ? Number(fresh.ask) : rate + (isJpy ? 0.15 : 0.0015);
+            const sellEntry = fresh ? Number(fresh.bid) : rate - (isJpy ? 0.15 : 0.0015);
+            const buySl = buyEntry - slDist, buyTp = buyEntry + tpDist;
+            const sellSl = sellEntry + slDist, sellTp = sellEntry - tpDist;
+            const label = phase === 'pre' ? 'STRADDLE' : 'BREAKOUT';
 
             html += `<div class="forex-card" style="border-left-color: var(--amber);">
                 <div>${pair} <b style="color:var(--amber)">${label}</b></div>
                 <div class="val" style="color:var(--green); font-size:11px;">BUY: ${buyEntry.toFixed(dec)} → TP ${buyTp.toFixed(dec)}</div>
                 <div class="val" style="color:var(--red); font-size:11px;">SELL: ${sellEntry.toFixed(dec)} → TP ${sellTp.toFixed(dec)}</div>
-                <div class="val" style="color:var(--muted); font-size:9px;">SL: ${buySl.toFixed(dec)} / ${sellSl.toFixed(dec)} • SL/TP ${slDist * pipMultiplier}/${tpDist * pipMultiplier} pips</div>
+                <div class="val" style="color:var(--muted); font-size:9px;">SL: ${buySl.toFixed(dec)} / ${sellSl.toFixed(dec)} • SL/TP ${Math.round(slPips)}/${Math.round(tpPips)} pips</div>
             </div>`;
         });
         html += `</div>`;
     }
 
+    // ---- CRYPTO -----------------------------------------------------------
     if (assets.crypto && Object.keys(CRYPTO_RATES).length > 0) {
-        const cryptoStatus = directed ? `(${actionOf(a.dir)} • USD ${a.dir === 'long' ? 'Melemah' : 'Menguat'})` : isPost ? '(Momentum per pair)' : '(Straddle Level)';
+        const cryptoStatus = focusData && focusData.dir
+            ? `(${actionOf(focusData.dir)} • ${basisText(focusData.basis)})`
+            : phase === 'post' ? '(menunggu konfirmasi harga)' : '(straddle level)';
         html += `<div class="forex-container" style="border-top: 1px dashed rgba(255,255,255,.1); margin-top: 10px; padding-top: 10px;"><span style="color:#f7931a; font-weight:bold; width:100%;">Crypto Markets ${cryptoStatus}</span>`;
         ['BTC/USD', 'ETH/USD'].forEach(pair => {
-            const rate = CRYPTO_RATES[pair];
-            if (!rate) return;
-            const fmt = n => n.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            const rate = Number(CRYPTO_RATES[pair]);
+            if (!Number.isFinite(rate) || rate <= 0) return;
+            const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             const isBTC = pair === 'BTC/USD';
             const bColor = isBTC ? '#f7931a' : '#627eea';
+            const d = signalCardData(e, pair, 'crypto', now);
 
-            const pairMom = isPost && !directed && assets.crypto ? momentumFor(e, 'crypto', pair) : null;
-            const pairReaction = isPost && !directed && assets.crypto && !(pairMom && pairMom.dir) ? reactionFor(e, pair) : null;
-            const pairBias = directed ? a.dir : ((pairMom && pairMom.dir) || (pairReaction && pairReaction.dir) || null);
-
-            if (pairBias) {
-                const slPct = isBTC ? 1.0 : 1.5;
-                const tpPct = isBTC ? 2.0 : 3.0;
-                const isLong = pairBias === 'long';
-                const fxSl = isLong ? rate * (1 - slPct / 100) : rate * (1 + slPct / 100);
-                const fxTp = isLong ? rate * (1 + tpPct / 100) : rate * (1 - tpPct / 100);
-                const momNote = pairMom ? ` <small style="color:var(--muted);">${pairMom.changePct >= 0 ? '+' : ''}${pairMom.changePct.toFixed(2)}%</small>`
-                    : pairReaction ? ` <small style="color:var(--muted);">${moveNote('reaksi', pairReaction.movePct, pairReaction.minutes)}</small>` : '';
-                html += `<div class="forex-card ${pairBias}" style="border-left-color: ${bColor};"><div>${pair} <b>${actionOf(pairBias)}</b>${momNote}</div><div class="val">Entry: $${fmt(rate)}</div><div class="val" style="color:var(--red)">SL: $${fmt(fxSl)}</div><div class="val" style="color:var(--green)">TP: $${fmt(fxTp)}</div></div>`;
+            if (d.dir && d.levels) {
+                const extra = phase === 'post' ? `valid s/d ${postValidUntil}` : '';
+                html += `<div class="forex-card ${d.dir}" style="border-left-color: ${bColor};"><div>${pair} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: $${fmt(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: $${fmt(d.levels.sl)}</div><div class="val" style="color:var(--green)">TP: $${fmt(d.levels.tp)}</div><div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
                 return;
             }
 
-            const bufferPct = isBTC ? 0.3 : 0.5;
-            const slPct = bufferPct * 2;
-            const tpPct = bufferPct * 4;
+            const bufferPct = (isBTC ? 0.3 : 0.5) * (1 + 0.25 * Math.max(0, impact - 2));
+            const slPct = bufferPct * 2, tpPct = bufferPct * 4;
             const buyEntry = rate * (1 + bufferPct / 100);
             const sellEntry = rate * (1 - bufferPct / 100);
-            const label = isPre ? 'STRADDLE' : 'BREAKOUT';
-
+            const label = phase === 'pre' ? 'STRADDLE' : 'BREAKOUT';
             html += `<div class="forex-card" style="border-left-color: var(--amber);">
                 <div>${pair} <b style="color:var(--amber)">${label}</b></div>
                 <div class="val" style="color:var(--green); font-size:11px;">BUY: $${fmt(buyEntry)} → TP $${fmt(buyEntry * (1 + tpPct / 100))}</div>
                 <div class="val" style="color:var(--red); font-size:11px;">SELL: $${fmt(sellEntry)} → TP $${fmt(sellEntry * (1 - tpPct / 100))}</div>
-                <div class="val" style="color:var(--muted); font-size:9px;">SL/TP: ${slPct}% / ${tpPct}%</div>
+                <div class="val" style="color:var(--muted); font-size:9px;">SL/TP: ${slPct.toFixed(1)}% / ${tpPct.toFixed(1)}%</div>
             </div>`;
         });
         html += `</div>`;
     }
 
+    // ---- INDICES ----------------------------------------------------------
     if (assets.indices && Object.keys(INDEX_RATES).length > 0) {
-        const indexBias = directed ? a.dir : (preFxBias ? preFxBias.dir : null);
-        const idxStatus = directed
-            ? `(${actionOf(a.dir)} • USD ${a.dir === 'long' ? 'Melemah' : 'Menguat'})`
-            : isPost ? '(Momentum per index)'
-            : preFxBias ? `(PRE-NEWS ${actionOf(preFxBias.dir)} bias)`
-            : '(Breakout Level)';
+        const idxStatus = focusData && focusData.dir
+            ? `(${actionOf(focusData.dir)} • ${basisText(focusData.basis)})`
+            : phase === 'post' ? '(menunggu konfirmasi harga)' : '(breakout level)';
         const fmtIdx = n => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         html += `<div class="forex-container" style="border-top: 1px dashed rgba(255,255,255,.1); margin-top: 10px; padding-top: 10px;"><span style="color:#8bd4ff; font-weight:bold; width:100%;">Indices (Nasdaq 100 &amp; S&amp;P 500) ${idxStatus}</span>`;
         INDICES.forEach(cfg => {
             const rate = indexRate(cfg.symbol);
             if (!rate) return;
-            let idxDir = indexBias;
-            let mom = null;
-            let idxReaction = null;
-            if (isPost && !directed) {
-                mom = momentumFor(e, 'index', cfg.symbol);
-                if (!(mom && mom.dir)) idxReaction = reactionFor(e, cfg.symbol);
-                idxDir = (mom && mom.dir) || (idxReaction && idxReaction.dir) || null;
-            }
-            if (idxDir) {
-                const isLong = idxDir === 'long';
-                const sl = isLong ? rate * (1 - cfg.slPct / 100) : rate * (1 + cfg.slPct / 100);
-                const tp = isLong ? rate * (1 + cfg.tpPct / 100) : rate * (1 - cfg.tpPct / 100);
-                const cls = isLong ? 'long' : 'short';
-                const momNote = mom ? ` <small style="color:var(--muted);">${mom.changePct >= 0 ? '+' : ''}${mom.changePct.toFixed(2)}%</small>`
-                    : idxReaction ? ` <small style="color:var(--muted);">${moveNote('reaksi', idxReaction.movePct, idxReaction.minutes)}</small>` : '';
-                const preNote = preFxBias && !mom && !idxReaction ? ' <small style="color:var(--amber);">pre-news market</small>' : '';
-                html += `<div class="forex-card ${cls}" style="border-left-color:${isLong ? 'var(--green)' : 'var(--red)'};"><div>${esc(cfg.symbol)} <b>${isLong ? 'BUY' : 'SELL'}</b>${momNote}${preNote}</div><div class="val">Entry: ${fmtIdx(rate)}</div><div class="val" style="color:var(--red)">SL: ${fmtIdx(sl)}</div><div class="val" style="color:var(--green)">TP: ${fmtIdx(tp)}</div><div class="val" style="color:var(--muted); font-size:9px;">SL/TP ${cfg.slPct}% / ${cfg.tpPct}%</div></div>`;
+            const d = signalCardData(e, cfg.symbol, 'index', now);
+
+            if (d.dir && d.levels) {
+                const cls = d.dir;
+                const extra = phase === 'post' ? `valid s/d ${postValidUntil}` : '';
+                html += `<div class="forex-card ${cls}" style="border-left-color:${d.dir === 'long' ? 'var(--green)' : 'var(--red)'};"><div>${esc(cfg.symbol)} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: ${fmtIdx(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: ${fmtIdx(d.levels.sl)}</div><div class="val" style="color:var(--green)">TP: ${fmtIdx(d.levels.tp)}</div><div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
                 return;
             }
+
             const buffer = cfg.slPct / 2;
             const buyEntry = rate * (1 + buffer / 100);
             const sellEntry = rate * (1 - buffer / 100);
-            const label = isPre ? 'STRADDLE' : 'BREAKOUT';
+            const label = phase === 'pre' ? 'STRADDLE' : 'BREAKOUT';
             html += `<div class="forex-card" style="border-left-color: var(--amber);">
                 <div>${esc(cfg.symbol)} <b style="color:var(--amber)">${label}</b></div>
                 <div class="val" style="color:var(--green); font-size:11px;">BUY &gt; ${fmtIdx(buyEntry)}</div>
@@ -1704,37 +1891,34 @@ function tpSl(a, e) {
     html += `</div>`;
     return html;
 }
-
 function card(e) {
     const a = analyze(e);
     const phase = newsPhase(e);
     const focus = focusPair(e);
-    const directed = a.dir === 'long' || a.dir === 'short';
-    const reaction = phase === 'post' && !directed && a.noData ? reactionFor(e, focus.pair) : null;
-    const reactionDir = reaction && reaction.dir ? reaction.dir : null;
-    const momentum = phase === 'post' && !directed && !reactionDir ? momentumFor(e, focus.kind, focus.pair) : null;
-    const preBias = phase === 'pre' && !directed && (+e.Importance || 1) >= 2 ? preNewsBias(e) : null;
-    const signalDir = directed
-        ? a.dir
-        : (reactionDir || (momentum && momentum.dir) || (preBias ? preBias.dir : 'wait'));
+    const now = Date.now();
+    const focusData = focus.kind !== 'none' ? signalCardData(e, focus.pair, focus.kind, now) : null;
+    const signalDir = focusData && focusData.dir ? focusData.dir : 'wait';
     const signalLabel = signalDir === 'long' ? 'BUY' : signalDir === 'short' ? 'SELL' : 'WAIT';
-    const signalNote = directed
-        ? `${phase === 'post' ? 'POST-NEWS' : 'PRE-NEWS'} • ${a.comparedTo} • ${a.score}% confidence`
-        : reactionDir
-            ? `${moveNote('Reaksi harga', reaction.movePct, reaction.minutes)} (${focus.pair}) — Actual tidak dipublikasikan`
-            : momentum && momentum.dir
-                ? `post-news ${momentum.changePct >= 0 ? '+' : ''}${momentum.changePct.toFixed(2)}% (${focus.pair})`
-                : preBias
-                    ? `pre-news bias${preBias.source ? ' • ' + preBias.source : ''} • Forecast ${preBias.forecast} vs Previous ${preBias.previous}`
-                    : a.noData
-                        ? 'NO ACTUAL DATA — arah belum terkonfirmasi'
-                        : 'menunggu Actual';
-    const meterScore = a.noData || a.basis === 'forecast-pending' ? null : a.score;
-    const reason = phase === 'post' && a.dir === 'wait'
-        ? `${a.reason} Arah pasca-rilis diambil dari reaksi ${focus.pair || 'pair terkait'} terhadap harga pra-rilisnya; bila arah belum jelas, level breakout dua arah ditampilkan.`
-        : phase === 'pre' && a.dir === 'wait' && preBias
-            ? `${a.reason} Bias pra-rilis memakai Forecast ${preBias.forecast} vs Previous ${preBias.previous}${preBias.source ? ` (dari ${preBias.source})` : ''}; entry market adalah skenario sampai rilis tercetak.`
-            : a.reason;
+    const basisLabel = basis => ({
+        reaction: 'reaksi harga 1 menit',
+        momentum: 'momentum pra-rilis',
+        actual: 'Actual vs Forecast',
+        forecast: 'Forecast vs Previous',
+        settling: 'menunggu konfirmasi 15 menit',
+        'no-actual': 'Actual tidak tersedia',
+        none: 'Forecast vs Previous flat',
+        flat: 'Actual sesuai perkiraan',
+        unmapped: 'belum ada pemetaan'
+    }[basis] || 'menunggu konfirmasi harga');
+    const signalNote = signalDir === 'wait'
+        ? (focusData && focusData.note ? focusData.note : (a.noData ? 'NO ACTUAL DATA — arah belum terkonfirmasi' : 'menunggu konfirmasi harga'))
+        : `${phase === 'post' ? 'POST-NEWS' : 'PRE-NEWS'} • ${basisLabel(focusData.basis)}${focusData.basis === 'actual' && Number.isFinite(a.score) ? ` • ${a.score}% confidence` : ''}`;
+    const meterScore = focusData && focusData.basis === 'actual' && Number.isFinite(a.score) ? a.score : null;
+    const reason = signalDir === 'wait'
+        ? `${a.reason}${phase === 'post' ? ' Arah pasca-rilis hanya diambil dari reaksi harga yang sudah melewati noise floor; bila belum jelas, level breakout dua arah ditampilkan.' : ''}`
+        : phase === 'post'
+            ? `Arah ${signalLabel} untuk ${focus.pair || 'aset terkait'} diambil dari ${basisLabel(focusData.basis)}${focusData.note ? ` (${focusData.note})` : ''}. Entry/SL/TP dikunci saat sinyal pertama terkonfirmasi.`
+            : `Bias pra-rilis ${signalLabel} untuk ${focus.pair || 'aset terkait'} dari ${basisLabel(focusData.basis)}${focusData.note ? ` (${focusData.note})` : ''}. Ini skenario sampai rilis tercetak, bukan kepastian.`;
     const color = signalDir === 'long' ? 'var(--green)' : signalDir === 'short' ? 'var(--red)' : 'var(--amber)';
     return `<article class="event glass">
         <div class="event-title">
@@ -1746,7 +1930,7 @@ function card(e) {
         <div class="metric"><span>Actual</span><b>${esc(e.Actual)}</b></div>
         <div>
             <span class="impact">${e.Importance>=3?'HIGH':e.Importance>=2?'MEDIUM':'LOW'}</span>
-            <div class="signal ${signalDir}"><b>${signalLabel}</b><small>${signalNote}</small></div>
+            <div class="signal ${signalDir}"><b>${signalLabel}</b><small>${esc(signalNote)}</small></div>
         </div>
         <div class="expand">
             <div class="reason"><b>shidiqpiy scenario</b><p>${esc(reason)}</p></div>
