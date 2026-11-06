@@ -133,7 +133,7 @@
     <div>
       <div class="eyebrow">Gold watch</div>
       <h3>XAU/USD</h3>
-      <p>Live gold levels from the active USD catalyst: directional BUY/SELL from the Forecast-vs-Previous bias before the release, Actual or 1-minute price reaction after it. Straddle OCO stays listed as the fallback when no direction is confirmed.</p>
+      <p>Live gold levels from the active USD catalyst. Before the release, BUY/SELL comes from the Forecast-vs-Previous bias. After it, entries wait 15 minutes, then direction follows price reaction first, momentum second, Actual last. Confirmed Entry/SL/TP are locked so they do not repaint; Straddle OCO stays as the fallback.</p>
     </div>
     <div class="mb-body" id="goldBoardBody"></div>
   </section>
@@ -141,7 +141,7 @@
     <div>
       <div class="eyebrow">Crypto watch</div>
       <h3>BTC/USD &amp; ETH/USD</h3>
-      <p>Always-on crypto prices, independent of the event currency. BUY/SELL comes from the same ladder as the pair board — Actual vs Forecast, then the 1-minute reaction, then pre-release momentum on USD events; risk template BTC 1%/2%, ETH 1.5%/3%.</p>
+      <p>Always-on crypto prices, independent of the event currency. BUY/SELL uses the same ladder as the other boards: wait 15 minutes after the release, then price reaction first, momentum second, Actual last. Confirmed Entry/SL/TP are locked with adaptive 1:2 R:R.</p>
     </div>
     <div class="crypto-grid" id="cryptoGrid"></div>
   </section>
@@ -149,7 +149,7 @@
     <div>
       <div class="eyebrow">Forex watch</div>
       <h3>Forex Majors &amp; JPY Crosses</h3>
-      <p>Pre-news market entry bias for EUR/USD, GBP/USD, USD/JPY, USD/CHF, AUD/USD, USD/CAD, NZD/USD, GBP/JPY and EUR/JPY. Prices use the live OANDA feed (TradingView) with a multi-broker cross-check. When the local MT5 bridge is running, the exact broker bid/ask is shown and used for the entry side (ask for BUY, bid for SELL). BUY/SELL comes from Forecast vs Previous on the next medium/high-impact event; it is a scenario, not a prediction.</p>
+      <p>Pre-news market entry bias for EUR/USD, GBP/USD, USD/JPY, USD/CHF, AUD/USD, USD/CAD, NZD/USD, GBP/JPY and EUR/JPY. Prices use the live OANDA feed (TradingView) with a multi-broker cross-check. When the local MT5 bridge is running, the exact broker bid/ask is shown and used for the entry side (ask for BUY, bid for SELL). After a release, entries wait 15 minutes and the confirmed Entry/SL/TP are locked. It is a scenario, not a prediction.</p>
     </div>
     <div class="fx-grid" id="fxGrid"></div>
   </section>
@@ -157,7 +157,7 @@
     <div>
       <div class="eyebrow">Index watch</div>
       <h3>Nasdaq 100 &amp; S&amp;P 500</h3>
-      <p>NAS100 and US500 react to the same USD catalyst. BUY means risk-on/stronger index, SELL means risk-off/weaker index. Risk template NAS100 1%/2%, US500 0.75%/1.5%.</p>
+      <p>NAS100 and US500 react to the same USD catalyst, with event-aware mapping: growth/employment surprises are read as risk-on/risk-off, while inflation keeps its rate-pressure direction. BUY means risk-on/stronger index, SELL means risk-off/weaker index. Confirmed levels are locked with adaptive 1:2 R:R.</p>
     </div>
     <div class="idx-grid" id="idxGrid"></div>
   </section>
