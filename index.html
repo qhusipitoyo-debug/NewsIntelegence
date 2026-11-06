@@ -164,6 +164,36 @@
   <nav class="toolbar glass"><div class="filters"><button class="chip active" data-filter="all">Full month</button><button class="chip" data-filter="upcoming">Upcoming</button><button class="chip" data-filter="high">High impact</button></div><span class="status" id="status">Loading calendar…</span><button class="refresh" id="refresh">↻ Refresh</button></nav>
   <div class="section-head"><div><h3 id="monthTitle">Economic calendar</h3><p>Oldest to newest • times shown in WITA</p></div></div>
   <section id="calendar" class="timeline"></section>
+  <section class="stats-panel glass" style="margin-top: 24px; border-radius: 20px;">
+    <div style="padding: 20px;">
+      <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 18px; color: var(--aqua);">📊 Sistem Statistik &amp; Kalibrasi</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 16px;">
+        <div class="stat-item" style="background:rgba(4,15,23,.42); padding:12px; border-radius:12px; border:1px solid var(--line);">
+          <div style="font-size: 24px; font-weight: 700; color: var(--green);" id="total-events">—</div>
+          <div style="color: var(--muted); font-size: 12px;">Total Event</div>
+        </div>
+        <div class="stat-item" style="background:rgba(4,15,23,.42); padding:12px; border-radius:12px; border:1px solid var(--line);">
+          <div style="font-size: 24px; font-weight: 700; color: var(--green);" id="events-with-actual">—</div>
+          <div style="color: var(--muted); font-size: 12px;">Dengan Actual</div>
+        </div>
+        <div class="stat-item" style="background:rgba(4,15,23,.42); padding:12px; border-radius:12px; border:1px solid var(--line);">
+          <div style="font-size: 24px; font-weight: 700; color: var(--amber);" id="high-importance">—</div>
+          <div style="color: var(--muted); font-size: 12px;">High Impact</div>
+        </div>
+        <div class="stat-item" style="background:rgba(4,15,23,.42); padding:12px; border-radius:12px; border:1px solid var(--line);">
+          <div style="font-size: 24px; font-weight: 700; color: var(--muted);" id="low-importance">—</div>
+          <div style="color: var(--muted); font-size: 12px;">Low Impact</div>
+        </div>
+      </div>
+      <div style="font-size: 12px; color: var(--muted); line-height: 1.6;" id="stats-summary">
+        <div>• <b>Kalibrasi Volatilitas &amp; Anti-Fakeout:</b> Threshold kejutan ekonomi disaring dari deviasi noise mikro.</div>
+        <div>• <b>Order Execution Bertingkat:</b> Entry Pasar / Breakout + Level Pullback (Retest OTE) untuk rasio RR terbaik.</div>
+        <div>• <b>Target Bertingkat:</b> TP1 (1:1 / BE Lock) amankan profit dini, TP2 (1:2 R:R) target ekspansi terkalibrasi.</div>
+        <div>• <b>Filter Spread &amp; Spike:</b> Delay konfirmasi 15 menit pasca-rilis mencegah terjebak di spike pertama.</div>
+        <div>• <b>Prioritas Arah:</b> Reaksi Harga 1M &gt; Momentum Terkalibrasi &gt; Actual Fundamental vs Forecast.</div>
+      </div>
+    </div>
+  </section>
   <div class="footer">Educational scenario analysis only—not financial advice. A scheduled event does not guarantee direction; wait for the actual release and price confirmation.</div>
 </main>
 <script>
@@ -739,11 +769,19 @@ function goldBoardHtml(price, state) {
     let html = `<div class="mb-price">${Number.isFinite(p) && p > 0 ? money(p) : '—'}</div>`;
     if (!Number.isFinite(p) || p <= 0) return html + `<div class="mb-meta">Menunggu harga gold live…</div>`;
     if (st.event) html += `<div class="mb-meta">${st.event}</div>`;
-    const lv = (cls, title, o) => `<div class="mb-level ${cls}"><b>${title}</b><span>Entry ${f(o.entry)}</span><span>SL ${f(o.sl)}</span><span>TP ${f(o.tp)}</span></div>`;
+    const lv = (cls, title, o) => {
+        const tp1 = o && o.tp1 ? `<span>TP1 ${f(o.tp1)}</span>` : '';
+        const pb = o && o.pullback ? `<span>Retest ${f(o.pullback)}</span>` : '';
+        return `<div class="mb-level ${cls}"><b>${title}</b><span>Entry ${f(o.entry)}</span><span>SL ${f(o.sl)}</span>${tp1}<span>TP ${f(o.tp)}</span>${pb}</div>`;
+    };
     const lockNote = st.locked && st.lockedAt ? ` • entry terkunci ${fmtTime(new Date(st.lockedAt))}` : '';
-    const warn = st.conflict
-        ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama, jangan flip mengejar harga.</div>`
-        : (st.missed ? `<div class="warning-badge">⚠️ Entry sudah terlewat — jangan kejar harga, tunggu pullback ke entry.</div>` : '');
+    const warn = st.stopped
+        ? `<div class="warning-badge" style="background:rgba(255,100,125,0.25);border-color:var(--red);color:var(--red);">🛑 Stop Loss tersentuh — batalkan order lama / setup selesai.</div>`
+        : (st.tpReached
+            ? `<div class="postnews-badge">🎯 Take Profit tercapai — setup berhasil, amankan profit!</div>`
+            : (st.conflict
+                ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama, jangan flip mengejar harga.</div>`
+                : (st.missed ? `<div class="warning-badge">⚠️ Entry sudah terlewat — jangan kejar harga, tunggu pullback ke entry.</div>` : '')));
 
     if (st.status === 'live') return html + `<div class="mb-meta">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit sebelum entry.</div>`;
     if (st.status === 'pre' && st.buy && st.sell) {
@@ -841,14 +879,19 @@ function cryptoBoardHtml(rates, change, state) {
         const label = dir === 'buy' ? 'BUY' : dir === 'sell' ? 'SELL' : 'WAIT';
         const badge = `<span class="fx-badge ${dir}">${label}${dir === 'wait' ? '' : (st.phase === 'post' ? ' · POST-NEWS' : ' · MARKET')}</span>`;
         const lockNote = it.locked && it.lockedAt ? ` • entry terkunci ${fmtTime(new Date(it.lockedAt))}` : '';
-        const warn = it.conflict
-            ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>`
-            : (it.missed ? `<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>` : '');
+        const warn = it && it.stopped
+            ? `<div class="warning-badge" style="background:rgba(255,100,125,0.25);border-color:var(--red);color:var(--red);">🛑 SL tersentuh — batalkan order.</div>`
+            : (it && it.tpReached
+                ? `<div class="postnews-badge">🎯 TP tercapai — amankan profit!</div>`
+                : (it && it.conflict
+                    ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>`
+                    : (it && it.missed ? `<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>` : '')));
         let levels;
         if (st.status === 'live') {
             levels = `<div class="idx-note">⏳ Level entry ditahan sampai konfirmasi 15 menit.</div>`;
         } else if (dir !== 'wait' && it.levels) {
-            levels = `<div class="levels idx-levels"><span>Entry ${fmt(it.levels.entry)}</span><span>SL ${fmt(it.levels.sl)}</span><span>TP ${fmt(it.levels.tp)}</span><span>R:R 1:${it.levels.rr || 2}</span></div>`;
+            const tp1Span = it.levels.tp1 ? `<span>TP1 $${fmt(it.levels.tp1)}</span>` : '';
+            levels = `<div class="levels idx-levels"><span>Entry ${fmt(it.levels.entry)}</span><span>SL ${fmt(it.levels.sl)}</span>${tp1Span}<span>TP ${fmt(it.levels.tp)}</span><span>R:R 1:${it.levels.rr || 2}</span></div>`;
         } else {
             const buffer = slPct / 2;
             levels = `<div class="levels idx-levels"><span>BUY &gt; ${fmt(rate * (1 + buffer / 100))}</span><span>SELL &lt; ${fmt(rate * (1 - buffer / 100))}</span></div>`;
@@ -995,16 +1038,22 @@ function forexBoardHtml(state) {
         if (it.phase === 'live') {
             levels = `<div class="fx-levels"><span>⏳ Tunggu konfirmasi 15 menit</span></div>`;
         } else if ((dir === 'buy' || dir === 'sell') && it.levels) {
-            levels = `<div class="fx-levels"><span>Entry ${fmt(it.levels.entry, dec)}</span><span>SL ${fmt(it.levels.sl, dec)}</span><span>TP ${fmt(it.levels.tp, dec)}</span><span>R:R 1:2</span></div>`;
+            const tp1Span = it.levels.tp1 ? `<span>TP1 ${fmt(it.levels.tp1, dec)}</span>` : '';
+            const pbSpan = it.levels.pullback ? `<span>Retest ${fmt(it.levels.pullback, dec)}</span>` : '';
+            levels = `<div class="fx-levels"><span>Entry ${fmt(it.levels.entry, dec)}</span><span>SL ${fmt(it.levels.sl, dec)}</span>${tp1Span}<span>TP ${fmt(it.levels.tp, dec)}</span>${pbSpan}<span>R:R 1:2</span></div>`;
         } else {
             const buffer = isJpyStyle ? 0.15 : 0.0015;
             const buyRef = broker ? Number(broker.ask) : rate + buffer;
             const sellRef = broker ? Number(broker.bid) : rate - buffer;
             levels = `<div class="fx-levels"><span>BUY ${fmt(buyRef, dec)}</span><span>SELL ${fmt(sellRef, dec)}</span></div>`;
         }
-        const warn = it.conflict
-            ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>`
-            : (it.missed ? `<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>` : '');
+        const warn = it.stopped
+            ? `<div class="warning-badge" style="background:rgba(255,100,125,0.25);border-color:var(--red);color:var(--red);">🛑 SL tersentuh — batalkan order.</div>`
+            : (it.tpReached
+                ? `<div class="postnews-badge">🎯 TP tercapai — amankan profit!</div>`
+                : (it.conflict
+                    ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>`
+                    : (it.missed ? `<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>` : '')));
         return `<div class="fx-card ${dir}">
             <div class="pair"><span>${esc(it.pair)}</span><span class="fx-badge ${dir}">${label}${suffix}</span></div>
             <div class="fx-price">${fmt(rate, dec)}${fxTickHtml(it.tick)}</div>
@@ -1104,7 +1153,8 @@ function indicesBoardHtml(state) {
         if (it.phase === 'live' || st.status === 'live') {
             levels = `<div class="idx-note">⏳ Level entry ditahan sampai konfirmasi 15 menit.</div>`;
         } else if ((dir === 'buy' || dir === 'sell') && it.levels) {
-            levels = `<div class="idx-levels"><span>Entry ${fmt(it.levels.entry)}</span><span>SL ${fmt(it.levels.sl)}</span><span>TP ${fmt(it.levels.tp)}</span><span>R:R 1:2</span></div>`;
+            const tp1Span = it.levels.tp1 ? `<span>TP1 ${fmt(it.levels.tp1)}</span>` : '';
+            levels = `<div class="idx-levels"><span>Entry ${fmt(it.levels.entry)}</span><span>SL ${fmt(it.levels.sl)}</span>${tp1Span}<span>TP ${fmt(it.levels.tp)}</span><span>R:R 1:2</span></div>`;
         } else {
             const buffer = it.slPct / 2;
             levels = `<div class="idx-levels"><span>BUY &gt; ${fmt(price * (1 + buffer / 100))}</span><span>SELL &lt; ${fmt(price * (1 - buffer / 100))}</span></div>`;
@@ -1119,9 +1169,13 @@ function indicesBoardHtml(state) {
         const itemNote = it.note || st.note;
         const lockNote = it.locked && it.lockedAt ? ` • entry terkunci ${fmtTime(new Date(it.lockedAt))}` : '';
         const noteLine = itemNote ? `<div class="idx-note">${esc(itemNote)}${lockNote}</div>` : '';
-        const warn = it.conflict
-            ? '<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>'
-            : (it.missed ? '<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>' : '');
+        const warn = it.stopped
+            ? '<div class="warning-badge" style="background:rgba(255,100,125,0.25);border-color:var(--red);color:var(--red);">🛑 SL tersentuh — batalkan order.</div>'
+            : (it.tpReached
+                ? '<div class="postnews-badge">🎯 TP tercapai — amankan profit!</div>'
+                : (it.conflict
+                    ? '<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>'
+                    : (it.missed ? '<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>' : '')));
         const liveLine = st.status === 'live' ? '<div class="idx-note">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit.</div>' : '';
         const postLine = st.phase === 'post' && st.validUntil ? `<div class="idx-note">Post-news • valid s/d ${esc(st.validUntil)}</div>` : '';
         return `<div class="idx-card ${dir}">
@@ -1250,7 +1304,7 @@ async function loadCrypto() {
 
 function goldBias(name, surprise, country) {
     const laborSoft = /unemployment rate|unemployment|initial claims|continuing claims|jobless claims|jobless/.test(name);
-    const usdSoftIfHigh = /cpi|inflation|pce|pmi|ism|retail sales|consumer confidence|fed funds|interest rate|rate decision|jolts|durable goods|nonfarm payroll|non-farm payroll|nfp|payroll|gdp|adp|employment/.test(name);
+    const usdSoftIfHigh = /cpi|inflation|pce|pmi|ism|retail sales|consumer confidence|fed funds|interest rate|rate decision|jolts|durable goods|nonfarm payroll|non-farm payroll|nfp|payroll|gdp|adp|employment|ppi|producer price|sentiment|michigan|average hourly earnings|hourly earnings|wages|trade balance|current account|industrial production|manufacturing production|factory orders/.test(name);
     if (country === 'USD') {
         if (laborSoft) return surprise > 0;
         if (usdSoftIfHigh) return surprise < 0;
@@ -1270,7 +1324,12 @@ function forecastBias(e) {
     const previous = num(e.Previous);
     if (forecast === null || previous === null) return null;
     const surprise = forecast - previous;
-    const threshold = Math.max(Math.abs(previous) * 0.001, 0.005);
+    const absPrev = Math.abs(previous);
+    const threshold = (/payroll|nonfarm|nfp|claims|jobless|jolts|adp/i.test(name) || absPrev >= 1000)
+        ? Math.max(absPrev * 0.02, 5000)
+        : (/pmi|ism|sentiment|confidence/i.test(name) || (absPrev >= 20 && absPrev <= 150))
+            ? 0.3
+            : Math.max(absPrev * 0.001, 0.005);
     if (Math.abs(surprise) < threshold) return null;
     const bullish = goldBias(name, surprise, country);
     if (bullish === null) return null;
@@ -1344,7 +1403,12 @@ function analyze(e) {
     }
 
     const surprise = actual - reference.value;
-    const threshold = Math.max(Math.abs(reference.value) * 0.005, 0.01);
+    const absRef = Math.abs(reference.value);
+    const threshold = (/payroll|nonfarm|nfp|claims|jobless|jolts|adp/i.test(name) || absRef >= 1000)
+        ? Math.max(absRef * 0.02, 5000)
+        : (/pmi|ism|sentiment|confidence/i.test(name) || (absRef >= 20 && absRef <= 150))
+            ? 0.3
+            : Math.max(absRef * 0.005, 0.01);
     const fmtVal = v => Math.abs(v) >= 1e6 ? `${(v / 1e6).toFixed(2)}M` : Math.abs(v) >= 1e4 ? Math.round(v).toLocaleString('en-US') : v;
     const comparison = `Actual ${fmtVal(actual)} vs ${reference.label} ${fmtVal(reference.value)}`;
     if (Math.abs(surprise) < threshold) {
@@ -1513,8 +1577,9 @@ function clampNum(v, lo, hi) {
     return Math.min(hi, Math.max(lo, Number(v)));
 }
 
-// SL/TP adaptif: makin tinggi impact dan makin besar reaksi, makin lebar stop.
-// Tujuannya supaya stop tidak berada di dalam noise spread pasca-rilis.
+// SL/TP adaptif & terkalibrasi: batas risiko dinamis berdasarkan volatilitas aktual,
+// dengan TP bertingkat (TP1 1:1 untuk amankan profit / BE, TP2 1:2 untuk target penuh)
+// serta zona Pullback/Retest (OTE) agar tidak terjebak membeli di pucuk candle rilis.
 function computeSignalLevels(kind, asset, dir, price, e, signal) {
     const impact = +e.Importance || 1;
     const vol = Math.abs(Number(signal && signal.movePct) || 0);
@@ -1526,26 +1591,30 @@ function computeSignalLevels(kind, asset, dir, price, e, signal) {
         const pip = entry > 10 ? 0.01 : 0.0001;
         const basePips = /JPY$/i.test(asset) ? (/\/JPY$/.test(asset) && !/^USD/.test(asset) ? 35 : 30) : 25;
         const volPips = vol / 100 * entry / pip;
-        const stopPips = clampNum(basePips * (1 + 0.35 * Math.max(0, impact - 2)) + 0.6 * volPips, basePips, basePips * 3);
+        const stopPips = clampNum(basePips * (1 + 0.35 * Math.max(0, impact - 2)) + 0.25 * volPips, basePips, basePips * 1.8);
         const stop = stopPips * pip;
         const sl = isBuy ? entry - stop : entry + stop;
         const tp = isBuy ? entry + stop * 2 : entry - stop * 2;
+        const tp1 = isBuy ? entry + stop : entry - stop;
+        const pullback = isBuy ? entry - stop * 0.4 : entry + stop * 0.4;
         const dec = entry > 10 ? 3 : 5;
-        return { entry, sl, tp, stopPips: Number(stopPips.toFixed(1)), riskPct: null, rr: 2, dec, broker: b ? b.brokerName : null };
+        return { entry, sl, tp, tp1, pullback, stopPips: Number(stopPips.toFixed(1)), riskPct: null, rr: 2, dec, broker: b ? b.brokerName : null };
     }
 
     const base = kind === 'gold' ? 0.55
         : kind === 'crypto' ? (asset === 'BTC/USD' ? 1.2 : 1.5)
         : (asset === 'NAS100' ? 0.8 : 0.6);
-    const riskPct = clampNum(base * (1 + 0.30 * Math.max(0, impact - 2)) + 0.45 * vol, base, base * 3);
+    const riskPct = clampNum(base * (1 + 0.30 * Math.max(0, impact - 2)) + 0.20 * vol, base, base * 2.0);
     const sl = isBuy ? price * (1 - riskPct / 100) : price * (1 + riskPct / 100);
     const tp = isBuy ? price * (1 + riskPct * 2 / 100) : price * (1 - riskPct * 2 / 100);
-    return { entry: price, sl, tp, stopPips: null, riskPct: Number(riskPct.toFixed(2)), rr: 2, dec: null, broker: null };
+    const tp1 = isBuy ? price * (1 + riskPct / 100) : price * (1 - riskPct / 100);
+    const pullback = isBuy ? price * (1 - (riskPct * 0.4) / 100) : price * (1 + (riskPct * 0.4) / 100);
+    return { entry: price, sl, tp, tp1, pullback, stopPips: null, riskPct: Number(riskPct.toFixed(2)), rr: 2, dec: null, broker: null };
 }
 
 function levelsFromLock(lock, kind) {
     return {
-        entry: lock.entry, sl: lock.sl, tp: lock.tp, rr: 2, kind,
+        entry: lock.entry, sl: lock.sl, tp: lock.tp, tp1: lock.tp1 || null, pullback: lock.pullback || null, rr: 2, kind,
         dec: lock.dec || null, stopPips: lock.stopPips || null, riskPct: lock.riskPct ?? null
     };
 }
@@ -1568,6 +1637,10 @@ function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
         const held = readSignalLock(e, asset);
         if (held && held.phase === 'post' && signal.phase === 'post') {
             const levels = levelsFromLock(held, kind);
+            const isBuy = held.dir === 'long';
+            const stopped = isBuy ? price <= levels.sl : price >= levels.sl;
+            const tpReached = isBuy ? price >= levels.tp : price <= levels.tp;
+            const tp1Reached = levels.tp1 ? (isBuy ? price >= levels.tp1 : price <= levels.tp1) : false;
             return {
                 ...signal,
                 dir: held.dir,
@@ -1577,6 +1650,9 @@ function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
                 lockedAt: held.at || null,
                 conflict: false,
                 missed: missedFromLevels(levels, held.dir, price),
+                stopped,
+                tpReached,
+                tp1Reached,
                 carried: true,
                 note: 'Sinyal pasca-rilis yang sudah terkonfirmasi tetap aktif sampai batas validitas.'
             };
@@ -1615,6 +1691,11 @@ function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
     }
 
     const lockedDir = conflict ? lock.dir : signal.dir;
+    const isBuy = lockedDir === 'long';
+    const stopped = levels ? (isBuy ? price <= levels.sl : price >= levels.sl) : false;
+    const tpReached = levels ? (isBuy ? price >= levels.tp : price <= levels.tp) : false;
+    const tp1Reached = levels && levels.tp1 ? (isBuy ? price >= levels.tp1 : price <= levels.tp1) : false;
+
     return {
         ...signal,
         dir: lockedDir,
@@ -1622,8 +1703,11 @@ function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
         levels,
         locked: Boolean(lock && lock.at),
         lockedAt: lock && lock.at ? lock.at : null,
-        conflict,
-        missed: missedFromLevels(levels, lockedDir, price)
+        conflict: conflict || Boolean(signal.conflict),
+        missed: missedFromLevels(levels, lockedDir, price),
+        stopped,
+        tpReached,
+        tp1Reached
     };
 }
 
@@ -1682,6 +1766,9 @@ function tpSl(a, e) {
     const noteOf = (d, extra = '') => {
         const bits = [d && d.note ? d.note : '', extra];
         if (d && d.locked && d.lockedAt) bits.push(`entry terkunci ${fmtTime(new Date(d.lockedAt))}`);
+        if (d && d.stopped) bits.push('🛑 SL tersentuh');
+        if (d && d.tpReached) bits.push('🎯 TP tercapai');
+        if (d && d.tp1Reached) bits.push('✅ TP1 tercapai');
         if (d && d.conflict) bits.push('arah berbalik — batalkan order lama');
         if (d && d.missed) bits.push('entry terlewat — tunggu pullback');
         return bits.filter(Boolean).join(' • ');
@@ -1715,9 +1802,11 @@ function tpSl(a, e) {
         const d = signalCardData(e, 'XAU/USD', 'gold', now);
         if (d.dir && d.levels) {
             const move = d.movePct == null ? '' : ` • reaksi ${d.movePct >= 0 ? '+' : ''}${Number(d.movePct).toFixed(2)}%`;
+            const tp1Text = d.levels.tp1 ? `<span><b>TP1</b> ${f(d.levels.tp1)}</span>` : '';
+            const pbText = d.levels.pullback ? `<span><b>Retest</b> ${f(d.levels.pullback)}</span>` : '';
             html += `<div style="display:flex; gap:14px; flex-wrap:wrap; background:rgba(43,157,181,.10); border:1px dashed rgba(114,212,228,.35); border-radius:14px; padding:12px 14px;">`;
             html += `<span style="color:#72d4e4; font-weight:bold; width:100%;">XAU/USD (Gold) — ${actionOf(d.dir)}${move}</span>`;
-            html += `<span><b>Entry</b> ${f(d.levels.entry)}</span><span><b>SL</b> ${f(d.levels.sl)}</span><span><b>TP</b> ${f(d.levels.tp)}</span><span><b>R:R</b> 1:${d.levels.rr || 2}.0</span>`;
+            html += `<span><b>Entry</b> ${f(d.levels.entry)}</span><span><b>SL</b> ${f(d.levels.sl)}</span>${tp1Text}<span><b>TP</b> ${f(d.levels.tp)}</span>${pbText}<span><b>R:R</b> 1:${d.levels.rr || 2}.0</span>`;
             html += `<span style="width:100%;color:var(--muted);font-size:11px;">${esc(noteOf(d, phase === 'post' ? `valid s/d ${postValidUntil}` : ''))}</span>`;
             html += `</div>`;
         } else if (phase === 'pre') {
@@ -1794,7 +1883,9 @@ function tpSl(a, e) {
                 const cls = d.dir;
                 const basisNote = d.basis === 'forecast' ? ' <small style="color:var(--amber);">pre-news market</small>' : '';
                 const extra = phase === 'post' ? `valid s/d ${postValidUntil}` : '';
-                html += `<div class="forex-card ${cls}"><div>${pair} <b>${actionOf(d.dir)}</b>${basisNote}</div><div class="val">Entry: ${Number(lv.entry).toFixed(ldec)}</div><div class="val" style="color:var(--red)">SL: ${Number(lv.sl).toFixed(ldec)}</div><div class="val" style="color:var(--green)">TP: ${Number(lv.tp).toFixed(ldec)}</div><div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
+                const tp1Val = lv.tp1 ? `<div class="val" style="color:var(--green)">TP1 (1:1): ${Number(lv.tp1).toFixed(ldec)}</div>` : '';
+                const pbVal = lv.pullback ? `<div class="val" style="color:var(--muted); font-size:10px;">Retest: ${Number(lv.pullback).toFixed(ldec)}</div>` : '';
+                html += `<div class="forex-card ${cls}"><div>${pair} <b>${actionOf(d.dir)}</b>${basisNote}</div><div class="val">Entry: ${Number(lv.entry).toFixed(ldec)}</div><div class="val" style="color:var(--red)">SL: ${Number(lv.sl).toFixed(ldec)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: ${Number(lv.tp).toFixed(ldec)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
                 return;
             }
 
@@ -1836,7 +1927,9 @@ function tpSl(a, e) {
 
             if (d.dir && d.levels) {
                 const extra = phase === 'post' ? `valid s/d ${postValidUntil}` : '';
-                html += `<div class="forex-card ${d.dir}" style="border-left-color: ${bColor};"><div>${pair} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: $${fmt(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: $${fmt(d.levels.sl)}</div><div class="val" style="color:var(--green)">TP: $${fmt(d.levels.tp)}</div><div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
+                const tp1Val = d.levels.tp1 ? `<div class="val" style="color:var(--green)">TP1 (1:1): $${fmt(d.levels.tp1)}</div>` : '';
+                const pbVal = d.levels.pullback ? `<div class="val" style="color:var(--muted); font-size:10px;">Retest: $${fmt(d.levels.pullback)}</div>` : '';
+                html += `<div class="forex-card ${d.dir}" style="border-left-color: ${bColor};"><div>${pair} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: $${fmt(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: $${fmt(d.levels.sl)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: $${fmt(d.levels.tp)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
                 return;
             }
 
@@ -1870,7 +1963,9 @@ function tpSl(a, e) {
             if (d.dir && d.levels) {
                 const cls = d.dir;
                 const extra = phase === 'post' ? `valid s/d ${postValidUntil}` : '';
-                html += `<div class="forex-card ${cls}" style="border-left-color:${d.dir === 'long' ? 'var(--green)' : 'var(--red)'};"><div>${esc(cfg.symbol)} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: ${fmtIdx(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: ${fmtIdx(d.levels.sl)}</div><div class="val" style="color:var(--green)">TP: ${fmtIdx(d.levels.tp)}</div><div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
+                const tp1Val = d.levels.tp1 ? `<div class="val" style="color:var(--green)">TP1 (1:1): ${fmtIdx(d.levels.tp1)}</div>` : '';
+                const pbVal = d.levels.pullback ? `<div class="val" style="color:var(--muted); font-size:10px;">Retest: ${fmtIdx(d.levels.pullback)}</div>` : '';
+                html += `<div class="forex-card ${cls}" style="border-left-color:${d.dir === 'long' ? 'var(--green)' : 'var(--red)'};"><div>${esc(cfg.symbol)} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: ${fmtIdx(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: ${fmtIdx(d.levels.sl)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: ${fmtIdx(d.levels.tp)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
                 return;
             }
 
@@ -2015,6 +2110,15 @@ function render() {
     renderForexBoard();
     renderCryptoBoard();
     renderIndicesBoard();
+
+    const totalEl = $('#total-events');
+    const actualEl = $('#events-with-actual');
+    const highEl = $('#high-importance');
+    const lowEl = $('#low-importance');
+    if (totalEl) totalEl.textContent = events.length;
+    if (actualEl) actualEl.textContent = events.filter(e => e.Actual && String(e.Actual).trim() !== '').length;
+    if (highEl) highEl.textContent = events.filter(e => (+e.Importance || 1) >= 3).length;
+    if (lowEl) lowEl.textContent = events.filter(e => (+e.Importance || 1) <= 1).length;
 }
 
 function updateCountdown(next) {
