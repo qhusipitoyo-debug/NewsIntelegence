@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-11-08T07:51:26.773Z",
+  "generatedAt": "2026-11-09T10:59:32.847Z",
   "items": [
     {
       "symbol": "NAS100",
       "name": "Nasdaq 100",
       "yahoo": "^NDX",
       "price": 26989.992,
-      "previousClose": 26629.809,
+      "previousClose": 26629.8,
       "changePct": 1.35
     },
     {
