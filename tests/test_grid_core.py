@@ -123,5 +123,67 @@ class GuardTests(unittest.TestCase):
         self.assertFalse(g.guard_tripped({}, 10.0, 5))
 
 
+class TradeStatsTests(unittest.TestCase):
+    def test_empty_trades(self):
+        stats = g.summarize_trades([])
+        self.assertEqual(stats["total"], 0)
+        self.assertEqual(stats["wins"], 0)
+        self.assertEqual(stats["losses"], 0)
+        self.assertEqual(stats["win_rate"], 0.0)
+        self.assertIsNone(stats["profit_factor"])
+        self.assertEqual(stats["net_pnl"], 0.0)
+
+    def test_all_wins(self):
+        stats = g.summarize_trades([{"pnl": 50.0}, {"pnl": 30.0}])
+        self.assertEqual(stats["total"], 2)
+        self.assertEqual(stats["wins"], 2)
+        self.assertEqual(stats["losses"], 0)
+        self.assertEqual(stats["win_rate"], 1.0)
+        self.assertIsNone(stats["profit_factor"])
+        self.assertAlmostEqual(stats["net_pnl"], 80.0)
+
+    def test_mixed_win_rate_profit_factor_and_expectancy(self):
+        stats = g.summarize_trades([{"pnl": 100.0}, {"pnl": -40.0}, {"pnl": -60.0}])
+        self.assertEqual(stats["total"], 3)
+        self.assertEqual(stats["wins"], 1)
+        self.assertEqual(stats["losses"], 2)
+        self.assertAlmostEqual(stats["win_rate"], 1 / 3)
+        self.assertAlmostEqual(stats["profit_factor"], 1.0)
+        self.assertAlmostEqual(stats["net_pnl"], 0.0)
+        self.assertAlmostEqual(stats["expectancy"], 0.0)
+
+    def test_open_trades_are_ignored_in_stats(self):
+        stats = g.summarize_trades([{"pnl": 25.0}, {"pnl": None}])
+        self.assertEqual(stats["total"], 1)
+        self.assertEqual(stats["wins"], 1)
+
+    def test_trades_from_order_rows_uses_paper_close_pnl(self):
+        rows = [
+            {"event": "PAPER_OPEN", "pair": "EUR/USD", "dir": "BUY", "price": "1.16", "status": "PAPER", "note": ""},
+            {"event": "PAPER_CLOSE", "pair": "EUR/USD", "dir": "BUY", "lot": "0.01", "price": "1.163",
+             "sl": "1.1585", "tp": "1.163", "status": "TP", "note": "pnl=$12.30"},
+        ]
+        trades = g.trades_from_order_rows(rows)
+        self.assertEqual(len(trades), 1)
+        self.assertEqual(trades[0]["pnl"], 12.3)
+        self.assertEqual(trades[0]["pair"], "EUR/USD")
+        self.assertEqual(trades[0]["dir"], "BUY")
+
+    def test_trades_from_order_rows_ignores_non_close_and_pnl_less_rows(self):
+        self.assertEqual(g.trades_from_order_rows([{"event": "PAPER_OPEN", "note": "pnl=$5"}]), [])
+        self.assertEqual(g.trades_from_order_rows([{"event": "PAPER_CLOSE", "note": "closed without pnl"}]), [])
+
+    def test_summarize_trades_by_pair_groups_per_pair(self):
+        trades = [
+            {"pair": "EUR/USD", "pnl": 50.0},
+            {"pair": "EUR/USD", "pnl": -20.0},
+            {"pair": "GBP/USD", "pnl": 30.0},
+        ]
+        by_pair = g.summarize_trades_by_pair(trades)
+        self.assertEqual([t["pair"] for t in by_pair], ["EUR/USD", "GBP/USD"])
+        self.assertEqual(by_pair[0]["total"], 2)
+        self.assertEqual(by_pair[1]["total"], 1)
+
+
 if __name__ == "__main__":
     unittest.main()

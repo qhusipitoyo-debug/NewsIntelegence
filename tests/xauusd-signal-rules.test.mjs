@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { getGoldSignal } from '../scripts/xauusd-signal-rules.js';
+import { getGoldSignal, sentimentOverlay } from '../scripts/xauusd-signal-rules.js';
 
 const cases = [
   [{event:'Nonfarm Payrolls', actual:150000, forecast:200000}, 'long'],
@@ -10,11 +10,25 @@ const cases = [
   [{event:'Initial Jobless Claims', actual:210000, forecast:220000}, 'short'],
   [{event:'CPI', actual:2.8, forecast:3.0}, 'long'],
   [{event:'CPI', actual:3.2, forecast:3.0}, 'short'],
+  [{event:'University of Michigan Consumer Sentiment Index', actual:68, forecast:71}, 'long'],
+  [{event:'Conference Board Consumer Confidence', actual:98, forecast:100}, 'long'],
+  [{event:'Consumer Sentiment', actual:90, forecast:90}, 'wait'],
   [{event:'Unknown Indicator', actual:10, forecast:9}, 'wait'],
   [{event:'CPI', actual:null, forecast:3.0}, 'wait'],
 ];
 
 for (const [input, expected] of cases) {
   assert.equal(getGoldSignal(input).dir, expected, JSON.stringify(input));
+}
+
+const sentimentCases = [
+  [{ score: 10, aai: -15 }, 'long'],
+  [{ score: 85, aai: 20 }, 'short'],
+  [{ score: 50, aai: 0 }, null],
+  [{ score: null, aai: 5 }, null],
+];
+for (const [input, expected] of sentimentCases) {
+  const overlay = sentimentOverlay(input.score, input.aai);
+  assert.equal(overlay ? overlay.dir : null, expected, JSON.stringify(input));
 }
 console.log(`Passed ${cases.length}/${cases.length} XAUUSD signal tests`);

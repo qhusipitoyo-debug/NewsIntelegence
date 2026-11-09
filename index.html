@@ -192,6 +192,7 @@
         <div>• <b>Filter Spread &amp; Spike:</b> Delay konfirmasi 15 menit pasca-rilis mencegah terjebak di spike pertama.</div>
         <div>• <b>Prioritas Arah:</b> Reaksi Harga 1M &gt; Momentum Terkalibrasi &gt; Actual Fundamental vs Forecast.</div>
       </div>
+      <div id="tradeStats" style="margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px;"></div>
     </div>
   </section>
   <div class="footer">Educational scenario analysis only—not financial advice. A scheduled event does not guarantee direction; wait for the actual release and price confirmation.</div>
@@ -244,6 +245,7 @@ let INDEX_RATES = {};
 let INDEX_CHANGE = {};
 let PRE_NEWS = {};
 let REACTION = null;
+let TRADE_STATS = { generatedAt: null, source: '', totals: { total: 0, wins: 0, losses: 0, win_rate: 0, profit_factor: null, gross_win: 0, gross_loss: 0, net_pnl: 0, avg_win: 0, avg_loss: 0, expectancy: 0 }, byPair: [] };
 const REACTION_MAX_AGE_MS = 45 * 60 * 1000;
 // Entry/SL/TP yang sudah dikonfirmasi disimpan per event+aset supaya tidak berubah
 // setiap tick. Level yang bergerak-gerak membuat order tidak pernah cocok dengan
@@ -468,6 +470,46 @@ async function loadReaction() {
         const j = await r.json();
         if (j && j.events) { REACTION = j; render(); }
     } catch (e) { console.log('Reaction data unavailable', e); }
+}
+
+async function loadTradeStats() {
+    try {
+        const r = await fetch(`data/trade-stats.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (!r.ok) return;
+        const j = await r.json();
+        if (j && j.byPair) { TRADE_STATS = j; renderTradeStats(); }
+    } catch (e) { console.log('Trade stats unavailable', e); }
+}
+
+function renderTradeStats() {
+    const el = document.querySelector('#tradeStats');
+    if (!el) return;
+    const totals = TRADE_STATS.totals || {};
+    const byPair = Array.isArray(TRADE_STATS.byPair) ? TRADE_STATS.byPair : [];
+    const total = Number(totals.total) || 0;
+    const winRate = (Number(totals.win_rate) || 0) * 100;
+    const profitFactor = totals.profit_factor == null ? 'n/a' : Number(totals.profit_factor).toFixed(2);
+    let html = `<div style="display:flex;gap:16px;flex-wrap:wrap;">`
+        + `<div>Closed: <b>${total}</b></div>`
+        + `<div>Win rate: <b>${winRate.toFixed(0)}%</b></div>`
+        + `<div>Profit factor: <b>${profitFactor}</b></div>`
+        + `<div>Net P/L: <b>$${Number(totals.net_pnl || 0).toFixed(2)}</b></div>`
+        + `<div>Expectancy: <b>$${Number(totals.expectancy || 0).toFixed(2)}</b></div>`
+        + `</div>`
+        + `<div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Source: ${esc(TRADE_STATS.source || 'mt5_grid_hft_paper')} • Generated: ${esc(TRADE_STATS.generatedAt || '—')}</div>`;
+    if (!byPair.length) {
+        html += `<div class="empty" style="padding:18px;">Menunggu closed trade dari executor grid…</div>`;
+    } else {
+        html += `<div style="display:grid;gap:8px;">${byPair.map(it => `
+            <div style="display:flex;gap:12px;flex-wrap:wrap;background:rgba(4,15,23,.42);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12px;">
+                <b>${esc(it.pair)}</b>
+                <span>Closed <b>${Number(it.total || 0)}</b></span>
+                <span>Win rate <b>${((Number(it.win_rate) || 0) * 100).toFixed(0)}%</b></span>
+                <span>PF <b>${it.profit_factor == null ? 'n/a' : Number(it.profit_factor).toFixed(2)}</b></span>
+                <span>Net <b>$${Number(it.net_pnl || 0).toFixed(2)}</b></span>
+            </div>`).join('')}</div>`;
+    }
+    el.innerHTML = html;
 }
 
 function applyForexPayload(j, fallbackSource, live) {
@@ -1304,7 +1346,7 @@ async function loadCrypto() {
 
 function goldBias(name, surprise, country) {
     const laborSoft = /unemployment rate|unemployment|initial claims|continuing claims|jobless claims|jobless/.test(name);
-    const usdSoftIfHigh = /cpi|inflation|pce|pmi|ism|retail sales|consumer confidence|fed funds|interest rate|rate decision|jolts|durable goods|nonfarm payroll|non-farm payroll|nfp|payroll|gdp|adp|employment|ppi|producer price|sentiment|michigan|average hourly earnings|hourly earnings|wages|trade balance|current account|industrial production|manufacturing production|factory orders/.test(name);
+    const usdSoftIfHigh = /cpi|inflation|pce|pmi|ism|retail sales|consumer confidence|fed funds|interest rate|rate decision|jolts|durable goods|nonfarm payroll|non-farm payroll|nfp|payroll|gdp|adp|employment|ppi|producer price|sentiment|michigan|average hourly earnings|hourly earnings|wages|trade balance|current account|industrial production|manufacturing production|factory orders|conference board|consumer optimism|ifo index|economic optimism/.test(name);
     if (country === 'USD') {
         if (laborSoft) return surprise > 0;
         if (usdSoftIfHigh) return surprise < 0;
@@ -1327,9 +1369,12 @@ function forecastBias(e) {
     const absPrev = Math.abs(previous);
     const threshold = (/payroll|nonfarm|nfp|claims|jobless|jolts|adp/i.test(name) || absPrev >= 1000)
         ? Math.max(absPrev * 0.02, 5000)
-        : (/pmi|ism|sentiment|confidence/i.test(name) || (absPrev >= 20 && absPrev <= 150))
+        : (/pmi|ism|sentiment|confidence|michigan/i.test(name) || (absPrev >= 20 && absPrev <= 150))
             ? 0.3
-            : Math.max(absPrev * 0.001, 0.005);
+            : Math.max(absPrev * 0.005, 0.01);
+    // Threshold diselaraskan antara forecastBias() (pra-rilis) dan analyze() (pasca-rilis):
+    // ambang flat yang sama dipakai di kedua sisi supaya tidak ada perbedaan toleransi
+    // yang membuat sinyal pra-rilis dan pasca-rilis tidak konsisten.
     if (Math.abs(surprise) < threshold) return null;
     const bullish = goldBias(name, surprise, country);
     if (bullish === null) return null;
@@ -1406,7 +1451,7 @@ function analyze(e) {
     const absRef = Math.abs(reference.value);
     const threshold = (/payroll|nonfarm|nfp|claims|jobless|jolts|adp/i.test(name) || absRef >= 1000)
         ? Math.max(absRef * 0.02, 5000)
-        : (/pmi|ism|sentiment|confidence/i.test(name) || (absRef >= 20 && absRef <= 150))
+        : (/pmi|ism|sentiment|confidence|michigan/i.test(name) || (absRef >= 20 && absRef <= 150))
             ? 0.3
             : Math.max(absRef * 0.005, 0.01);
     const fmtVal = v => Math.abs(v) >= 1e6 ? `${(v / 1e6).toFixed(2)}M` : Math.abs(v) >= 1e4 ? Math.round(v).toLocaleString('en-US') : v;
@@ -1473,6 +1518,20 @@ function mapActualBias(kind, asset, dir, e) {
         return dir;
     }
     return dir;
+}
+
+// Overlay sentimen pasar eksternal (CNN Fear & Greed Index + AAII survey).
+// score: CNN F&G 0..100 (75+ = extreme greed -> risk-off, <25 = extreme fear -> risk-on)
+// aai: AAII net % (bullish minus bearish). Mengembalikan { dir, score, aai } atau null.
+function sentimentOverlay(score, aai) {
+    const s = Number(score);
+    const hasScore = score !== null && score !== undefined && String(score).trim() !== '' && Number.isFinite(s);
+    if (!hasScore) return null;
+    const aa = Number(aai);
+    const aaDir = Number.isFinite(aa) ? (aa < -10 ? 'long' : aa > 10 ? 'short' : null) : null;
+    const dir = aaDir || (s <= 25 ? 'long' : s >= 75 ? 'short' : null);
+    if (dir === null) return null;
+    return { dir, score: s, aai: Number.isFinite(aa) ? aa : null };
 }
 
 function signalDirection(e, asset, kind, now = Date.now()) {
@@ -2143,12 +2202,12 @@ document.querySelector('.filters').addEventListener('click', ev => {
     render();
 });
 
-$('#refresh').onclick = () => { load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); };
+$('#refresh').onclick = () => { load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadTradeStats(); renderTradeStats(); };
 renderGoldBoard();
 renderCryptoBoard();
 renderForexBoard();
 renderIndicesBoard();
-load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction();
+load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadTradeStats(); renderTradeStats();
 setInterval(() => { loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); }, 60000);
 // Harga pair: tarik scanner langsung tiap 20 detik supaya board benar-benar bergerak.
 setInterval(loadForexLive, 20000);

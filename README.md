@@ -136,4 +136,16 @@ Event cards also show the pre-news market bias for affected forex majors, crosse
 
 Do not run it at the same time as `start.bat` (news executor) on the same terminal. Logs: `bridge/grid_orders.csv`; state: `bridge/grid_state.json`. Parameters: `python scripts\mt5_grid_hft.py --help`.
 
+### Statistik win rate & expectancy
+
+Closed trade (PAPER mode) ditulis ke `state["trades"]` (plus log `PAPER_CLOSE` di `bridge/grid_orders.csv` dengan `pnl`). Ringkasan statistik tersedia via fungsi murni `scripts/grid_core.py::summarize_trades(trades)` — dipakai executor untuk print `trade_stats | closed=… win_rate=… profit_factor=… net_pnl=… expectancy=…` pada setiap `--once`. Closed trade juga bisa *di-seed* dari baris `PAPER_CLOSE` di `bridge/grid_orders.csv` lewat `grid_core.trades_from_order_rows(rows)`, sehingga agregasi tidak hanya bergantung state JSON.
+
+- **win_rate** = closed trade dengan `pnl > 0` / total closed trade.
+- **profit_factor** = gross win / gross loss (None bila tidak ada loss).
+- **expectancy** = `(win_rate × avg_win) − ((1 − win_rate) × avg_loss)`.
+
+Karena sinyal entry order bersifat scenario analysis, win rate ini baru meaningful setelah ada closed trade (PAPER/DONE) yang cukup; belum ada closed trade → stats kosong (`closed=0`). Untuk akun real, closed deal MT5 perlu dipasangkan ke `state["trades"]` agar agregasi seragam. Untuk sentiment pasar eksternal, `sentimentOverlay(score, aai)` di `index.html` dan `scripts/xauusd-signal-rules.js` mengambil CNN F&G Index (`score`) + AAII net % (`aai`) sebagai overlay risiko.
+
+Dashboard (`index.html`) menampilkan panel **📊 Closed Trade Stats** (`#tradeStats`) yang membaca `data/trade-stats.json` (ditulis otomatis executor dari state + seed CSV) dan merender agregat total + breakdown **per pair** (`summarize_trades_by_pair`). Dengan begitu setiap pair market (EUR/USD, GBP/USD, USD/JPY, dst.) punya metrik win rate/profit factor/net P&L sendiri.
+
 # aiterminaltrading
