@@ -34,6 +34,9 @@ from grid_core import (
     round_price,
     should_breakeven_dist,
     sl_tp,
+    summarize_trades,
+    summarize_trades_by_pair,
+    trades_from_order_rows,
     within_chase,
 )
 from mt5_bridge import BASE_DIR, PAIR_SYMBOLS, load_json, load_source, parse_dt, resolve_symbol
@@ -92,6 +95,21 @@ def save_state(path, state):
     tmp = path.with_name(path.name + ".tmp")
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(state, f, indent=2)
+    os.replace(tmp, path)
+
+
+def write_trade_stats(path, trades):
+    payload = {
+        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        " source": "mt5_grid_hft_paper",
+        " totals": summarize_trades(trades),
+        " byPair": summarize_trades_by_pair(trades),
+    }
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(path.name + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
     os.replace(tmp, path)
 
 
@@ -485,6 +503,20 @@ def manage_paper(args, state, contexts, now):
         pnl = (exit_price - pos["entry"]) if direction == "long" else (pos["entry"] - exit_price)
         pnl_usd = pnl * info.trade_contract_size * float(pos.get("lot") or args.lot) * \
             quote_to_usd(info, ctx["mid"])
+        state.setdefault("trades", []).append({
+            "ticket": str(pos.get("id") or ""),
+            "pair": pos.get("pair"),
+            "symbol": pos.get("symbol"),
+            "dir": pos.get("dir"),
+            "lot": pos.get("lot") or args.lot,
+            "entry": pos.get("entry"),
+            "sl": pos.get("sl"),
+            "tp": pos.get("tp"),
+            "exit": exit_price,
+            "pnl": float(pnl_usd),
+            "reason": note,
+            "closed_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        })
         append_log(args.log, log_row(
             "DRY_RUN", "PAPER_CLOSE", pair=pos["pair"], symbol=pos["symbol"], direction=label,
             lot=pos.get("lot", args.lot), price=fmt(exit_price, info.digits),
@@ -586,6 +618,19 @@ def print_once(args, state, contexts, now, news, positions, day):
         print(f"  {pair} level={fmt(level, ctx['info'].digits) if level is not None else '-'} "
               f"bid={fmt(ctx['bid'], ctx['info'].digits)} spread={ctx['spread_pips']:.1f}p "
               f"EMA{args.ema_period}={ema_txt}", flush=True)
+    trades = list(state.get("trades") or [])
+    try:
+        with open(args.log, newline="", encoding="utf-8") as f:
+            for row in csv.DictReader(f):
+                trades.extend(trades_from_order_rows([row]))
+    except (OSError, csv.Error):
+        pass
+    stats = summarize_trades(trades)
+    profit_factor = f"{stats['profit_factor']:.2f}" if stats["profit_factor"] is not None else "n/a"
+    print(f"trade_stats | closed={stats['total']} win_rate={stats['win_rate']:.1%} "
+          f"profit_factor={profit_factor} gross_win=${stats['gross_win']:.2f} "
+          f"gross_loss=${stats['gross_loss']:.2f} net_pnl=${stats['net_pnl']:.2f} "
+          f"expectancy=${stats['expectancy']:.2f}", flush=True)
 
 
 def parse_args():
@@ -621,6 +666,8 @@ def parse_args():
     parser.add_argument("--path", default=None, help="path terminal MT5 opsional")
     parser.add_argument("--state", default=str(BASE_DIR / "bridge" / "grid_state.json"))
     parser.add_argument("--log", default=str(BASE_DIR / "bridge" / "grid_orders.csv"))
+    parser.add_argument("--stats-file", default=str(BASE_DIR / "data" / "trade-stats.json"),
+                        help="file JSON untuk ringkasan closed trade + win rate (dashboard)")
     return parser.parse_args()
 
 
@@ -637,6 +684,7 @@ def main():
     state.setdefault("paper_seq", 0)
     state.setdefault("last_trade", {})
     state.setdefault("open_tickets", [])
+    state.setdefault("trades", [])
     state["pairs"] = {}
 
     connect(args.path, args.enable)
@@ -707,6 +755,15 @@ def main():
                         open_symbols.add(ctx["symbol"])
             if entered:
                 print(f"[{now:%H:%M:%S}Z] {entered} entry baru.", flush=True)
+
+            trades = list(state.get("trades") or [])
+            try:
+                with open(args.log, newline="", encoding="utf-8") as f:
+                    for row in csv.DictReader(f):
+                        trades.extend(trades_from_order_rows([row]))
+            except (OSError, csv.Error):
+                pass
+            write_trade_stats(args.stats_file, trades)
 
             if args.once or entered or time.time() - last_save > 5:
                 save_state(args.state, state)

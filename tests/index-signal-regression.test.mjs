@@ -84,6 +84,7 @@ const missedFromLevelsFn = extractFunction('missedFromLevels');
 const resolveSignalLevelsFn = extractFunction('resolveSignalLevels');
 const signalCardDataFn = extractFunction('signalCardData');
 const riskSensitiveConst = source.match(/const RISK_SENSITIVE_EVENT = .*?;\n/)[0];
+const sentimentOverlayFn = extractFunction('sentimentOverlay');
 
 function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, indexRates = defaultIndexRates, reaction = null) {
   const body = `
@@ -284,6 +285,12 @@ assert.equal(forecastBias({ Event: 'CPI', Country: 'USD', Forecast: '3.2%', Prev
 assert.equal(forecastBias({ Event: 'CPI', Country: 'EUR', Forecast: '4.0%', Previous: '3.8%' }).dir, 'long');
 assert.equal(forecastBias({ Event: 'CPI', Country: 'USD', Forecast: '3.0%', Previous: '3.0%' }), null);
 assert.equal(forecastBias({ Event: 'CPI', Country: 'USD', Forecast: '', Previous: '3.0%' }), null);
+
+const sentimentOverlay = new Function(`${sentimentOverlayFn}\nreturn sentimentOverlay;`)();
+assert.equal(sentimentOverlay(10, -15).dir, 'long', 'extreme fear from CNN F&G -> long');
+assert.equal(sentimentOverlay(85, 20).dir, 'short', 'extreme greed from CNN F&G -> short');
+assert.equal(sentimentOverlay(50, 0), null, 'neutral sentiment -> no overlay');
+assert.equal(sentimentOverlay(null, 5), null, 'missing score -> no overlay');
 
 const mapPairBias = new Function(`${countryFn}\n${invertDirFn}\n${mapPairBiasFn}\nreturn mapPairBias;`)();
 assert.equal(mapPairBias('EUR/USD', 'short'), 'short');
@@ -1416,6 +1423,55 @@ function memoryStore() {
   ] });
   assert.match(liveForex, /Tunggu konfirmasi 15 menit/);
   assert.doesNotMatch(liveForex, /Entry 1\.10000/);
+}
+
+// ---------------------------------------------------------------------------
+// Sentiment calibration: consumer / sentiment-style indices share the same
+// significance rules as PMI and are allowed to drive a post-news forex entry.
+// ---------------------------------------------------------------------------
+{
+  // A flat sentiment print is flat: no edge, no synthetic confidence.
+  const sentFlat = analyze({ Event: 'University of Michigan Consumer Sentiment Index', Country: 'USA', Actual: '70.0', Forecast: '70.0' });
+  assert.equal(sentFlat.dir, 'wait');
+  assert.equal(sentFlat.basis, 'flat');
+  assert.equal(sentFlat.score, 45);
+
+  // A released sentiment index with a real surprise resolves a post-news forex
+  // entry: stronger (weaker USD) than expected -> EUR/USD BUY, USD/JPY SELL.
+  const sentEvent = {
+    Date: new Date(Date.now() - 40 * 60 * 1000).toISOString(),
+    Event: 'University of Michigan Consumer Sentiment Index', Country: 'USA', Importance: 2,
+    Forecast: '71.0', Previous: '69.0', Actual: '68.5'
+  };
+  const sentSig = buildEngine(4000).signalDirection(sentEvent, 'EUR/USD', 'forex', Date.now());
+  assert.equal(sentSig.phase, 'post');
+  assert.equal(sentSig.basis, 'actual');
+  assert.equal(sentSig.dir, 'long');
+  const sentJpy = buildEngine(150).signalDirection(sentEvent, 'USD/JPY', 'forex', Date.now());
+  assert.equal(sentJpy.dir, 'short');
+
+  const sentCci = buildEngine(4000).signalDirection({
+    ...sentEvent, Event: 'Conference Board Consumer Confidence'
+  }, 'EUR/USD', 'forex', Date.now());
+  assert.equal(sentCci.basis, 'actual');
+  assert.equal(sentCci.dir, 'long');
+}
+
+// ---------------------------------------------------------------------------
+// Threshold unification: the pre-news bias and the post-news analysis must use
+// the same flat threshold, so a release cannot flip between "flat" and "significant".
+// ---------------------------------------------------------------------------
+{
+  const gdpFlatForecast = forecastBias({ Event: 'GDP', Country: 'USA', Forecast: '27.0', Previous: '27.0' });
+  assert.equal(gdpFlatForecast, null, 'flat GDP forecast -> no pre-news edge');
+  const gdpFlatActual = analyze({ Event: 'GDP', Country: 'USA', Actual: '27.0', Forecast: '27.0' });
+  assert.equal(gdpFlatActual.dir, 'wait');
+  assert.equal(gdpFlatActual.basis, 'flat');
+  assert.equal(gdpFlatActual.score, 45);
+
+  const gdpUp = forecastBias({ Event: 'GDP', Country: 'USA', Forecast: '27.5', Previous: '27.0' });
+  assert.equal(gdpUp.dir, 'short');
+  assert.ok(gdpUp.surprise > 0);
 }
 
 console.log('Passed post-news confirmation and lock tests');

@@ -13,13 +13,13 @@ export function getGoldSignal({ event = '', actual, forecast, importance = 1 }) 
   const absF = Math.abs(f);
   const threshold = (/payroll|nonfarm|nfp|claims|jobless|jolts|adp/i.test(name) || absF >= 1000)
     ? Math.max(absF * 0.02, 5000)
-    : (/pmi|ism|sentiment|confidence/i.test(name) || (absF >= 20 && absF <= 150))
+    : (/pmi|ism|sentiment|confidence|michigan/i.test(name) || (absF >= 20 && absF <= 150))
       ? 0.3
       : Math.max(absF * 0.005, 0.01);
   if (Math.abs(surprise) < threshold) {
     return { dir: 'wait', score: 45, reason: `Actual ${a} vs Forecast ${f}: deviasi ekonomi terlalu kecil / dalam batas toleransi pasar (flat).` };
   }
-  const inflationHigherBearish = /cpi|inflation|pce|pmi|ism|retail sales|consumer confidence|fed funds|interest rate|rate decision|jolts|durable goods|ppi|producer price|sentiment|michigan|trade balance|current account|industrial production|factory orders/.test(name);
+  const inflationHigherBearish = /cpi|inflation|pce|pmi|ism|retail sales|consumer confidence|consumer sentiment|fed funds|interest rate|rate decision|jolts|durable goods|ppi|producer price|sentiment|michigan|trade balance|current account|industrial production|factory orders|conference board|consumer optimism|ifo index|economic optimism/.test(name);
   const nfpHigherBearish = /nonfarm payroll|non-farm payroll|nfp|payroll|average hourly earnings|hourly earnings|wages/.test(name);
   const unemploymentHigherBullish = /unemployment rate|unemployment/.test(name);
   const claimsHigherBullish = /initial claims|continuing claims|jobless claims/.test(name);
@@ -30,4 +30,18 @@ export function getGoldSignal({ event = '', actual, forecast, importance = 1 }) 
   const strength = Math.min(40, Math.round(Math.abs(surprise) / threshold * 10));
   const score = Math.min(95, Math.max(55, 55 + strength));
   return { dir: goldBullish ? 'long' : 'short', score, reason: `Actual ${a} vs Forecast ${f}. ${goldBullish ? 'Data USD lebih lemah dari ekspektasi -> Bias bullish untuk Emas (BUY).' : 'Data USD lebih kuat dari ekspektasi -> Bias bearish untuk Emas (SELL).'}` };
+}
+
+// Overlay sentimen pasar eksternal (CNN Fear & Greed Index + AAII survey).
+// score: CNN F&G 0..100 (75+ = extreme greed -> risk-off, <25 = extreme fear -> risk-on)
+// aai: AAII net % (bullish minus bearish). Mengembalikan { dir, score, aai } atau null.
+export function sentimentOverlay(score, aai) {
+  const s = Number(score);
+  const hasScore = score !== null && score !== undefined && String(score).trim() !== '' && Number.isFinite(s);
+  if (!hasScore) return null;
+  const aa = Number(aai);
+  const aaDir = Number.isFinite(aa) ? (aa < -10 ? 'long' : aa > 10 ? 'short' : null) : null;
+  const dir = aaDir || (s <= 25 ? 'long' : s >= 75 ? 'short' : null);
+  if (dir === null) return null;
+  return { dir, score: s, aai: Number.isFinite(aa) ? aa : null };
 }
