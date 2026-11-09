@@ -1,4 +1,146 @@
 {
-  "generatedAt": "2026-11-09T10:59:33.068Z",
-  "events": {}
+  "generatedAt": "2026-11-09T20:53:32.871Z",
+  "events": {
+    "2026-11-09T10:00:00-05:00|Final Wholesale Inventories m/m": {
+      "releasedAt": "2026-11-09T15:00:00.000Z",
+      "pairs": {
+        "AUD/USD": {
+          "baseClose": 0.6904646754264832,
+          "lastClose": 0.690321683883667,
+          "movePct": -0.021,
+          "dir": null,
+          "minutes": 45
+        },
+        "NZD/USD": {
+          "baseClose": 0.5611042380332947,
+          "lastClose": 0.5608525276184082,
+          "movePct": -0.045,
+          "dir": "short",
+          "minutes": 45
+        }
+      }
+    },
+    "2026-11-09T10:00:00-05:00|FOMC Member Goolsbee Speaks": {
+      "releasedAt": "2026-11-09T15:00:00.000Z",
+      "pairs": {
+        "AUD/USD": {
+          "baseClose": 0.6904646754264832,
+          "lastClose": 0.690321683883667,
+          "movePct": -0.021,
+          "dir": null,
+          "minutes": 45
+        },
+        "NZD/USD": {
+          "baseClose": 0.5611042380332947,
+          "lastClose": 0.5608525276184082,
+          "movePct": -0.045,
+          "dir": "short",
+          "minutes": 45
+        }
+      }
+    },
+    "2026-11-09T12:15:00-05:00|FOMC Member Barkin Speaks": {
+      "releasedAt": "2026-11-09T17:15:00.000Z",
+      "pairs": {
+        "EUR/USD": {
+          "baseClose": 1.1204482316970825,
+          "lastClose": 1.1206992864608765,
+          "movePct": 0.022,
+          "dir": null,
+          "minutes": 45
+        },
+        "GBP/USD": {
+          "baseClose": 1.3419395685195923,
+          "lastClose": 1.342011570930481,
+          "movePct": 0.005,
+          "dir": null,
+          "minutes": 45
+        },
+        "USD/JPY": {
+          "baseClose": 158.02000427246094,
+          "lastClose": 158.05799865722656,
+          "movePct": 0.024,
+          "dir": null,
+          "minutes": 45
+        },
+        "USD/CHF": {
+          "baseClose": 0.8213599920272827,
+          "lastClose": 0.8210999965667725,
+          "movePct": -0.032,
+          "dir": "short",
+          "minutes": 45
+        },
+        "AUD/USD": {
+          "baseClose": 0.6915150880813599,
+          "lastClose": 0.691658616065979,
+          "movePct": 0.021,
+          "dir": null,
+          "minutes": 44
+        },
+        "USD/CAD": {
+          "baseClose": 1.4132399559020996,
+          "lastClose": 1.4128899574279785,
+          "movePct": -0.025,
+          "dir": null,
+          "minutes": 45
+        },
+        "NZD/USD": {
+          "baseClose": 0.5617662072181702,
+          "lastClose": 0.5622715950012207,
+          "movePct": 0.09,
+          "dir": "long",
+          "minutes": 44
+        },
+        "GBP/JPY": {
+          "baseClose": 212.0540008544922,
+          "lastClose": 212.09800720214844,
+          "movePct": 0.021,
+          "dir": null,
+          "minutes": 45
+        },
+        "EUR/JPY": {
+          "baseClose": 177.01199340820312,
+          "lastClose": 177.0659942626953,
+          "movePct": 0.031,
+          "dir": "long",
+          "minutes": 45
+        },
+        "XAU/USD": {
+          "baseClose": 4113.5,
+          "lastClose": 4111.2001953125,
+          "movePct": -0.056,
+          "dir": "short",
+          "minutes": 45
+        },
+        "BTC/USD": {
+          "baseClose": 74842.5078125,
+          "lastClose": 74667.453125,
+          "movePct": -0.234,
+          "dir": "short",
+          "minutes": 45
+        },
+        "ETH/USD": {
+          "baseClose": 2126.25,
+          "lastClose": 2122.800048828125,
+          "movePct": -0.162,
+          "dir": "short",
+          "minutes": 45
+        },
+        "NAS100": {
+          "baseClose": 27875.3515625,
+          "lastClose": 27844.15234375,
+          "movePct": -0.112,
+          "dir": "short",
+          "minutes": 45
+        },
+        "US500": {
+          "baseClose": 7546.52001953125,
+          "lastClose": 7548.919921875,
+          "movePct": 0.032,
+          "dir": "long",
+          "minutes": 45
+        }
+      }
+    }
+  }
 }
