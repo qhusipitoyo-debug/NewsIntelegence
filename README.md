@@ -80,7 +80,7 @@ A static file can only be as fresh as the 15-minute cron, so the pair board no l
 
 ### Local MT5 broker bid/ask
 
-GitHub Actions cannot reach your PC, so the exact broker quote is exported by `scripts/mt5_quotes.py` on the Windows machine where MT5 is open and logged in. It reads `symbol_info_tick()` for the nine pairs and writes `data/forex-broker.json`; it never writes login numbers, balance, equity or credentials.
+GitHub Actions cannot reach your PC, so the exact broker quote is exported by `scripts/mt5_quotes.py` on the Windows machine where MT5 is open and logged in. It reads `symbol_info_tick()` for the nine forex pairs **plus XAU/USD (gold)** and writes `data/forex-broker.json`; it never writes login numbers, balance, equity or credentials. Gold is bridged too because it is the focus asset for USD releases: without it, gold levels fall back to the spot reference from `api.gold-api.com`, which is not the price FBS actually executes.
 
     python scripts\mt5_quotes.py       :: export only
     publish-broker-quotes.bat          :: export + commit + push
@@ -88,7 +88,15 @@ GitHub Actions cannot reach your PC, so the exact broker quote is exported by `s
 
 The scheduled task is `aiterminaltrading-broker-quotes`; it runs only while the user is logged on and MT5 is open. Log: `bridge\broker-quotes.log`.
 
-`data/forex-broker.json` is intentionally minimal. It shape is `{ generatedAt, source, broker: { id, name, accountType }, quotes: { "EUR/USD": { bid, ask, mid, spread, spreadPips, digits, symbol, brokerTime } }, providers }`. The public file does **not** contain login, balance, equity, password, server name or terminal installation. `brokerTime` is the broker server clock; UI freshness uses `generatedAt`. When the file is at most 30 minutes old, the board shows the broker bid/ask and uses **ask for BUY** / **bid for SELL**. Older quotes are shown as STALE and the OANDA mid is used instead.
+`data/forex-broker.json` is intentionally minimal. It shape is `{ generatedAt, source, broker: { id, name, accountType }, quotes: { "EUR/USD": { bid, ask, mid, spread, spreadPips, digits, symbol, brokerTime } }, providers }`. The public file does **not** contain login, balance, equity, password, server name or terminal installation. `brokerTime` is the broker server clock; UI freshness uses `generatedAt`. When the file is at most 30 minutes old, the board shows the broker bid/ask and uses **ask for BUY** / **bid for SELL**. Older quotes are shown as STALE and are **never used as an entry price** — the level engine then falls back to the live mid ± half of the quoted spread (the spread stays representative even when the price level is old) via `execEntries()`/`halfSpreadEstimate()` in `index.html`.
+
+### ATR-calibrated SL/TP and spread-aware entries
+
+All entry levels are execution prices, not mid prices: BUY arms at ask, SELL at bid. With a fresh broker quote that is the exact FBS bid/ask; without one it is the live mid ± half of an estimated spread (`DEFAULT_SPREAD_PCT` in `index.html`), so what is displayed is what the broker would actually fill.
+
+Stop widths stop being purely fixed percentages: `index.html` loads `data/markets.json` (`loadMarkets()`, refreshed every 5 minutes, data older than 2 hours is ignored) and measures the real 1-minute ATR per asset (`atrInfo()`). The ATR acts as a **floor** under the existing formulas — a calm market keeps the old behaviour, while a violent post-release market widens the stop instead of letting price blow through the old fixed SL. Forex clamps stay at 25–35 pips base × 1.8 max; gold/crypto/index clamp at base × 2.0 with the ATR floor applied after the clamp. A straddle/breakout buffer is never narrower than 1.5–2× the current ATR.
+
+Note on gold bars: `MARKET_SYMBOLS` keeps `GC=F` (COMEX futures) for the 1-minute history because Yahoo publishes no 1-minute spot `XAUUSD=X`. Those bars are used **only** for percentage reactions/momentum and ATR — never for entry prices, which come from the broker bridge.
 
 ### Local scheduled market-data refresh
 

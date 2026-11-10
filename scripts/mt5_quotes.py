@@ -26,6 +26,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_OUT = BASE_DIR / "data" / "forex-broker.json"
 
 # Pair -> canonical MT5 symbol (without broker suffix).
+# XAU/USD wajib ada: gold adalah aset fokus untuk news USD, dan level entry
+# emas di terminal hanya akurat kalau memakai bid/ask broker yang sama
+# (api.gold-api.com adalah harga spot referensi, bukan harga eksekusi broker).
 PAIR_SYMBOLS = {
     "EUR/USD": "EURUSD",
     "GBP/USD": "GBPUSD",
@@ -36,6 +39,7 @@ PAIR_SYMBOLS = {
     "NZD/USD": "NZDUSD",
     "GBP/JPY": "GBPJPY",
     "EUR/JPY": "EURJPY",
+    "XAU/USD": "XAUUSD",
 }
 
 # Known broker fingerprints. The first matching token wins, so put the most
@@ -79,8 +83,9 @@ def account_type(trade_mode) -> str:
 
 
 def pip_size(pair: str, digits) -> float:
+    base = pair.split("/")[0].upper()
     quote = pair.split("/")[-1].upper()
-    if quote == "JPY":
+    if base == "XAU" or quote == "JPY":
         return 0.01
     if isinstance(digits, int) and digits >= 4:
         return 10 ** -(digits - 1)
@@ -131,7 +136,9 @@ def collect_quotes(mt5, now: datetime) -> dict:
             continue
 
         info = mt5.symbol_info(name)
-        digits = info.digits if info is not None else (3 if pair.endswith("JPY") else 5)
+        digits = info.digits if info is not None else (
+            2 if pair.startswith("XAU") else (3 if pair.endswith("JPY") else 5)
+        )
         bid = float(tick.bid)
         ask = float(tick.ask)
         if bid <= 0 or ask <= 0 or ask < bid:
