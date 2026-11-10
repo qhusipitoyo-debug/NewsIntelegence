@@ -996,8 +996,14 @@ function nextPairCatalyst(pair, now = Date.now()) {
         .filter(x => Number.isFinite(x.t))
         .sort((a, b) => a.t - b.t);
     const recent = pool.filter(x => x.t <= now && now <= x.t + POST_NEWS_HOLD_MS);
-    if (recent.length) return { ...recent[recent.length - 1], phase: 'post' };
     const upcoming = pool.find(x => x.t > now);
+    if (recent.length) {
+        const last = recent[recent.length - 1];
+        const sig = signalDirection(last.e, pair, 'forex', now);
+        const upcomingImminent = upcoming && (upcoming.t - now <= 45 * 60 * 1000 || (!sig.dir && upcoming.t - now <= 120 * 60 * 1000));
+        if (upcomingImminent) return { ...upcoming, phase: 'pre' };
+        return { ...last, phase: 'post' };
+    }
     return upcoming ? { ...upcoming, phase: 'pre' } : null;
 }
 
@@ -1148,7 +1154,15 @@ function nextUsdCatalyst(now = Date.now()) {
         .sort((a, b) => a.t - b.t);
     const upcoming = usd.find(x => x.t > now);
     const released = usd.filter(x => x.t <= now && now <= postNewsExpiry(x.e).getTime());
-    const pick = released.length ? released[released.length - 1] : upcoming;
+    let pick = null;
+    if (released.length) {
+        const last = released[released.length - 1];
+        const sig = signalDirection(last.e, 'XAU/USD', 'gold', now);
+        const upcomingImminent = upcoming && (upcoming.t - now <= 45 * 60 * 1000 || (!sig.dir && upcoming.t - now <= 120 * 60 * 1000));
+        pick = upcomingImminent ? upcoming : last;
+    } else {
+        pick = upcoming;
+    }
     const label = pick ? `${pick.e.Event} · ${fmtDate(new Date(pick.e.Date))} ${fmtTime(new Date(pick.e.Date))}` : '';
     return { pick, upcoming, label };
 }
@@ -1369,15 +1383,16 @@ async function loadCrypto() {
 }
 
 function goldBias(name, surprise, country) {
-    const laborSoft = /unemployment rate|unemployment|initial claims|continuing claims|jobless claims|jobless/.test(name);
-    const usdSoftIfHigh = /cpi|inflation|pce|pmi|ism|retail sales|consumer confidence|fed funds|interest rate|rate decision|jolts|durable goods|nonfarm payroll|non-farm payroll|nfp|payroll|gdp|adp|employment|ppi|producer price|sentiment|michigan|average hourly earnings|hourly earnings|wages|trade balance|current account|industrial production|manufacturing production|factory orders|conference board|consumer optimism|ifo index|economic optimism/.test(name);
+    const laborSoft = /unemployment rate|unemployment|initial claims|continuing claims|jobless claims|jobless|claimant count/i.test(name);
+    const usdSoftIfHigh = /inventories|wholesale inventories|business inventories|crude oil inventories|oil inventories|gas storage|natural gas/i.test(name);
+    const usdFirmIfHigh = /cpi|inflation|pce|pmi|ism|retail sales|consumer confidence|consumer sentiment|fed funds|interest rate|rate decision|jolts|durable goods|nonfarm payroll|non-farm payroll|nfp|payroll|gdp|adp|employment|ppi|producer price|sentiment|michigan|average hourly earnings|hourly earnings|wages|trade balance|current account|industrial production|manufacturing production|factory orders|conference board|consumer optimism|ifo index|economic optimism|building permits|housing starts|existing home sales|new home sales|pending home sales|house price|home price|budget balance|federal budget|zew|kof|sentix|import price|export price|capacity utilization|leading index|economic index/i.test(name);
     if (country === 'USD') {
-        if (laborSoft) return surprise > 0;
-        if (usdSoftIfHigh) return surprise < 0;
+        if (laborSoft || usdSoftIfHigh) return surprise > 0;
+        if (usdFirmIfHigh) return surprise < 0;
         return null;
     }
-    if (laborSoft) return surprise < 0;
-    if (usdSoftIfHigh) return surprise > 0;
+    if (laborSoft || usdSoftIfHigh) return surprise < 0;
+    if (usdFirmIfHigh) return surprise > 0;
     return null;
 }
 
@@ -1391,11 +1406,13 @@ function forecastBias(e) {
     if (forecast === null || previous === null) return null;
     const surprise = forecast - previous;
     const absPrev = Math.abs(previous);
-    const threshold = (/payroll|nonfarm|nfp|claims|jobless|jolts|adp/i.test(name) || absPrev >= 1000)
+    const threshold = (/payroll|nonfarm|nfp/i.test(name) || absPrev >= 50000)
         ? Math.max(absPrev * 0.02, 5000)
-        : (/pmi|ism|sentiment|confidence|michigan/i.test(name) || (absPrev >= 20 && absPrev <= 150))
-            ? 0.3
-            : Math.max(absPrev * 0.005, 0.01);
+        : (/claims|jobless|jolts|adp/i.test(name) || absPrev >= 1000)
+            ? Math.max(absPrev * 0.015, 500)
+            : (/pmi|ism|sentiment|confidence|michigan/i.test(name) || (absPrev >= 20 && absPrev <= 150))
+                ? 0.3
+                : Math.max(absPrev * 0.005, 0.01);
     // Threshold diselaraskan antara forecastBias() (pra-rilis) dan analyze() (pasca-rilis):
     // ambang flat yang sama dipakai di kedua sisi supaya tidak ada perbedaan toleransi
     // yang membuat sinyal pra-rilis dan pasca-rilis tidak konsisten.
@@ -1473,11 +1490,13 @@ function analyze(e) {
 
     const surprise = actual - reference.value;
     const absRef = Math.abs(reference.value);
-    const threshold = (/payroll|nonfarm|nfp|claims|jobless|jolts|adp/i.test(name) || absRef >= 1000)
+    const threshold = (/payroll|nonfarm|nfp/i.test(name) || absRef >= 50000)
         ? Math.max(absRef * 0.02, 5000)
-        : (/pmi|ism|sentiment|confidence|michigan/i.test(name) || (absRef >= 20 && absRef <= 150))
-            ? 0.3
-            : Math.max(absRef * 0.005, 0.01);
+        : (/claims|jobless|jolts|adp/i.test(name) || absRef >= 1000)
+            ? Math.max(absRef * 0.015, 500)
+            : (/pmi|ism|sentiment|confidence|michigan/i.test(name) || (absRef >= 20 && absRef <= 150))
+                ? 0.3
+                : Math.max(absRef * 0.005, 0.01);
     const fmtVal = v => Math.abs(v) >= 1e6 ? `${(v / 1e6).toFixed(2)}M` : Math.abs(v) >= 1e4 ? Math.round(v).toLocaleString('en-US') : v;
     const comparison = `Actual ${fmtVal(actual)} vs ${reference.label} ${fmtVal(reference.value)}`;
     if (Math.abs(surprise) < threshold) {
@@ -1603,9 +1622,9 @@ function signalDirection(e, asset, kind, now = Date.now()) {
         }
     }
 
-    // Actual hanya dipakai bila tidak ada arah harga sama sekali, dan hanya untuk
-    // event medium/high impact dalam 3 jam pertama.
-    if (actualDir && (+e.Importance || 1) >= 2 && ageMin <= 180) {
+    // Actual dipakai bila tidak ada arah harga sama sekali, dan hanya dalam 3 jam pertama
+    // (setelah 3 jam, sinyal yang sudah terkonfirmasi tetap dibawa lewat signal lock).
+    if (actualDir && (+e.Importance || 1) >= 1 && ageMin <= 180) {
         return {
             phase, dir: actualDir, basis: 'actual', movePct: null, minutes: null,
             actualDir, note: a.comparedTo || a.reason || 'Arah dari Actual vs Forecast'
@@ -2184,9 +2203,11 @@ function card(e) {
     const signalNote = signalDir === 'wait'
         ? (focusData && focusData.note ? focusData.note : (a.noData ? 'NO ACTUAL DATA — arah belum terkonfirmasi' : 'menunggu konfirmasi harga'))
         : `${phase === 'post' ? 'POST-NEWS' : 'PRE-NEWS'} • ${basisLabel(focusData.basis)}${focusData.basis === 'actual' && Number.isFinite(a.score) ? ` • ${a.score}% confidence` : ''}`;
-    const meterScore = focusData && focusData.basis === 'actual' && Number.isFinite(a.score) ? a.score : null;
+    const meterScore = (focusData && focusData.dir)
+        ? (focusData.basis === 'actual' && Number.isFinite(a.score) ? a.score : (focusData.basis === 'forecast' ? 75 : 80))
+        : (phase === 'pre' ? 50 : null);
     const reason = signalDir === 'wait'
-        ? `${a.reason}${phase === 'post' ? ' Arah pasca-rilis hanya diambil dari reaksi harga yang sudah melewati noise floor; bila belum jelas, level breakout dua arah ditampilkan.' : ''}`
+        ? `${a.reason || 'Arah belum terkonfirmasi.'}${phase === 'post' ? ' Arah pasca-rilis diambil dari Actual atau reaksi harga; bila belum jelas, level breakout OCO ditampilkan.' : ' Forecast vs Previous flat; strategi pending order Straddle (OCO) siap dipasang sebelum rilis.'}`
         : phase === 'post'
             ? `Arah ${signalLabel} untuk ${focus.pair || 'aset terkait'} diambil dari ${basisLabel(focusData.basis)}${focusData.note ? ` (${focusData.note})` : ''}. Entry/SL/TP dikunci saat sinyal pertama terkonfirmasi.`
             : `Bias pra-rilis ${signalLabel} untuk ${focus.pair || 'aset terkait'} dari ${basisLabel(focusData.basis)}${focusData.note ? ` (${focusData.note})` : ''}. Ini skenario sampai rilis tercetak, bukan kepastian.`;

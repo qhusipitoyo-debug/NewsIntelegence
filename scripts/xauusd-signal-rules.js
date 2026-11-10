@@ -11,20 +11,22 @@ export function getGoldSignal({ event = '', actual, forecast, importance = 1 }) 
   }
   const surprise = a - f;
   const absF = Math.abs(f);
-  const threshold = (/payroll|nonfarm|nfp|claims|jobless|jolts|adp/i.test(name) || absF >= 1000)
+  const threshold = (/payroll|nonfarm|nfp/i.test(name) || absF >= 50000)
     ? Math.max(absF * 0.02, 5000)
-    : (/pmi|ism|sentiment|confidence|michigan/i.test(name) || (absF >= 20 && absF <= 150))
-      ? 0.3
-      : Math.max(absF * 0.005, 0.01);
+    : (/claims|jobless|jolts|adp/i.test(name) || absF >= 1000)
+      ? Math.max(absF * 0.015, 500)
+      : (/pmi|ism|sentiment|confidence|michigan/i.test(name) || (absF >= 20 && absF <= 150))
+        ? 0.3
+        : Math.max(absF * 0.005, 0.01);
   if (Math.abs(surprise) < threshold) {
     return { dir: 'wait', score: 45, reason: `Actual ${a} vs Forecast ${f}: deviasi ekonomi terlalu kecil / dalam batas toleransi pasar (flat).` };
   }
-  const inflationHigherBearish = /cpi|inflation|pce|pmi|ism|retail sales|consumer confidence|consumer sentiment|fed funds|interest rate|rate decision|jolts|durable goods|ppi|producer price|sentiment|michigan|trade balance|current account|industrial production|factory orders|conference board|consumer optimism|ifo index|economic optimism/.test(name);
-  const nfpHigherBearish = /nonfarm payroll|non-farm payroll|nfp|payroll|average hourly earnings|hourly earnings|wages/.test(name);
-  const unemploymentHigherBullish = /unemployment rate|unemployment/.test(name);
-  const claimsHigherBullish = /initial claims|continuing claims|jobless claims/.test(name);
+  const laborSoft = /unemployment rate|unemployment|initial claims|continuing claims|jobless claims|jobless|claimant count/i.test(name);
+  const usdSoftIfHigh = /inventories|wholesale inventories|business inventories|crude oil inventories|oil inventories|gas storage|natural gas/i.test(name);
+  const inflationHigherBearish = /cpi|inflation|pce|pmi|ism|retail sales|consumer confidence|consumer sentiment|fed funds|interest rate|rate decision|jolts|durable goods|ppi|producer price|sentiment|michigan|trade balance|current account|industrial production|manufacturing production|factory orders|conference board|consumer optimism|ifo index|economic optimism|building permits|housing starts|existing home sales|new home sales|pending home sales|house price|home price|budget balance|federal budget|zew|kof|sentix|import price|export price|capacity utilization/i.test(name);
+  const nfpHigherBearish = /nonfarm payroll|non-farm payroll|nfp|payroll|average hourly earnings|hourly earnings|wages|adp|employment|gdp/i.test(name);
   let goldBullish;
-  if (unemploymentHigherBullish || claimsHigherBullish) goldBullish = surprise > 0;
+  if (laborSoft || usdSoftIfHigh) goldBullish = surprise > 0;
   else if (inflationHigherBearish || nfpHigherBearish) goldBullish = surprise < 0;
   else return { dir: 'wait', score: 40, reason: `Belum tersedia pemetaan dampak ekonomi XAUUSD untuk ${name}.` };
   const strength = Math.min(40, Math.round(Math.abs(surprise) / threshold * 10));
