@@ -734,6 +734,11 @@ async function fetchIndices() {
 }
 
 const MARKET_SYMBOLS = [
+  // Catatan kalibrasi: bar emas memakai futures GC=F karena Yahoo tidak
+  // menyediakan historis 1 menit untuk spot XAUUSD=X (404). Bar GC=F hanya
+  // dipakai untuk mengukur PERSENTASE reaksi/momentum dan ATR — bukan harga
+  // entry. Harga entry dikalibrasi ke bid/ask broker asli lewat MT5 bridge
+  // (scripts/mt5_quotes.py, termasuk XAU/USD) dan disimpan di forex-broker.json.
   { pair: 'EUR/USD', yahoo: 'EURUSD=X' },
   { pair: 'GBP/USD', yahoo: 'GBPUSD=X' },
   { pair: 'USD/JPY', yahoo: 'USDJPY=X' },

@@ -28,6 +28,7 @@ PAIRS = {
     "NZD/USD": (0.56000, 0.56011),
     "GBP/JPY": (212.700, 212.716),
     "EUR/JPY": (177.600, 177.614),
+    "XAU/USD": (4142.20, 4142.55),
 }
 
 
@@ -53,7 +54,7 @@ class FakeMT5:
         self.ticks = {}
         for pair, (bid, ask) in PAIRS.items():
             name = pair.replace("/", "") + ".r"
-            digits = 3 if pair.endswith("JPY") else 5
+            digits = 2 if pair.startswith("XAU") else (3 if pair.endswith("JPY") else 5)
             self.infos[name] = FakeInfo(name, digits)
             self.ticks[name] = FakeTick(bid, ask, 1793760430)
 
@@ -87,6 +88,8 @@ def test_pure_helpers():
     assert mt5_quotes.pip_size("EUR/USD", 5) == 0.0001
     assert mt5_quotes.pip_size("USD/JPY", 3) == 0.01
     assert mt5_quotes.pip_size("GBP/JPY", 3) == 0.01
+    assert mt5_quotes.pip_size("XAU/USD", 2) == 0.01
+    assert mt5_quotes.pip_size("XAU/USD", None) == 0.01
     assert mt5_quotes.broker_id("FBS Markets Inc.", "FBS-Demo") == "FBS"
     assert mt5_quotes.broker_id("GO Markets Pty Ltd", "GO-Markets-Live") == "GOMARKETS"
     assert mt5_quotes.broker_id("CMC Markets", "CMC-Live") == "CMCMARKETS"
@@ -108,7 +111,14 @@ def test_payload_shape_and_no_credentials():
     assert broker["accountType"] == "demo"
     assert set(broker) == {"id", "name", "accountType"}, "public broker payload must stay minimal"
     assert payload["providers"]["FBS"]["status"] == "ok"
-    assert len(payload["quotes"]) == 9
+    assert len(payload["quotes"]) == 10
+
+    gold = payload["quotes"]["XAU/USD"]
+    assert gold["symbol"] == "XAUUSD.r", "gold must be bridged from the broker"
+    assert gold["bid"] == 4142.2
+    assert gold["ask"] == 4142.55
+    assert gold["spreadPips"] == 35.0
+    assert gold["digits"] == 2
 
     eur = payload["quotes"]["EUR/USD"]
     assert eur["symbol"] == "EURUSD.r", "suffix symbols must resolve"

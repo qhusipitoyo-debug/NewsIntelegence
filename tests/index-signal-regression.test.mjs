@@ -78,6 +78,12 @@ const readSignalLockFn = extractFunction('readSignalLock');
 const writeSignalLockFn = extractFunction('writeSignalLock');
 const assetPriceFn = extractFunction('assetPrice');
 const clampNumFn = extractFunction('clampNum');
+const marketsFreshFn = extractFunction('marketsFresh');
+const assetBarsFn = extractFunction('assetBars');
+const atrInfoFn = extractFunction('atrInfo');
+const halfSpreadEstimateFn = extractFunction('halfSpreadEstimate');
+const execEntriesFn = extractFunction('execEntries');
+const spreadConst = source.match(/const DEFAULT_SPREAD_PCT = .*?;\n/)[0];
 const computeSignalLevelsFn = extractFunction('computeSignalLevels');
 const levelsFromLockFn = extractFunction('levelsFromLock');
 const missedFromLevelsFn = extractFunction('missedFromLevels');
@@ -141,6 +147,13 @@ function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, inde
     ${writeSignalLockFn}
     ${assetPriceFn}
     ${clampNumFn}
+    ${spreadConst}
+    const MARKETS = null;
+    ${marketsFreshFn}
+    ${assetBarsFn}
+    ${atrInfoFn}
+    ${halfSpreadEstimateFn}
+    ${execEntriesFn}
     function brokerQuoteFor() { return null; }
     ${computeSignalLevelsFn}
     ${levelsFromLockFn}
@@ -494,7 +507,7 @@ const cryptoPairsConst = source.slice(
   source.indexOf('];', source.indexOf('const CRYPTO_PAIRS = [')) + 2
 );
 const cryptoBoardFn = extractFunction('cryptoBoardHtml');
-const cryptoBoardHtml = new Function(`const esc = s => String(s ?? '');\nconst fmtTime = d => '13:00 WITA';\n${cryptoPairsConst}\n${cryptoBoardFn}\nreturn cryptoBoardHtml;`)();
+const cryptoBoardHtml = new Function(`const esc = s => String(s ?? '');\nconst fmtTime = d => '13:00 WITA';\n${cryptoPairsConst}\n${spreadConst}\nconst MARKETS = null;\n${marketsFreshFn}\n${assetBarsFn}\n${atrInfoFn}\n${halfSpreadEstimateFn}\n${execEntriesFn}\nfunction brokerQuoteFor() { return null; }\n${cryptoBoardFn}\nreturn cryptoBoardHtml;`)();
 
 const boardHtml = cryptoBoardHtml(
   { 'BTC/USD': 80934.65, 'ETH/USD': 3200.5 },
@@ -535,8 +548,8 @@ assert.match(cryptoBuy, /TP 79,816\.02/);
 assert.match(cryptoBuy, /Reaksi harga \+0\.27%/);
 assert.match(cryptoBuy, /valid s\/d Kam 05 Nov 18:00 WITA/);
 assert.match(cryptoBuy, /WAIT/);
-assert.match(cryptoBuy, /BUY &gt; 3,224\.50/);
-assert.match(cryptoBuy, /SELL &lt; 3,176\.50/);
+assert.match(cryptoBuy, /BUY &gt; 3,225\.39/);
+assert.match(cryptoBuy, /SELL &lt; 3,175\.62/);
 assert.doesNotMatch(cryptoBuy, /· MARKET/);
 assert.doesNotMatch(cryptoBuy, /NaN|undefined/);
 
@@ -590,6 +603,13 @@ function buildCryptoState(evts, now, rates, change, reaction = null) {
     ${writeSignalLockFn}
     ${assetPriceFn}
     ${clampNumFn}
+    ${spreadConst}
+    const MARKETS = null;
+    ${marketsFreshFn}
+    ${assetBarsFn}
+    ${atrInfoFn}
+    ${halfSpreadEstimateFn}
+    ${execEntriesFn}
     function brokerQuoteFor() { return null; }
     ${computeSignalLevelsFn}
     ${levelsFromLockFn}
@@ -836,6 +856,13 @@ function buildIndicesState(evts, idxRates, now, analyzeBody = "() => ({ dir: 'wa
     ${writeSignalLockFn}
     ${assetPriceFn}
     ${clampNumFn}
+    ${spreadConst}
+    const MARKETS = null;
+    ${marketsFreshFn}
+    ${assetBarsFn}
+    ${atrInfoFn}
+    ${halfSpreadEstimateFn}
+    ${execEntriesFn}
     function brokerQuoteFor() { return null; }
     ${computeSignalLevelsFn}
     ${levelsFromLockFn}
@@ -989,6 +1016,13 @@ function buildGoldState(evts, price, now, analyzeBody = "() => ({ dir: 'wait' })
     ${writeSignalLockFn}
     ${assetPriceFn}
     ${clampNumFn}
+    ${spreadConst}
+    const MARKETS = null;
+    ${marketsFreshFn}
+    ${assetBarsFn}
+    ${atrInfoFn}
+    ${halfSpreadEstimateFn}
+    ${execEntriesFn}
     function brokerQuoteFor() { return null; }
     ${computeSignalLevelsFn}
     ${levelsFromLockFn}
@@ -1010,18 +1044,20 @@ const audFuture = { Date: new Date(now + 60 * 60 * 1000).toISOString(), Event: '
 
 const preState = buildGoldState([usdFuture], 4000, now);
 assert.equal(preState.status, 'pre');
-assert.ok(Math.abs(preState.buy.entry - 4007.5) < 1e-9);
-assert.ok(Math.abs(preState.buy.sl - 3992.5) < 1e-9);
-assert.ok(Math.abs(preState.buy.tp - 4037.5) < 1e-9);
-assert.ok(Math.abs(preState.sell.entry - 3992.5) < 1e-9);
-assert.ok(Math.abs(preState.sell.tp - 3962.5) < 1e-9);
+// Entry sekarang spread-aware: BUY di ask (mid + setengah spread emas 0.0075% = $0.15),
+// SELL di bid. Buffer straddle tetap 0.15% x faktor impact.
+assert.ok(Math.abs(preState.buy.entry - 4007.65) < 1e-9);
+assert.ok(Math.abs(preState.buy.sl - 3992.65) < 1e-9);
+assert.ok(Math.abs(preState.buy.tp - 4037.65) < 1e-9);
+assert.ok(Math.abs(preState.sell.entry - 3992.35) < 1e-9);
+assert.ok(Math.abs(preState.sell.tp - 3962.35) < 1e-9);
 
 const postBreakout = buildGoldState([usdPast], 4000, now);
 assert.equal(postBreakout.status, 'post');
 assert.equal(postBreakout.dir, null);
-assert.ok(Math.abs(postBreakout.buy.entry - 4012.5) < 1e-9);
-assert.ok(Math.abs(postBreakout.buy.sl - 3993.75) < 1e-9);
-assert.ok(Math.abs(postBreakout.buy.tp - 4050) < 1e-9);
+assert.ok(Math.abs(postBreakout.buy.entry - 4012.65) < 1e-9);
+assert.ok(Math.abs(postBreakout.buy.sl - 3993.9) < 1e-9);
+assert.ok(Math.abs(postBreakout.buy.tp - 4050.15) < 1e-9);
 
 // Pre-news with a Forecast-vs-Previous edge now prints a real entry, and the
 // straddle stays visible so the OCO plan is not lost.
@@ -1029,14 +1065,14 @@ const preBiasState = buildGoldState([usdFuture], 4000, now, "() => ({ dir: 'wait
 assert.equal(preBiasState.status, 'pre');
 assert.equal(preBiasState.dir, 'short');
 assert.equal(preBiasState.status, 'pre');
-assert.ok(Math.abs(preBiasState.levels.entry - 4000) < 1e-9);
-assert.ok(Math.abs(preBiasState.levels.sl - 4028.6) < 1e-9);
-assert.ok(Math.abs(preBiasState.levels.tp - 3942.8) < 1e-9);
+assert.ok(Math.abs(preBiasState.levels.entry - 3999.85) < 1e-9);
+assert.ok(Math.abs(preBiasState.levels.sl - 4028.4489275) < 1e-9);
+assert.ok(Math.abs(preBiasState.levels.tp - 3942.652145) < 1e-9);
 assert.ok(preBiasState.buy && preBiasState.sell, 'straddle levels must survive the pre-news bias');
 assert.match(preBiasState.note, /Forecast 3\.2 vs Previous 3/);
 const preBiasHtml = goldBoardHtml(4000, preBiasState);
 assert.match(preBiasHtml, /SELL · MARKET/);
-assert.match(preBiasHtml, /Entry 4000\.00/);
+assert.match(preBiasHtml, /Entry 3999\.85/);
 assert.match(preBiasHtml, /Straddle OCO tetap tersedia bila arah tidak diambil\./);
 assert.match(preBiasHtml, /BUY STOP/);
 assert.doesNotMatch(preBiasHtml, /NaN|undefined/);
@@ -1055,8 +1091,8 @@ assert.match(viaReaction.note, /\(bar XAUUSD\)/);
 const postDirected = buildGoldState([usdPast], 4000, now, "() => ({ dir: 'short' })");
 assert.equal(postDirected.status, 'post');
 assert.equal(postDirected.dir, 'short');
-assert.ok(Math.abs(postDirected.levels.sl - 4028.6) < 1e-9);
-assert.ok(Math.abs(postDirected.levels.tp - 3942.8) < 1e-9);
+assert.ok(Math.abs(postDirected.levels.sl - 4028.4489275) < 1e-9);
+assert.ok(Math.abs(postDirected.levels.tp - 3942.652145) < 1e-9);
 
 const postMomentum = buildGoldState([usdPast], 4000, now, "() => ({ dir: 'wait' })", "() => ({ dir: 'long', changePct: 0.35 })");
 assert.equal(postMomentum.dir, 'long');
@@ -1267,6 +1303,13 @@ function buildEngine(price, { reaction = null, preNews = {}, indexRates = {}, st
     ${writeSignalLockFn}
     ${assetPriceFn}
     ${clampNumFn}
+    ${spreadConst}
+    const MARKETS = null;
+    ${marketsFreshFn}
+    ${assetBarsFn}
+    ${atrInfoFn}
+    ${halfSpreadEstimateFn}
+    ${execEntriesFn}
     function brokerQuoteFor() { return null; }
     ${computeSignalLevelsFn}
     ${levelsFromLockFn}
@@ -1338,7 +1381,7 @@ function memoryStore() {
   const engine = buildEngine(4000, { store });
   const first = engine.signalCardData(conflictEvent, 'XAU/USD', 'gold', now);
   assert.ok(first.locked, 'post-news levels must be locked');
-  assert.equal(first.levels.entry, 4000);
+  assert.equal(first.levels.entry, 3999.85);
   engine.setPrice(3900);
   const second = engine.signalCardData(conflictEvent, 'XAU/USD', 'gold', now);
   assert.equal(second.levels.entry, first.levels.entry, 'locked entry must not repaint');

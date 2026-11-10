@@ -245,6 +245,9 @@ let INDEX_RATES = {};
 let INDEX_CHANGE = {};
 let PRE_NEWS = {};
 let REACTION = null;
+// Histori bar 1 menit per aset dari workflow (data/markets.json) — dipakai
+// untuk mengukur ATR/volatilitas riil saat menghitung lebar SL/TP.
+let MARKETS = null;
 let TRADE_STATS = { generatedAt: null, source: '', totals: { total: 0, wins: 0, losses: 0, win_rate: 0, profit_factor: null, gross_win: 0, gross_loss: 0, net_pnl: 0, avg_win: 0, avg_loss: 0, expectancy: 0 }, byPair: [] };
 const REACTION_MAX_AGE_MS = 45 * 60 * 1000;
 // Entry/SL/TP yang sudah dikonfirmasi disimpan per event+aset supaya tidak berubah
@@ -470,6 +473,17 @@ async function loadReaction() {
         const j = await r.json();
         if (j && j.events) { REACTION = j; render(); }
     } catch (e) { console.log('Reaction data unavailable', e); }
+}
+
+// Bar 1 menit per aset untuk kalibrasi ATR. File ~700KB dan berubah tiap run
+// workflow; cukup ditarik sekali di awal lalu dipoles setiap 5 menit.
+async function loadMarkets() {
+    try {
+        const r = await fetch(`data/markets.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (!r.ok) return;
+        const j = await r.json();
+        if (j && j.pairs) { MARKETS = j; render(); }
+    } catch (e) { console.log('Markets history unavailable', e); }
 }
 
 async function loadTradeStats() {
@@ -773,9 +787,12 @@ function goldBoardState(now = Date.now()) {
     if (phase === 'pre') {
         // Straddle tetap level pending (memang harus bergerak mengikuti harga),
         // sedangkan entry market memakai engine yang sama dengan kartu event.
-        const buffer = price * (0.0015 * (1 + 0.25 * Math.max(0, impact - 2)));
-        const buy = { entry: price + buffer, sl: price + buffer - buffer * 2, tp: price + buffer + buffer * 4 };
-        const sell = { entry: price - buffer, sl: price - buffer + buffer * 2, tp: price - buffer - buffer * 4 };
+        const info = atrInfo('XAU/USD', price);
+        const buffer = Math.max(price * (0.0015 * (1 + 0.25 * Math.max(0, impact - 2))), info ? info.atr * 1.5 : 0);
+        const ex = execEntries('XAU/USD', price);
+        const midBuy = ex ? ex.buy : price, midSell = ex ? ex.sell : price;
+        const buy = { entry: midBuy + buffer, sl: midBuy + buffer - buffer * 2, tp: midBuy + buffer + buffer * 4 };
+        const sell = { entry: midSell - buffer, sl: midSell - buffer + buffer * 2, tp: midSell - buffer - buffer * 4 };
         const data = signalCardData(pick.e, 'XAU/USD', 'gold', now);
         if (!data.dir || !data.levels) return { status: 'pre', event: label, buy, sell, note: data.note };
         return {
@@ -794,12 +811,15 @@ function goldBoardState(now = Date.now()) {
         };
     }
 
-    const buffer = price * (0.0025 * (1 + 0.25 * Math.max(0, impact - 2)));
+    const info = atrInfo('XAU/USD', price);
+    const buffer = Math.max(price * (0.0025 * (1 + 0.25 * Math.max(0, impact - 2))), info ? info.atr * 2 : 0);
+    const ex = execEntries('XAU/USD', price);
+    const midBuy = ex ? ex.buy : price, midSell = ex ? ex.sell : price;
     return {
         status: 'post', event: label, dir: null, changePct: data.movePct, validUntil,
         note: data.note || 'Arah belum terkonfirmasi — tunggu reaksi harga.',
-        buy: { entry: price + buffer, sl: price + buffer - buffer * 1.5, tp: price + buffer + buffer * 3 },
-        sell: { entry: price - buffer, sl: price - buffer + buffer * 1.5, tp: price - buffer - buffer * 3 }
+        buy: { entry: midBuy + buffer, sl: midBuy + buffer - buffer * 1.5, tp: midBuy + buffer + buffer * 3 },
+        sell: { entry: midSell - buffer, sl: midSell - buffer + buffer * 1.5, tp: midSell - buffer - buffer * 3 }
     };
 }
 
@@ -935,8 +955,10 @@ function cryptoBoardHtml(rates, change, state) {
             const tp1Span = it.levels.tp1 ? `<span>TP1 $${fmt(it.levels.tp1)}</span>` : '';
             levels = `<div class="levels idx-levels"><span>Entry ${fmt(it.levels.entry)}</span><span>SL ${fmt(it.levels.sl)}</span>${tp1Span}<span>TP ${fmt(it.levels.tp)}</span><span>R:R 1:${it.levels.rr || 2}</span></div>`;
         } else {
-            const buffer = slPct / 2;
-            levels = `<div class="levels idx-levels"><span>BUY &gt; ${fmt(rate * (1 + buffer / 100))}</span><span>SELL &lt; ${fmt(rate * (1 - buffer / 100))}</span></div>`;
+            const info = atrInfo(pair, rate);
+            const buffer = Math.max(slPct / 2, info ? info.atrPct * 1.5 : 0);
+            const ex = execEntries(pair, rate);
+            levels = `<div class="levels idx-levels"><span>BUY &gt; ${fmt((ex ? ex.buy : rate) * (1 + buffer / 100))}</span><span>SELL &lt; ${fmt((ex ? ex.sell : rate) * (1 - buffer / 100))}</span></div>`;
         }
         const itemNote = it.note || st.note;
         return `<div class="crypto-card ${dir}">
@@ -1636,6 +1658,71 @@ function clampNum(v, lo, hi) {
     return Math.min(hi, Math.max(lo, Number(v)));
 }
 
+// data/markets.json menyimpan 270 bar 1 menit per aset. Dipakai untuk mengukur
+// volatilitas SEBENARNYA (ATR 1 menit) supaya lebar SL/TP mengikuti regime
+// pasar, bukan persentase tetap yang melar saat rilis besar dan mengunci saat
+// pasar tenang.
+function marketsFresh(now = Date.now()) {
+    const at = Date.parse((MARKETS && MARKETS.generatedAt) || '');
+    return Number.isFinite(at) && now - at < 2 * 60 * 60 * 1000;
+}
+
+function assetBars(asset) {
+    const pairs = MARKETS && MARKETS.pairs;
+    const cfg = pairs && pairs[String(asset).toUpperCase()];
+    return cfg && Array.isArray(cfg.bars) ? cfg.bars : [];
+}
+
+// ATR rata-rata dari maksimal 60 bar 1 menit terakhir. Bar terbaru sudah
+// mencakup spike pasca-rilis bila rilis baru lewat, jadi SL otomatis melebar
+// saat pasar sedang liar dan menyempit saat tenang.
+function atrInfo(asset, price) {
+    if (!marketsFresh()) return null;
+    const rows = assetBars(asset).slice(-60)
+        .map(b => ({ h: Number(b && b.h), l: Number(b && b.l), c: Number(b && b.c) }))
+        .filter(r => r.h > 0 && r.l > 0 && r.c > 0 && Number.isFinite(r.h) && Number.isFinite(r.l) && Number.isFinite(r.c));
+    if (rows.length < 20) return null;
+    let sum = 0;
+    for (let i = 1; i < rows.length; i++) {
+        sum += Math.max(rows[i].h - rows[i].l, Math.abs(rows[i].h - rows[i - 1].c), Math.abs(rows[i].l - rows[i - 1].c));
+    }
+    const atr = sum / (rows.length - 1);
+    const p = Number(price);
+    if (!(atr > 0) || !(p > 0)) return null;
+    return { atr, atrPct: atr / p * 100 };
+}
+
+// Setengah-spread yang wajar saat bid/ask broker tidak tersedia. Spread dari
+// quote broker tetap dipakai walau sudah basi — spread jauh lebih stabil
+// daripada level harganya. Ini HANYA estimasi; sumber utama tetap MT5 bridge.
+const DEFAULT_SPREAD_PCT = { 'XAU/USD': 0.0075, 'BTC/USD': 0.045, 'ETH/USD': 0.055, 'NAS100': 0.004, 'US500': 0.004 };
+function halfSpreadEstimate(asset, price) {
+    const p = Number(price);
+    if (!Number.isFinite(p) || p <= 0) return null;
+    const b = brokerQuoteFor(asset);
+    if (b && Number.isFinite(b.ask) && Number.isFinite(b.bid) && b.bid > 0 && b.ask >= b.bid) {
+        return (b.ask - b.bid) / 2;
+    }
+    const pct = DEFAULT_SPREAD_PCT[String(asset).toUpperCase()];
+    if (Number.isFinite(pct)) return p * pct / 100 / 2;
+    // Forex tanpa data broker: ~1 pip spread penuh (setengahnya dikembalikan).
+    return p > 10 ? 0.005 : 0.00005;
+}
+
+// Harga eksekusi realistis: BUY dieksekusi di ask, SELL di bid. Bid/ask broker
+// (MT5 bridge) hanya dipakai bila segar; quote basi TIDAK boleh jadi harga
+// entry karena levelnya sudah jauh dari pasar — jatuh ke harga live ± estimasi
+// spread supaya entry tetap berkalibrasi dengan harga eksekusi yang sesungguhnya.
+function execEntries(asset, price) {
+    const p = Number(price);
+    if (!Number.isFinite(p) || p <= 0) return null;
+    const b = brokerQuoteFor(asset);
+    if (b && !b.stale) return { buy: b.ask, sell: b.bid, spread: b.ask - b.bid, source: 'broker' };
+    const half = halfSpreadEstimate(asset, p);
+    if (!Number.isFinite(half) || !(half > 0)) return { buy: p, sell: p, spread: 0, source: 'estimated' };
+    return { buy: p + half, sell: p - half, spread: half * 2, source: 'estimated' };
+}
+
 // SL/TP adaptif & terkalibrasi: batas risiko dinamis berdasarkan volatilitas aktual,
 // dengan TP bertingkat (TP1 1:1 untuk amankan profit / BE, TP2 1:2 untuk target penuh)
 // serta zona Pullback/Retest (OTE) agar tidak terjebak membeli di pucuk candle rilis.
@@ -1643,32 +1730,46 @@ function computeSignalLevels(kind, asset, dir, price, e, signal) {
     const impact = +e.Importance || 1;
     const vol = Math.abs(Number(signal && signal.movePct) || 0);
     const isBuy = dir === 'long';
+    const ex = execEntries(asset, price);
+    const entry = ex ? (isBuy ? ex.buy : ex.sell) : price;
 
     if (kind === 'forex') {
-        const b = brokerQuoteFor(asset);
-        const entry = b ? (isBuy ? b.ask : b.bid) : price;
         const pip = entry > 10 ? 0.01 : 0.0001;
         const basePips = /JPY$/i.test(asset) ? (/\/JPY$/.test(asset) && !/^USD/.test(asset) ? 35 : 30) : 25;
         const volPips = vol / 100 * entry / pip;
-        const stopPips = clampNum(basePips * (1 + 0.35 * Math.max(0, impact - 2)) + 0.25 * volPips, basePips, basePips * 1.8);
+        const info = atrInfo(asset, entry);
+        const atrPips = info ? info.atr / pip : 0;
+        const spreadPips = ex && ex.spread > 0 ? ex.spread / pip : 0;
+        // Lantai volatilitas: SL minimal harus menampung ATR 1 menit + spread.
+        // Saat pasar tenang formula tetap yang menang; saat rilis high-impact
+        // SL melebar mengikuti pasar, dan tetap di-clamp agar tidak melar.
+        const stopPips = clampNum(
+            Math.max(basePips * (1 + 0.35 * Math.max(0, impact - 2)) + 0.25 * volPips, atrPips * 1.2 + spreadPips * 1.5),
+            basePips, basePips * 1.8
+        );
         const stop = stopPips * pip;
         const sl = isBuy ? entry - stop : entry + stop;
         const tp = isBuy ? entry + stop * 2 : entry - stop * 2;
         const tp1 = isBuy ? entry + stop : entry - stop;
         const pullback = isBuy ? entry - stop * 0.4 : entry + stop * 0.4;
         const dec = entry > 10 ? 3 : 5;
-        return { entry, sl, tp, tp1, pullback, stopPips: Number(stopPips.toFixed(1)), riskPct: null, rr: 2, dec, broker: b ? b.brokerName : null };
+        const bq = ex && ex.source === 'broker' ? brokerQuoteFor(asset) : null;
+        return { entry, sl, tp, tp1, pullback, stopPips: Number(stopPips.toFixed(1)), riskPct: null, rr: 2, dec, broker: bq ? bq.brokerName : null, entrySource: ex ? ex.source : null };
     }
 
     const base = kind === 'gold' ? 0.55
         : kind === 'crypto' ? (asset === 'BTC/USD' ? 1.2 : 1.5)
         : (asset === 'NAS100' ? 0.8 : 0.6);
-    const riskPct = clampNum(base * (1 + 0.30 * Math.max(0, impact - 2)) + 0.20 * vol, base, base * 2.0);
-    const sl = isBuy ? price * (1 - riskPct / 100) : price * (1 + riskPct / 100);
-    const tp = isBuy ? price * (1 + riskPct * 2 / 100) : price * (1 - riskPct * 2 / 100);
-    const tp1 = isBuy ? price * (1 + riskPct / 100) : price * (1 - riskPct / 100);
-    const pullback = isBuy ? price * (1 - (riskPct * 0.4) / 100) : price * (1 + (riskPct * 0.4) / 100);
-    return { entry: price, sl, tp, tp1, pullback, stopPips: null, riskPct: Number(riskPct.toFixed(2)), rr: 2, dec: null, broker: null };
+    const riskPctFixed = clampNum(base * (1 + 0.30 * Math.max(0, impact - 2)) + 0.20 * vol, base, base * 2.0);
+    const info = atrInfo(asset, price);
+    // Lantai ATR diterapkan SETELAH clamp pola tetap: kalau volatilitas riil
+    // 1 menit melebihi pola (rilis besar), SL mengikuti pasar — bukan sebaliknya.
+    const riskPct = info ? Math.max(riskPctFixed, info.atrPct * 1.6) : riskPctFixed;
+    const sl = isBuy ? entry * (1 - riskPct / 100) : entry * (1 + riskPct / 100);
+    const tp = isBuy ? entry * (1 + riskPct * 2 / 100) : entry * (1 - riskPct * 2 / 100);
+    const tp1 = isBuy ? entry * (1 + riskPct / 100) : entry * (1 - riskPct / 100);
+    const pullback = isBuy ? entry * (1 - (riskPct * 0.4) / 100) : entry * (1 + (riskPct * 0.4) / 100);
+    return { entry, sl, tp, tp1, pullback, stopPips: null, riskPct: Number(riskPct.toFixed(2)), rr: 2, dec: null, broker: null, entrySource: ex ? ex.source : null };
 }
 
 function levelsFromLock(lock, kind) {
@@ -1824,6 +1925,7 @@ function tpSl(a, e) {
     }[basis] || 'konfirmasi harga');
     const noteOf = (d, extra = '') => {
         const bits = [d && d.note ? d.note : '', extra];
+        if (d && d.levels && d.levels.entrySource === 'estimated') bits.push('entry = harga live ± estimasi spread (jalankan MT5 bridge untuk bid/ask persis)');
         if (d && d.locked && d.lockedAt) bits.push(`entry terkunci ${fmtTime(new Date(d.lockedAt))}`);
         if (d && d.stopped) bits.push('🛑 SL tersentuh');
         if (d && d.tpReached) bits.push('🎯 TP tercapai');
@@ -1869,11 +1971,14 @@ function tpSl(a, e) {
             html += `<span style="width:100%;color:var(--muted);font-size:11px;">${esc(noteOf(d, phase === 'post' ? `valid s/d ${postValidUntil}` : ''))}</span>`;
             html += `</div>`;
         } else if (phase === 'pre') {
-            const buffer = LIVE_PRICE * (0.0015 * (1 + 0.25 * Math.max(0, impact - 2)));
-            const buyStop = LIVE_PRICE + buffer;
-            const sellStop = LIVE_PRICE - buffer;
+            const info = atrInfo('XAU/USD', LIVE_PRICE);
+            // Jarak straddle minimal menampung ATR 1 menit terbaru (1.5x), sisanya pola tetap.
+            const buffer = Math.max(LIVE_PRICE * (0.0015 * (1 + 0.25 * Math.max(0, impact - 2))), info ? info.atr * 1.5 : 0);
+            const ex = execEntries('XAU/USD', LIVE_PRICE);
+            const midBuy = ex ? ex.buy : LIVE_PRICE, midSell = ex ? ex.sell : LIVE_PRICE;
             const slDist = buffer * 2.0;
             const tpDist = buffer * 4.0;
+            const buyStop = midBuy + buffer, sellStop = midSell - buffer;
             const buySL = buyStop - slDist, buyTP = buyStop + tpDist;
             const sellSL = sellStop + slDist, sellTP = sellStop - tpDist;
 
@@ -1898,9 +2003,11 @@ function tpSl(a, e) {
                 <div class="oco-note">*OCO: Jika salah satu order tersentuh, batalkan order lainnya.</div>
             </div>`;
         } else {
-            const buffer = LIVE_PRICE * (0.0025 * (1 + 0.25 * Math.max(0, impact - 2)));
+            const info = atrInfo('XAU/USD', LIVE_PRICE);
+            const buffer = Math.max(LIVE_PRICE * (0.0025 * (1 + 0.25 * Math.max(0, impact - 2))), info ? info.atr * 2 : 0);
             const slDist = buffer * 1.5, tpDist = buffer * 3.0;
-            const buyEntry = LIVE_PRICE + buffer, sellEntry = LIVE_PRICE - buffer;
+            const ex = execEntries('XAU/USD', LIVE_PRICE);
+            const buyEntry = (ex ? ex.buy : LIVE_PRICE) + buffer, sellEntry = (ex ? ex.sell : LIVE_PRICE) - buffer;
             if (impact >= 3) html += `<div class="warning-badge">⚠️ HIGH IMPACT NEWS: Spread melebar — tunggu candle konfirmasi.</div>`;
             html += `<div class="exec-box">
                 <h5>POST-NEWS BREAKOUT (OCO)</h5>
@@ -1948,14 +2055,17 @@ function tpSl(a, e) {
                 return;
             }
 
-            const slPips = (isJpy ? 30 : 25) * (1 + 0.35 * Math.max(0, impact - 2));
-            const tpPips = slPips * 2;
+            const slPipsBase = (isJpy ? 30 : 25) * (1 + 0.35 * Math.max(0, impact - 2));
             const pip = isJpy ? 0.01 : 0.0001;
+            const ex = execEntries(pair, rate);
+            const info = atrInfo(pair, rate);
+            const atrPips = info ? info.atr / pip : 0;
+            const spreadPips = ex && ex.spread > 0 ? ex.spread / pip : 0;
+            const slPips = Math.max(slPipsBase, atrPips * 1.2 + spreadPips * 1.5);
+            const tpPips = slPips * 2;
             const slDist = slPips * pip, tpDist = tpPips * pip;
-            const broker = brokerQuoteFor(pair);
-            const fresh = broker && !broker.stale ? broker : null;
-            const buyEntry = fresh ? Number(fresh.ask) : rate + (isJpy ? 0.15 : 0.0015);
-            const sellEntry = fresh ? Number(fresh.bid) : rate - (isJpy ? 0.15 : 0.0015);
+            const buyEntry = ex ? ex.buy : rate;
+            const sellEntry = ex ? ex.sell : rate;
             const buySl = buyEntry - slDist, buyTp = buyEntry + tpDist;
             const sellSl = sellEntry + slDist, sellTp = sellEntry - tpDist;
             const label = phase === 'pre' ? 'STRADDLE' : 'BREAKOUT';
@@ -1992,10 +2102,12 @@ function tpSl(a, e) {
                 return;
             }
 
-            const bufferPct = (isBTC ? 0.3 : 0.5) * (1 + 0.25 * Math.max(0, impact - 2));
+            const info = atrInfo(pair, rate);
+            const bufferPct = Math.max((isBTC ? 0.3 : 0.5) * (1 + 0.25 * Math.max(0, impact - 2)), info ? info.atrPct * 1.5 : 0);
             const slPct = bufferPct * 2, tpPct = bufferPct * 4;
-            const buyEntry = rate * (1 + bufferPct / 100);
-            const sellEntry = rate * (1 - bufferPct / 100);
+            const ex = execEntries(pair, rate);
+            const buyEntry = (ex ? ex.buy : rate) * (1 + bufferPct / 100);
+            const sellEntry = (ex ? ex.sell : rate) * (1 - bufferPct / 100);
             const label = phase === 'pre' ? 'STRADDLE' : 'BREAKOUT';
             html += `<div class="forex-card" style="border-left-color: var(--amber);">
                 <div>${pair} <b style="color:var(--amber)">${label}</b></div>
@@ -2028,9 +2140,11 @@ function tpSl(a, e) {
                 return;
             }
 
-            const buffer = cfg.slPct / 2;
-            const buyEntry = rate * (1 + buffer / 100);
-            const sellEntry = rate * (1 - buffer / 100);
+            const info = atrInfo(cfg.symbol, rate);
+            const buffer = Math.max(cfg.slPct / 2, info ? info.atrPct * 1.5 : 0);
+            const ex = execEntries(cfg.symbol, rate);
+            const buyEntry = (ex ? ex.buy : rate) * (1 + buffer / 100);
+            const sellEntry = (ex ? ex.sell : rate) * (1 - buffer / 100);
             const label = phase === 'pre' ? 'STRADDLE' : 'BREAKOUT';
             html += `<div class="forex-card" style="border-left-color: var(--amber);">
                 <div>${esc(cfg.symbol)} <b style="color:var(--amber)">${label}</b></div>
@@ -2202,12 +2316,12 @@ document.querySelector('.filters').addEventListener('click', ev => {
     render();
 });
 
-$('#refresh').onclick = () => { load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadTradeStats(); renderTradeStats(); };
+$('#refresh').onclick = () => { load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadTradeStats(); renderTradeStats(); };
 renderGoldBoard();
 renderCryptoBoard();
 renderForexBoard();
 renderIndicesBoard();
-load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadTradeStats(); renderTradeStats();
+load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadTradeStats(); renderTradeStats();
 setInterval(() => { loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); }, 60000);
 // Harga pair: tarik scanner langsung tiap 20 detik supaya board benar-benar bergerak.
 setInterval(loadForexLive, 20000);
@@ -2215,6 +2329,8 @@ setInterval(loadForexLive, 20000);
 setInterval(load, 60000);
 // reaction.json dibangun workflow dari bar 1 menit; cukup dipoles tiap 5 menit.
 setInterval(loadReaction, 300000);
+// Bar 1 menit (ATR) juga produk workflow; refresh bersamaan dengan reaction.
+setInterval(loadMarkets, 300000);
 </script>
   <script src="scripts/xauusd-price-widget.js?v=202610192017"></script>
 </body>
