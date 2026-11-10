@@ -84,7 +84,7 @@ GitHub Actions cannot reach your PC, so the exact broker quote is exported by `s
 
     python scripts\mt5_quotes.py       :: export only
     publish-broker-quotes.bat          :: export + commit + push
-    install-broker-quotes-task.bat     :: schedule the publisher every 15 minutes
+    install-broker-quotes-task.bat     :: schedule the publisher every 5 minutes
 
 The scheduled task is `aiterminaltrading-broker-quotes`; it runs only while the user is logged on and MT5 is open. Log: `bridge\broker-quotes.log`.
 

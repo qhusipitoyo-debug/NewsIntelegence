@@ -1756,7 +1756,7 @@ function computeSignalLevels(kind, asset, dir, price, e, signal) {
         const pullback = isBuy ? entry - stop * 0.4 : entry + stop * 0.4;
         const dec = entry > 10 ? 3 : 5;
         const bq = ex && ex.source === 'broker' ? brokerQuoteFor(asset) : null;
-        return { entry, sl, tp, tp1, pullback, stopPips: Number(stopPips.toFixed(1)), riskPct: null, rr: 2, dec, broker: bq ? bq.brokerName : null, entrySource: ex ? ex.source : null };
+        return { entry, sl, tp, tp1, pullback, stopPips: Number(stopPips.toFixed(1)), riskPct: null, rr: 2, dec, broker: bq ? bq.brokerName : null, brokerAgeMin: bq && Number.isFinite(bq.ageMin) ? Math.round(bq.ageMin) : null, entrySource: ex ? ex.source : null };
     }
 
     const base = kind === 'gold' ? 0.55
@@ -1927,6 +1927,7 @@ function tpSl(a, e) {
     }[basis] || 'konfirmasi harga');
     const noteOf = (d, extra = '') => {
         const bits = [d && d.note ? d.note : '', extra];
+        if (d && d.levels && d.levels.entrySource === 'broker' && d.levels.brokerAgeMin != null) bits.push(`quote broker ${d.levels.brokerAgeMin} mnt lalu`);
         if (d && d.levels && d.levels.entrySource === 'estimated') bits.push('entry = harga live ± estimasi spread (jalankan MT5 bridge untuk bid/ask persis)');
         if (d && d.locked && d.lockedAt) bits.push(`entry terkunci ${fmtTime(new Date(d.lockedAt))}`);
         if (d && d.stopped) bits.push('🛑 SL tersentuh');
