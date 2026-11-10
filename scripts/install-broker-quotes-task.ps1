@@ -10,7 +10,7 @@ if (-not (Test-Path $bat)) {
 
 $action = New-ScheduledTaskAction -Execute 'cmd.exe' -Argument ('/c ""{0}""' -f $bat)
 $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) `
-    -RepetitionInterval (New-TimeSpan -Minutes 15) `
+    -RepetitionInterval (New-TimeSpan -Minutes 5) `
     -RepetitionDuration (New-TimeSpan -Days 3650)
 $settings = New-ScheduledTaskSettingsSet `
     -StartWhenAvailable `
@@ -29,9 +29,9 @@ Register-ScheduledTask `
     -Trigger $trigger `
     -Settings $settings `
     -Principal $principal `
-    -Description 'Push MT5 broker bid/ask to the public forex board every 15 minutes while MT5 is running.' `
+    -Description 'Push MT5 broker bid/ask to the public forex board every 5 minutes while MT5 is running.' `
     -Force | Out-Null
 
-Write-Host "Scheduled task '$taskName' created: publish-broker-quotes.bat every 15 minutes."
+Write-Host "Scheduled task '$taskName' created: publish-broker-quotes.bat every 5 minutes."
 Write-Host "Log: $root\bridge\broker-quotes.log"
 Write-Host "MT5 must be open and logged in for a quote to be published."
