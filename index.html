@@ -1220,8 +1220,10 @@ function indicesBoardHtml(state) {
             const tp1Span = it.levels.tp1 ? `<span>TP1 ${fmt(it.levels.tp1)}</span>` : '';
             levels = `<div class="idx-levels"><span>Entry ${fmt(it.levels.entry)}</span><span>SL ${fmt(it.levels.sl)}</span>${tp1Span}<span>TP ${fmt(it.levels.tp)}</span><span>R:R 1:2</span></div>`;
         } else {
-            const buffer = it.slPct / 2;
-            levels = `<div class="idx-levels"><span>BUY &gt; ${fmt(price * (1 + buffer / 100))}</span><span>SELL &lt; ${fmt(price * (1 - buffer / 100))}</span></div>`;
+            const info = atrInfo(it.symbol, price);
+            const buffer = Math.max(it.slPct / 2, info ? info.atrPct * 1.5 : 0);
+            const ex = execEntries(it.symbol, price);
+            levels = `<div class="idx-levels"><span>BUY &gt; ${fmt((ex ? ex.buy : price) * (1 + buffer / 100))}</span><span>SELL &lt; ${fmt((ex ? ex.sell : price) * (1 - buffer / 100))}</span></div>`;
         }
         const chg = Number(it.changePct);
         const mom = it.momPct === null || it.momPct === undefined ? null : Number(it.momPct);
