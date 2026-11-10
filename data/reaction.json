@@ -1,4 +1,110 @@
 {
-  "generatedAt": "2026-11-10T07:37:53.861Z",
-  "events": {}
+  "generatedAt": "2026-11-10T11:03:56.625Z",
+  "events": {
+    "2026-11-10T04:00:00-05:00|FOMC Member Waller Speaks": {
+      "releasedAt": "2026-11-10T09:00:00.000Z",
+      "pairs": {
+        "EUR/USD": {
+          "baseClose": 1.1241008043289185,
+          "lastClose": 1.1228384971618652,
+          "movePct": -0.112,
+          "dir": "short",
+          "minutes": 45
+        },
+        "GBP/USD": {
+          "baseClose": 1.3440680503845215,
+          "lastClose": 1.3427865505218506,
+          "movePct": -0.095,
+          "dir": "short",
+          "minutes": 45
+        },
+        "USD/JPY": {
+          "baseClose": 158.031005859375,
+          "lastClose": 158.10800170898438,
+          "movePct": 0.049,
+          "dir": "long",
+          "minutes": 45
+        },
+        "USD/CHF": {
+          "baseClose": 0.8191499710083008,
+          "lastClose": 0.8208400011062622,
+          "movePct": 0.206,
+          "dir": "long",
+          "minutes": 45
+        },
+        "AUD/USD": {
+          "baseClose": 0.6930967569351196,
+          "lastClose": 0.691658616065979,
+          "movePct": -0.207,
+          "dir": "short",
+          "minutes": 45
+        },
+        "USD/CAD": {
+          "baseClose": 1.411620020866394,
+          "lastClose": 1.4134600162506104,
+          "movePct": 0.13,
+          "dir": "long",
+          "minutes": 45
+        },
+        "NZD/USD": {
+          "baseClose": 0.5648122429847717,
+          "lastClose": 0.5634120106697083,
+          "movePct": -0.248,
+          "dir": "short",
+          "minutes": 45
+        },
+        "GBP/JPY": {
+          "baseClose": 212.45599365234375,
+          "lastClose": 212.30499267578125,
+          "movePct": -0.071,
+          "dir": "short",
+          "minutes": 45
+        },
+        "EUR/JPY": {
+          "baseClose": 177.63800048828125,
+          "lastClose": 177.5,
+          "movePct": -0.078,
+          "dir": "short",
+          "minutes": 45
+        },
+        "XAU/USD": {
+          "baseClose": 4110.7998046875,
+          "lastClose": 4091.39990234375,
+          "movePct": -0.472,
+          "dir": "short",
+          "minutes": 45
+        },
+        "BTC/USD": {
+          "baseClose": 74318.0390625,
+          "lastClose": 74399.9921875,
+          "movePct": 0.11,
+          "dir": "long",
+          "minutes": 45
+        },
+        "ETH/USD": {
+          "baseClose": 2103.72998046875,
+          "lastClose": 2102.18994140625,
+          "movePct": -0.073,
+          "dir": "short",
+          "minutes": 45
+        },
+        "NAS100": {
+          "baseClose": 27920.25,
+          "lastClose": 28015.75,
+          "movePct": 0.342,
+          "dir": "long",
+          "minutes": 45,
+          "via": "NQ=F"
+        },
+        "US500": {
+          "baseClose": 7574.75,
+          "lastClose": 7586.25,
+          "movePct": 0.152,
+          "dir": "long",
+          "minutes": 45,
+          "via": "ES=F"
+        }
+      }
+    }
+  }
 }
