@@ -1,50 +1,15 @@
 {
-  "generatedAt": "2026-11-10T04:22:53.717Z",
+  "generatedAt": "2026-11-10T04:37:54.973Z",
   "events": {
     "2026-11-09T19:01:00-05:00|BRC Retail Sales Monitor y/y": {
       "releasedAt": "2026-11-10T00:01:00.000Z",
       "pairs": {
-        "EUR/USD": {
-          "baseClose": 1.1225864887237549,
-          "lastClose": 1.121956706047058,
-          "movePct": -0.056,
-          "dir": "short",
-          "minutes": 45
-        },
-        "GBP/USD": {
-          "baseClose": 1.3441221714019775,
-          "lastClose": 1.3433096408843994,
-          "movePct": -0.06,
-          "dir": "short",
-          "minutes": 45
-        },
-        "USD/JPY": {
-          "baseClose": 157.99000549316406,
-          "lastClose": 158.08799743652344,
-          "movePct": 0.062,
-          "dir": "long",
-          "minutes": 45
-        },
-        "USD/CHF": {
-          "baseClose": 0.8196399807929993,
-          "lastClose": 0.8199800252914429,
-          "movePct": 0.041,
-          "dir": "long",
-          "minutes": 45
-        },
         "AUD/USD": {
           "baseClose": 0.6923289895057678,
           "lastClose": 0.6919457912445068,
           "movePct": -0.055,
           "dir": "short",
           "minutes": 44
-        },
-        "USD/CAD": {
-          "baseClose": 1.4118000268936157,
-          "lastClose": 1.4124000072479248,
-          "movePct": 0.042,
-          "dir": "long",
-          "minutes": 45
         },
         "NZD/USD": {
           "baseClose": 0.5636661052703857,
@@ -53,38 +18,10 @@
           "dir": "short",
           "minutes": 44
         },
-        "GBP/JPY": {
-          "baseClose": 212.36099243164062,
-          "lastClose": 212.36300659179688,
-          "movePct": 0.001,
-          "dir": null,
-          "minutes": 45
-        },
-        "EUR/JPY": {
-          "baseClose": 177.29100036621094,
-          "lastClose": 177.33200073242188,
-          "movePct": 0.023,
-          "dir": null,
-          "minutes": 45
-        },
         "XAU/USD": {
           "baseClose": 4145.2001953125,
           "lastClose": 4136.60009765625,
           "movePct": -0.207,
-          "dir": "short",
-          "minutes": 45
-        },
-        "BTC/USD": {
-          "baseClose": 75208.859375,
-          "lastClose": 74947.4765625,
-          "movePct": -0.348,
-          "dir": "short",
-          "minutes": 45
-        },
-        "ETH/USD": {
-          "baseClose": 2131.820068359375,
-          "lastClose": 2124.389892578125,
-          "movePct": -0.349,
           "dir": "short",
           "minutes": 45
         },
