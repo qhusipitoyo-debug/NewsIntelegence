@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-10T03:03:54.627Z",
+  "generatedAt": "2026-11-10T03:20:52.705Z",
   "events": {
     "2026-11-09T19:01:00-05:00|BRC Retail Sales Monitor y/y": {
       "releasedAt": "2026-11-10T00:01:00.000Z",
@@ -55,8 +55,8 @@
         },
         "GBP/JPY": {
           "baseClose": 212.36099243164062,
-          "lastClose": 212.35899353027344,
-          "movePct": -0.001,
+          "lastClose": 212.36300659179688,
+          "movePct": 0.001,
           "dir": null,
           "minutes": 45
         },
@@ -75,9 +75,9 @@
           "minutes": 45
         },
         "BTC/USD": {
-          "baseClose": 75208.859375,
-          "lastClose": 74947.4765625,
-          "movePct": -0.348,
+          "baseClose": 75218.390625,
+          "lastClose": 74939.140625,
+          "movePct": -0.371,
           "dir": "short",
           "minutes": 45
         },
