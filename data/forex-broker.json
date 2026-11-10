@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T07:52:35Z",
+  "generatedAt": "2026-11-10T03:12:14Z",
   "source": "MT5 local bridge",
   "broker": {
     "id": "FBS",
@@ -8,101 +8,111 @@
   },
   "quotes": {
     "EUR/USD": {
-      "bid": 1.12395,
-      "ask": 1.12405,
-      "mid": 1.124,
-      "spread": 0.0001,
-      "spreadPips": 1.0,
+      "bid": 1.12186,
+      "ask": 1.12195,
+      "mid": 1.1219,
+      "spread": 9e-05,
+      "spreadPips": 0.9,
       "digits": 5,
       "symbol": "EURUSD",
-      "brokerTime": "2026-11-04T09:52:35Z"
+      "brokerTime": "2026-11-10T05:12:14Z"
     },
     "GBP/USD": {
-      "bid": 1.34799,
-      "ask": 1.34811,
-      "mid": 1.34805,
-      "spread": 0.00012,
-      "spreadPips": 1.2,
+      "bid": 1.34424,
+      "ask": 1.34435,
+      "mid": 1.3443,
+      "spread": 0.00011,
+      "spreadPips": 1.1,
       "digits": 5,
       "symbol": "GBPUSD",
-      "brokerTime": "2026-11-04T09:52:35Z"
+      "brokerTime": "2026-11-10T05:12:14Z"
     },
     "USD/JPY": {
-      "bid": 158.05,
-      "ask": 158.059,
-      "mid": 158.055,
-      "spread": 0.009,
-      "spreadPips": 0.9,
+      "bid": 158.068,
+      "ask": 158.078,
+      "mid": 158.073,
+      "spread": 0.01,
+      "spreadPips": 1.0,
       "digits": 3,
       "symbol": "USDJPY",
-      "brokerTime": "2026-11-04T09:52:35Z"
+      "brokerTime": "2026-11-10T05:12:14Z"
     },
     "USD/CHF": {
-      "bid": 0.81598,
-      "ask": 0.81607,
-      "mid": 0.81603,
+      "bid": 0.81979,
+      "ask": 0.81988,
+      "mid": 0.81984,
       "spread": 9e-05,
       "spreadPips": 0.9,
       "digits": 5,
       "symbol": "USDCHF",
-      "brokerTime": "2026-11-04T09:52:35Z"
+      "brokerTime": "2026-11-10T05:12:13Z"
     },
     "AUD/USD": {
-      "bid": 0.69932,
-      "ask": 0.69943,
-      "mid": 0.69938,
+      "bid": 0.69203,
+      "ask": 0.69213,
+      "mid": 0.69208,
+      "spread": 0.0001,
+      "spreadPips": 1.0,
+      "digits": 5,
+      "symbol": "AUDUSD",
+      "brokerTime": "2026-11-10T05:12:13Z"
+    },
+    "USD/CAD": {
+      "bid": 1.41199,
+      "ask": 1.4121,
+      "mid": 1.41204,
       "spread": 0.00011,
       "spreadPips": 1.1,
       "digits": 5,
-      "symbol": "AUDUSD",
-      "brokerTime": "2026-11-04T09:52:33Z"
-    },
-    "USD/CAD": {
-      "bid": 1.39554,
-      "ask": 1.39566,
-      "mid": 1.3956,
-      "spread": 0.00012,
-      "spreadPips": 1.2,
-      "digits": 5,
       "symbol": "USDCAD",
-      "brokerTime": "2026-11-04T09:52:33Z"
+      "brokerTime": "2026-11-10T05:12:12Z"
     },
     "NZD/USD": {
-      "bid": 0.56215,
-      "ask": 0.56227,
-      "mid": 0.56221,
+      "bid": 0.56356,
+      "ask": 0.56368,
+      "mid": 0.56362,
       "spread": 0.00012,
       "spreadPips": 1.2,
       "digits": 5,
       "symbol": "NZDUSD",
-      "brokerTime": "2026-11-04T09:52:35Z"
+      "brokerTime": "2026-11-10T05:12:13Z"
     },
     "GBP/JPY": {
-      "bid": 213.049,
-      "ask": 213.068,
-      "mid": 213.059,
-      "spread": 0.019,
-      "spreadPips": 1.9,
+      "bid": 212.483,
+      "ask": 212.498,
+      "mid": 212.49,
+      "spread": 0.015,
+      "spreadPips": 1.5,
       "digits": 3,
       "symbol": "GBPJPY",
-      "brokerTime": "2026-11-04T09:52:35Z"
+      "brokerTime": "2026-11-10T05:12:14Z"
     },
     "EUR/JPY": {
-      "bid": 177.642,
-      "ask": 177.656,
-      "mid": 177.649,
-      "spread": 0.014,
-      "spreadPips": 1.4,
+      "bid": 177.331,
+      "ask": 177.344,
+      "mid": 177.337,
+      "spread": 0.013,
+      "spreadPips": 1.3,
       "digits": 3,
       "symbol": "EURJPY",
-      "brokerTime": "2026-11-04T09:52:35Z"
+      "brokerTime": "2026-11-10T05:12:14Z"
+    },
+    "XAU/USD": {
+      "bid": 4111.56,
+      "ask": 4111.83,
+      "mid": 4111.69,
+      "spread": 0.27,
+      "spreadPips": 27.0,
+      "digits": 2,
+      "symbol": "XAUUSD",
+      "brokerTime": "2026-11-10T05:12:14Z"
     }
   },
   "providers": {
     "FBS": {
       "name": "FBS",
       "status": "ok",
-      "pairs": 9
+      "pairs": 10
     }
   },
   "staleAfterSec": 1800
