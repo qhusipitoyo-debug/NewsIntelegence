@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-10T03:12:14Z",
+  "generatedAt": "2026-11-10T03:22:39Z",
   "source": "MT5 local bridge",
   "broker": {
     "id": "FBS",
@@ -8,104 +8,104 @@
   },
   "quotes": {
     "EUR/USD": {
-      "bid": 1.12186,
-      "ask": 1.12195,
-      "mid": 1.1219,
+      "bid": 1.12206,
+      "ask": 1.12215,
+      "mid": 1.1221,
       "spread": 9e-05,
       "spreadPips": 0.9,
       "digits": 5,
       "symbol": "EURUSD",
-      "brokerTime": "2026-11-10T05:12:14Z"
+      "brokerTime": "2026-11-10T05:22:39Z"
     },
     "GBP/USD": {
-      "bid": 1.34424,
-      "ask": 1.34435,
-      "mid": 1.3443,
-      "spread": 0.00011,
-      "spreadPips": 1.1,
+      "bid": 1.34452,
+      "ask": 1.34464,
+      "mid": 1.34458,
+      "spread": 0.00012,
+      "spreadPips": 1.2,
       "digits": 5,
       "symbol": "GBPUSD",
-      "brokerTime": "2026-11-10T05:12:14Z"
+      "brokerTime": "2026-11-10T05:22:39Z"
     },
     "USD/JPY": {
-      "bid": 158.068,
-      "ask": 158.078,
-      "mid": 158.073,
+      "bid": 158.035,
+      "ask": 158.045,
+      "mid": 158.04,
       "spread": 0.01,
       "spreadPips": 1.0,
       "digits": 3,
       "symbol": "USDJPY",
-      "brokerTime": "2026-11-10T05:12:14Z"
+      "brokerTime": "2026-11-10T05:22:39Z"
     },
     "USD/CHF": {
-      "bid": 0.81979,
-      "ask": 0.81988,
-      "mid": 0.81984,
+      "bid": 0.81962,
+      "ask": 0.81971,
+      "mid": 0.81967,
       "spread": 9e-05,
       "spreadPips": 0.9,
       "digits": 5,
       "symbol": "USDCHF",
-      "brokerTime": "2026-11-10T05:12:13Z"
+      "brokerTime": "2026-11-10T05:22:38Z"
     },
     "AUD/USD": {
       "bid": 0.69203,
-      "ask": 0.69213,
-      "mid": 0.69208,
-      "spread": 0.0001,
-      "spreadPips": 1.0,
+      "ask": 0.69214,
+      "mid": 0.69209,
+      "spread": 0.00011,
+      "spreadPips": 1.1,
       "digits": 5,
       "symbol": "AUDUSD",
-      "brokerTime": "2026-11-10T05:12:13Z"
+      "brokerTime": "2026-11-10T05:22:33Z"
     },
     "USD/CAD": {
-      "bid": 1.41199,
-      "ask": 1.4121,
-      "mid": 1.41204,
+      "bid": 1.41192,
+      "ask": 1.41203,
+      "mid": 1.41197,
       "spread": 0.00011,
       "spreadPips": 1.1,
       "digits": 5,
       "symbol": "USDCAD",
-      "brokerTime": "2026-11-10T05:12:12Z"
+      "brokerTime": "2026-11-10T05:22:38Z"
     },
     "NZD/USD": {
-      "bid": 0.56356,
-      "ask": 0.56368,
-      "mid": 0.56362,
+      "bid": 0.56363,
+      "ask": 0.56375,
+      "mid": 0.56369,
       "spread": 0.00012,
       "spreadPips": 1.2,
       "digits": 5,
       "symbol": "NZDUSD",
-      "brokerTime": "2026-11-10T05:12:13Z"
+      "brokerTime": "2026-11-10T05:22:39Z"
     },
     "GBP/JPY": {
-      "bid": 212.483,
-      "ask": 212.498,
+      "bid": 212.482,
+      "ask": 212.499,
       "mid": 212.49,
+      "spread": 0.017,
+      "spreadPips": 1.7,
+      "digits": 3,
+      "symbol": "GBPJPY",
+      "brokerTime": "2026-11-10T05:22:39Z"
+    },
+    "EUR/JPY": {
+      "bid": 177.324,
+      "ask": 177.339,
+      "mid": 177.332,
       "spread": 0.015,
       "spreadPips": 1.5,
       "digits": 3,
-      "symbol": "GBPJPY",
-      "brokerTime": "2026-11-10T05:12:14Z"
-    },
-    "EUR/JPY": {
-      "bid": 177.331,
-      "ask": 177.344,
-      "mid": 177.337,
-      "spread": 0.013,
-      "spreadPips": 1.3,
-      "digits": 3,
       "symbol": "EURJPY",
-      "brokerTime": "2026-11-10T05:12:14Z"
+      "brokerTime": "2026-11-10T05:22:39Z"
     },
     "XAU/USD": {
-      "bid": 4111.56,
-      "ask": 4111.83,
-      "mid": 4111.69,
-      "spread": 0.27,
-      "spreadPips": 27.0,
+      "bid": 4114.46,
+      "ask": 4114.79,
+      "mid": 4114.62,
+      "spread": 0.33,
+      "spreadPips": 33.0,
       "digits": 2,
       "symbol": "XAUUSD",
-      "brokerTime": "2026-11-10T05:12:14Z"
+      "brokerTime": "2026-11-10T05:22:38Z"
     }
   },
   "providers": {
