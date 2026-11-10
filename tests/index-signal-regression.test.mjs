@@ -788,7 +788,7 @@ assert.ok(indicesBoardStart > -1, 'indices board section missing');
 assert.ok(indicesBoardStart < calendarStart, 'indices board must render before the calendar');
 
 const indicesBoardFn = extractFunction('indicesBoardHtml');
-const indicesBoardHtml = new Function(`const esc = s => String(s ?? '');\nconst fmtTime = d => '13:00 WITA';\n${indicesBoardFn}\nreturn indicesBoardHtml;`)();
+const indicesBoardHtml = new Function(`const esc = s => String(s ?? '');\nconst fmtTime = d => '13:00 WITA';\n${spreadConst}\nconst MARKETS = null;\n${marketsFreshFn}\n${assetBarsFn}\n${atrInfoFn}\n${halfSpreadEstimateFn}\n${execEntriesFn}\nfunction brokerQuoteFor() { return null; }\n${indicesBoardFn}\nreturn indicesBoardHtml;`)();
 
 const idxBoard = indicesBoardHtml({
   status: 'active', phase: 'pre', event: 'CPI · Kam 05 Nov 12:00 WITA', note: 'Forecast 3.2 vs Previous 3.0',
@@ -805,8 +805,8 @@ assert.match(idxBoard, /SL 28,462\.06/);
 assert.match(idxBoard, /TP 27,616\.65/);
 assert.match(idxBoard, /US500/);
 assert.match(idxBoard, /WAIT/);
-assert.match(idxBoard, /BUY &gt; 7,597\.30/);
-assert.match(idxBoard, /SELL &lt; 7,540\.54/);
+assert.match(idxBoard, /BUY &gt; 7,597\.46/);
+assert.match(idxBoard, /SELL &lt; 7,540\.39/);
 assert.match(idxBoard, /SL\/TP 1% \/ 2%/);
 assert.match(idxBoard, /SL\/TP 0\.75% \/ 1\.5%/);
 assert.doesNotMatch(idxBoard, /NaN|undefined/);

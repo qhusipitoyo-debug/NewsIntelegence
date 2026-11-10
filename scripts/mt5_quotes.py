@@ -26,9 +26,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DEFAULT_OUT = BASE_DIR / "data" / "forex-broker.json"
 
 # Pair -> canonical MT5 symbol (without broker suffix).
-# XAU/USD wajib ada: gold adalah aset fokus untuk news USD, dan level entry
-# emas di terminal hanya akurat kalau memakai bid/ask broker yang sama
-# (api.gold-api.com adalah harga spot referensi, bukan harga eksekusi broker).
+# - XAU/USD wajib ada: gold adalah aset fokus untuk news USD, dan level entry
+#   emas di terminal hanya akurat kalau memakai bid/ask broker yang sama
+#   (api.gold-api.com adalah harga spot referensi, bukan harga eksekusi broker).
+# - NAS100/US500 wajib ada: broker mengeksekusi CFD berbasis FUTURES (NQ/ES),
+#   sedangkan sumber lain menampilkan indeks CASH (^NDX/^GSPC) yang bedanya
+#   bisa puluhan-ratusan poin. Nilainya boleh berupa tuple kandidat karena
+#   nama simbol indeks berbeda antar broker.
 PAIR_SYMBOLS = {
     "EUR/USD": "EURUSD",
     "GBP/USD": "GBPUSD",
@@ -40,6 +44,8 @@ PAIR_SYMBOLS = {
     "GBP/JPY": "GBPJPY",
     "EUR/JPY": "EURJPY",
     "XAU/USD": "XAUUSD",
+    "NAS100": ("NAS100", "USTEC", "US100"),
+    "US500": ("SP500", "US500", "SPX500"),
 }
 
 # Known broker fingerprints. The first matching token wins, so put the most
@@ -83,6 +89,9 @@ def account_type(trade_mode) -> str:
 
 
 def pip_size(pair: str, digits) -> float:
+    if "/" not in pair:
+        # Indeks CFD (NAS100/US500): 1 poin = 1.0.
+        return 1.0
     base = pair.split("/")[0].upper()
     quote = pair.split("/")[-1].upper()
     if base == "XAU" or quote == "JPY":
@@ -92,23 +101,33 @@ def pip_size(pair: str, digits) -> float:
     return 0.0001
 
 
-def resolve_symbol(mt5, canonical: str, cache: dict) -> str | None:
-    """Return the broker's real symbol name, tolerant of suffixes/prefixes."""
+def resolve_symbol(mt5, canonical, cache) -> str | None:
+    """Return the broker's real symbol name, tolerant of suffixes/prefixes.
+
+    `canonical` can be a single name or a tuple of candidate names (index CFDs
+    are named differently across brokers); the first that resolves wins.
+    """
     if canonical in cache:
         return cache[canonical]
 
-    info = mt5.symbol_info(canonical)
+    candidates_list = canonical if isinstance(canonical, tuple) else (canonical,)
+    info = None
+    for candidate in candidates_list:
+        info = mt5.symbol_info(candidate)
+        if info is not None:
+            break
     if info is None:
         candidates = []
         for symbol in mt5.symbols_get() or []:
             name = symbol.name.upper()
-            if name == canonical:
-                candidates.append((0, symbol.name))
-            elif name.startswith(canonical) and len(name) > len(canonical):
-                tail = name[len(canonical):]
-                # Prefer common suffix separators, then any suffix.
-                rank = 1 if tail[0] in "._-#" else 2
-                candidates.append((rank, symbol.name))
+            for candidate in candidates_list:
+                if name == candidate:
+                    candidates.append((0, symbol.name))
+                elif name.startswith(candidate) and len(name) > len(candidate):
+                    tail = name[len(candidate):]
+                    # Prefer common suffix separators, then any suffix.
+                    rank = 1 if tail[0] in "._-#" else 2
+                    candidates.append((rank, symbol.name))
         if candidates:
             candidates.sort(key=lambda item: (item[0], len(item[1]), item[1]))
             info = mt5.symbol_info(candidates[0][1])
@@ -137,7 +156,8 @@ def collect_quotes(mt5, now: datetime) -> dict:
 
         info = mt5.symbol_info(name)
         digits = info.digits if info is not None else (
-            2 if pair.startswith("XAU") else (3 if pair.endswith("JPY") else 5)
+            2 if pair.startswith("XAU") or "/" not in pair
+            else (3 if pair.endswith("JPY") else 5)
         )
         bid = float(tick.bid)
         ask = float(tick.ask)

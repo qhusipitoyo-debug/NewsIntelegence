@@ -29,6 +29,8 @@ PAIRS = {
     "GBP/JPY": (212.700, 212.716),
     "EUR/JPY": (177.600, 177.614),
     "XAU/USD": (4142.20, 4142.55),
+    "NAS100": (27850.00, 27855.00),
+    "SP500": (7547.00, 7549.00),
 }
 
 
@@ -54,7 +56,7 @@ class FakeMT5:
         self.ticks = {}
         for pair, (bid, ask) in PAIRS.items():
             name = pair.replace("/", "") + ".r"
-            digits = 2 if pair.startswith("XAU") else (3 if pair.endswith("JPY") else 5)
+            digits = 2 if pair.startswith("XAU") or "/" not in pair else (3 if pair.endswith("JPY") else 5)
             self.infos[name] = FakeInfo(name, digits)
             self.ticks[name] = FakeTick(bid, ask, 1793760430)
 
@@ -111,7 +113,7 @@ def test_payload_shape_and_no_credentials():
     assert broker["accountType"] == "demo"
     assert set(broker) == {"id", "name", "accountType"}, "public broker payload must stay minimal"
     assert payload["providers"]["FBS"]["status"] == "ok"
-    assert len(payload["quotes"]) == 10
+    assert len(payload["quotes"]) == 12
 
     gold = payload["quotes"]["XAU/USD"]
     assert gold["symbol"] == "XAUUSD.r", "gold must be bridged from the broker"
@@ -119,6 +121,17 @@ def test_payload_shape_and_no_credentials():
     assert gold["ask"] == 4142.55
     assert gold["spreadPips"] == 35.0
     assert gold["digits"] == 2
+
+    nas = payload["quotes"]["NAS100"]
+    assert nas["symbol"] == "NAS100.r", "index CFDs must be bridged from the broker"
+    assert nas["bid"] == 27850.0
+    assert nas["ask"] == 27855.0
+    assert nas["digits"] == 2
+
+    sp = payload["quotes"]["US500"]
+    assert sp["symbol"] == "SP500.r", "candidate symbol names must resolve (SP500 -> US500)"
+    assert sp["spreadPips"] == 2.0
+    assert sp["digits"] == 2
 
     eur = payload["quotes"]["EUR/USD"]
     assert eur["symbol"] == "EURUSD.r", "suffix symbols must resolve"
