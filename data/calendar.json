@@ -54,22 +54,22 @@
     "Actual": ""
   },
   {
-    "Date": "2026-11-10T08:15:00-05:00",
-    "Event": "ADP Weekly Employment Change",
-    "Country": "USD",
-    "Importance": 1,
-    "Forecast": "",
-    "Previous": "",
-    "Actual": ""
-  },
-  {
-    "Date": "2026-11-10T08:16:00-05:00",
+    "Date": "2026-11-10T08:14:00-05:00",
     "Event": "ADP Weekly Employment Change",
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
     "Previous": "16.8K",
     "Actual": ""
+  },
+  {
+    "Date": "2026-11-10T08:15:00-05:00",
+    "Event": "ADP Weekly Employment Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "19.5K",
+    "Actual": "19.75K"
   },
   {
     "Date": "2026-11-10T08:30:00-05:00",
