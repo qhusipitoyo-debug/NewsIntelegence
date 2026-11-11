@@ -189,22 +189,8 @@
     </div>
     <div class="idx-grid" id="idxGrid"></div>
   </section>
-  <section class="tech-board glass" id="techBoard">
-    <div>
-      <div class="eyebrow">AI technical suite</div>
-      <h3>Indikator, Pola Candle &amp; ICT</h3>
-      <p>Confluence engine dari bar 1 menit (data/markets.json): EMA 20/50, RSI 14, ATR 1 menit, pola candle (bullish/bearish engulfing, pin bar/hammer, shooting star, inside bar, doji, pembalikan 2-1), dan pola ala ICT (Fair Value Gap, liquidity sweep/stop hunt, Break of Structure, zona OTE 0.618–0.79). BUY/SELL hanya tampil saat ≥3 konfirmasi searah; Entry/SL/TP dihitung dari harga live dengan kalibrasi ATR + spread yang sama seperti sinyal news.</p>
-    </div>
-    <div class="tech-grid" id="techGrid"></div>
-  </section>
-  <section class="tech-board glass" id="macroBoard">
-    <div>
-      <div class="eyebrow">Macro &amp; sentiment</div>
-      <h3>Faktor Makro, USD &amp; Fear–Greed</h3>
-      <p>Bias makro mikro: DXY sintetis dari bobot EUR 57.6%, JPY 13.6%, GBP 11.9%, CAD 9.1%, CHF 7.8% (diubah jadi pergerakan USD, USD kuat = tekanan jual emas), kalibrasi harga pra-rilis vs harga live, dan CNN Fear &amp; Greed Index — extreme fear (&lt;25) condong risk-on untuk emas, extreme greed (&gt;75) condong risk-off. Semua overlay ini adalah konteks, bukan pengganti konfirmasi harga.</p>
-    </div>
-    <div class="macro-body" id="macroBody"></div>
-  </section>
+  
+  
   <nav class="toolbar glass"><div class="filters"><button class="chip active" data-filter="all">Full month</button><button class="chip" data-filter="upcoming">Upcoming</button><button class="chip" data-filter="high">High impact</button></div><span class="status" id="status">Loading calendar…</span><button class="refresh" id="refresh">↻ Refresh</button></nav>
   <div class="section-head"><div><h3 id="monthTitle">Economic calendar</h3><p>Oldest to newest • times shown in WITA</p></div></div>
   <section id="calendar" class="timeline"></section>
@@ -2640,8 +2626,6 @@ function render() {
     renderForexBoard();
     renderCryptoBoard();
     renderIndicesBoard();
-    renderTechBoard();
-    renderMacroBoard();
 
     const totalEl = $('#total-events');
     const actualEl = $('#events-with-actual');
@@ -2680,8 +2664,6 @@ renderGoldBoard();
 renderCryptoBoard();
 renderForexBoard();
 renderIndicesBoard();
-renderTechBoard();
-renderMacroBoard();
 loadSentiment();
 load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadTradeStats(); renderTradeStats();
 setInterval(() => { loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); }, 60000);
