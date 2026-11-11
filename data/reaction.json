@@ -1,28 +1,4 @@
 {
-  "generatedAt": "2026-11-11T11:52:13.676Z",
-  "events": {
-    "2026-11-11T02:00:00-05:00|German Final CPI m/m": {
-      "releasedAt": "2026-11-11T07:00:00.000Z",
-      "pairs": {
-        "AUD/USD": {
-          "baseClose": 0.6877579092979431,
-          "lastClose": 0.6872379779815674,
-          "movePct": -0.076,
-          "dir": "short",
-          "minutes": 45,
-          "spikePct": -0.014,
-          "faded": false
-        },
-        "NZD/USD": {
-          "baseClose": 0.5607267022132874,
-          "lastClose": 0.5599417686462402,
-          "movePct": -0.14,
-          "dir": "short",
-          "minutes": 45,
-          "spikePct": 0,
-          "faded": false
-        }
-      }
-    }
-  }
+  "generatedAt": "2026-11-11T18:12:18.659Z",
+  "events": {}
 }
