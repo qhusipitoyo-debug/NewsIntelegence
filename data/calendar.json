@@ -60,7 +60,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "16.8K",
-    "Actual": ""
+    "Actual": "19.75K"
   },
   {
     "Date": "2026-11-10T08:15:00-05:00",
@@ -78,7 +78,7 @@
     "Importance": 3,
     "Forecast": "0.2%",
     "Previous": "0.3%",
-    "Actual": ""
+    "Actual": "0.3%"
   },
   {
     "Date": "2026-11-10T08:30:00-05:00",
@@ -87,7 +87,7 @@
     "Importance": 3,
     "Forecast": "0.3%",
     "Previous": "0.6%",
-    "Actual": ""
+    "Actual": "0.4%"
   },
   {
     "Date": "2026-11-10T10:50:00-05:00",
@@ -211,7 +211,7 @@
     "Event": "Crude Oil Inventories",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "-0.6M",
     "Previous": "-0.9M",
     "Actual": ""
   },
@@ -238,7 +238,7 @@
     "Event": "Federal Budget Balance",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "-286.3B",
+    "Forecast": "-298.6B",
     "Previous": "-26.9B",
     "Actual": ""
   },
@@ -288,11 +288,20 @@
     "Actual": ""
   },
   {
+    "Date": "2026-11-13T09:40:00-05:00",
+    "Event": "FOMC Member Logan Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
     "Date": "2026-11-13T10:30:00-05:00",
     "Event": "Natural Gas Storage",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "65B",
     "Previous": "77B",
     "Actual": ""
   },
