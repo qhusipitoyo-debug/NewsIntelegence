@@ -134,18 +134,26 @@ const COUNTRY_ADJECTIVES = [
   [/mexico|mexican/i, 'MX'], [/china|chinese/i, 'CN'], [/india|indian/i, 'IN'],
   [/sweden|swedish/i, 'SE'], [/norway|norwegian/i, 'NO'], [/denmark|danish/i, 'DK']
 ];
+// Konsep (sinonim) dipakai di KEDUA sisi judul (FF dan TV), jadi pemetaan ini
+// menjembatani penamaan yang berbeda: FF "Core CPI m/m" ↔ TV "Core Inflation
+// Rate MoM", FF "Non-Farm Employment Change" ↔ TV "Nonfarm Payrolls", dst.
 const TOKEN_SYNONYM = {
   manufacturing: 'mfg', mfg: 'mfg', services: 'svs', service: 'svs',
   claims: 'claim', claim: 'claim', jobless: 'claim', unemployment: 'claim',
-  sales: 'sale', sale: 'sale', payrolls: 'payroll', payroll: 'payroll', nfp: 'payroll',
-  nonfarm: 'farm', 'non-farm': 'farm', mom: 'm', mo: 'm', mm: 'm',
+  sales: 'sale', sale: 'sale', payrolls: 'employ', payroll: 'employ', nfp: 'employ',
+  employment: 'employ', employed: 'employ', nonfarm: 'farm', 'non-farm': 'farm',
+  cpi: 'cpi', inflation: 'cpi', ppi: 'ppi', producer: 'ppi', pce: 'pce', consumption: 'pce',
+  mom: 'm', mo: 'm', mm: 'm',
   yoy: 'y', yy: 'y', y: 'y', qoq: 'q', qq: 'q', q: 'q',
   prelim: 'preliminary', flash: 'preliminary'
 };
 const TOKEN_NOISE = new Set([
   's', 'p', 'global', 'and', 'the', 'of', 'for', 'in', 'on', 'index', 'final', 'preliminary',
-  'revised', 'annualized', 'm', 'y', 'q', 'adapted', 'separately', 'seasonally', 'adjusted',
-  'unadjusted', 'sa', 'nsa', 'real', 'nominal', 'daylight', 'saving', 'time', 'shift', 'total'
+  'revised', 'annualized', 'adapted', 'separately', 'seasonally', 'adjusted',
+  'unadjusted', 'sa', 'nsa', 'real', 'nominal', 'daylight', 'saving', 'time', 'shift', 'total',
+  // "initial" hanya membedakan initial vs continued claims; FF tidak memakai kata
+  // itu di "Unemployment Claims", jadi dihilangkan agar pasangan itu tetap cocok.
+  'initial', 'change'
 ]);
 
 const firstNonEmpty = (...values) => values.find(v => String(v ?? '').trim() !== '') ?? '';
@@ -316,11 +324,13 @@ function refAgreement(ffEvent, candidate) {
   return Math.abs(Math.log10(ref.num / tvRef.num)) < TV_REF_TOLERANCE_LOG10;
 }
 
-function rankCandidates(ffEvent, index, minute) {
+export function rankCandidates(ffEvent, index, minute) {
   const ffTitle = String(ffEvent.Event || '');
   const tokens = titleTokens(ffTitle);
-  const head = tokens[tokens.length - 1];
-  if (!head) return [];
+  // Penjaga "head token" dilepas: skor overlap >= 0.6 sudah menjamin minimal
+  // satu token konsep bersama, dan penjaga lama justru membuang pasangan valid
+  // seperti FF "CPI m/m" <-> TV "Inflation Rate MoM" karena kata terakhir FF
+  // ('cpi') tidak ada di judul TV.
   const currency = String(ffEvent.Country || '').toUpperCase();
   const iso = eventIsoHint(ffTitle) || AGGREGATE_ISO[currency] || '';
   const exact = index.buckets.get(`${minute}|${currency}|${titleKey(ffTitle)}`);
@@ -330,7 +340,6 @@ function rankCandidates(ffEvent, index, minute) {
     if (candidate.currency !== currency) continue;
     if (iso && candidate.iso !== iso) continue;
     if (Math.abs(candidate.minute - minute) > TV_TIME_TOLERANCE_MS) continue;
-    if (!candidate.tokens.has(head)) continue;
     let score = overlapScore(tokens, candidate.tokens);
     if (qualifierConflict(ffTitle, candidate.title)) score -= 0.25;
     if (score < TV_MIN_TOKEN_SCORE) continue;
@@ -365,7 +374,7 @@ export function mergeActuals(ffEvents, tvEvents, now = Date.now()) {
     rejected: 0,
     ambiguous: 0
   };
-  const events = (ffEvents || []).map(event => {
+  const merged = (ffEvents || []).map(event => {
     if (!event || String(event.Actual ?? '').trim()) return event;
     const minute = minuteOf(event.Date);
     // Event yang belum rilis tidak boleh punya Actual, meskipun sumber pihak
@@ -382,6 +391,25 @@ export function mergeActuals(ffEvents, tvEvents, now = Date.now()) {
     stats.filled++;
     return { ...event, Actual: actual };
   });
+  // Pass 2: ForexFactory kadang mencantumkan rilis yang sama dua kali dengan
+  // menit beda 1 (mis. "ADP Weekly Employment Change" 08:14 & 08:15) tetapi
+  // kolom Previous-nya dari minggu berbeda, sehingga pass skala menolak salah
+  // satunya. Baris kembar (judul + negara sama, menit berdekatan) mewarisi
+  // Actual dari saudaranya yang sudah terisi — ini rilis yang sama, bukan seri
+  // data yang berbeda.
+  const events = merged.map(event => {
+    if (!event || String(event.Actual ?? '').trim()) return event;
+    const minute = minuteOf(event.Date);
+    if (minute === null || minute > now) return event;
+    const twin = merged.find(o => o !== event
+      && String(o.Actual ?? '').trim()
+      && String(o.Event || '') === String(event.Event || '')
+      && String(o.Country || '').toUpperCase() === String(event.Country || '').toUpperCase()
+      && Math.abs((minuteOf(o.Date) ?? Infinity) - minute) <= TV_TIME_TOLERANCE_MS);
+    if (!twin) return event;
+    stats.filled++;
+    return { ...event, Actual: twin.Actual };
+  });
   return { events, stats };
 }
 
@@ -389,6 +417,9 @@ export async function fetchTradingViewActuals(fromMs, toMs, { fetchImpl = fetch,
   const collected = [];
   for (let start = fromMs; start <= toMs; start += TV_CHUNK_MS) {
     const end = Math.min(start + TV_CHUNK_MS - 1000, toMs);
+    // Jendela nol (from == to) membuat TradingView menjawab tanpa `result`;
+    // chunk seperti itu tidak valid, jadi dihentikan saja.
+    if (end < start) break;
     const url = `${TV_CALENDAR_URL}?from=${isoZ(start)}&to=${isoZ(end)}&lang=en`;
     try {
       const response = await fetchImpl(url, { headers: TV_HEADERS, signal: AbortSignal.timeout(timeoutMs) });
@@ -398,7 +429,8 @@ export async function fetchTradingViewActuals(fromMs, toMs, { fetchImpl = fetch,
       }
       const payload = await response.json();
       const rows = payload && Array.isArray(payload.result) ? payload.result : [];
-      if (!Array.isArray(payload && payload.result)) {
+      if (!Array.isArray(payload && payload.result) && start <= Date.now()) {
+        // Chunk yang belum terjadi (next week) memang wajarnya kosong — bukan error.
         console.error(`TradingView kalender tidak mengembalikan daftar event pada ${isoZ(start).slice(0, 10)}.`);
       }
       if (payload && Number.isFinite(payload.total) && payload.total !== rows.length) {

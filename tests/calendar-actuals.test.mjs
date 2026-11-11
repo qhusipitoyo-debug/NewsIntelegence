@@ -130,6 +130,60 @@ assert.equal(titleKey('Germany Manufacturing PMI'), titleKey('German Manufacturi
   assert.equal(events[0].Actual, '');
 }
 
+// (g) Konsep dipetakan lewat sinonim: FF "CPI m/m" ↔ TV "Inflation Rate MoM",
+//     dan level indeks ("CPI" 337.x) tidak boleh menang lantaran persen.
+{
+  const event = ff({ Event: 'CPI m/m', Country: 'USD', Forecast: '0.3%', Previous: '0.6%' });
+  const inflation = tv({ title: 'Inflation Rate MoM', country: 'US', currency: 'USD', previous: '0.6', forecast: '0.3', actual: '0.4' });
+  const indexLevel = tv({ title: 'CPI', country: 'US', currency: 'USD', previous: '336.94', actual: '337.511' });
+  const { events, stats } = mergeActuals([event], [indexLevel, inflation], NOW);
+  assert.equal(events[0].Actual, '0.4%', JSON.stringify(stats));
+}
+
+// (h) Core CPI harus mengambil seri Core, bukan headline.
+{
+  const event = ff({ Event: 'Core CPI m/m', Country: 'USD', Forecast: '0.2%', Previous: '0.3%' });
+  const core = tv({ title: 'Core Inflation Rate MoM', country: 'US', currency: 'USD', previous: '0.3', forecast: '0.2', actual: '0.3' });
+  const headline = tv({ title: 'Inflation Rate MoM', country: 'US', currency: 'USD', previous: '0.6', actual: '0.4' });
+  const { events } = mergeActuals([event], [headline, core], NOW);
+  assert.equal(events[0].Actual, '0.3%');
+}
+
+// (i) FF "Non-Farm Employment Change" ↔ TV "Nonfarm Payrolls".
+{
+  const event = ff({ Event: 'Non-Farm Employment Change', Country: 'USD', Forecast: '150K', Previous: '100K' });
+  const candidate = tv({ title: 'Nonfarm Payrolls', country: 'US', currency: 'USD', previous: '100', forecast: '150', actual: '180' });
+  const { events } = mergeActuals([event], [candidate], NOW);
+  assert.equal(events[0].Actual, '180K');
+}
+
+// (j) FF "Unemployment Claims" ↔ TV "Initial Jobless Claims".
+{
+  const event = ff({ Event: 'Unemployment Claims', Country: 'USD', Forecast: '220K', Previous: '230K' });
+  const initial = tv({ title: 'Initial Jobless Claims', country: 'US', currency: 'USD', previous: '230', forecast: '220', actual: '217' });
+  const continued = tv({ title: 'Continued Jobless Claims', country: 'US', currency: 'USD', previous: '1900', actual: '1950' });
+  const { events } = mergeActuals([event], [continued, initial], NOW);
+  assert.equal(events[0].Actual, '217K');
+}
+
+// (k) Duplikat FF menit berdekatan mewarisi Actual dari kembarannya.
+{
+  const a = ff({ Event: 'ADP Weekly Employment Change', Country: 'USD', Date: '2026-11-04T03:14:00-05:00', Previous: '16.8K' });
+  const b = ff({ Event: 'ADP Weekly Employment Change', Country: 'USD', Date: '2026-11-04T03:15:00-05:00', Previous: '19.5K' });
+  const candidate = tv({ title: 'ADP Employment Change Weekly', country: 'US', currency: 'USD', date: '2026-11-04T08:15:00.000Z', previous: '19.5', actual: '19.75' });
+  const { events, stats } = mergeActuals([a, b], [candidate], NOW);
+  assert.equal(events[0].Actual, '19.75K', 'baris 08:14 mewarisi kembarannya');
+  assert.equal(events[1].Actual, '19.75K');
+  assert.ok(stats.filled >= 2, JSON.stringify(stats));
+}
+
+// (l) Rilis tanpa angka (pidato FOMC) memang tidak boleh punya Actual.
+{
+  const speech = ff({ Event: 'FOMC Member Bowman Speaks', Forecast: '', Previous: '', Actual: '' });
+  const { events } = mergeActuals([speech], [tv()], NOW);
+  assert.equal(events[0].Actual, '');
+}
+
 // buildActualIndex ignores rows without an actual value.
 {
   const index = buildActualIndex([tv(), tv({ actual: '' }), tv({ actual: null })]);
