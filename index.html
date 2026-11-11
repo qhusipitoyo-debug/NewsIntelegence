@@ -110,6 +110,34 @@
     .idx-event { margin-top: 7px; color: #cfe9ef; font-size: 10.5px; font-weight: 600; }
     .idx-note { margin-top: 3px; color: var(--muted); font-size: 9.5px; }
     @media(max-width:760px){ .crypto-board,.market-board,.forex-board,.indices-board { grid-template-columns: 1fr; } .crypto-grid,.mb-levels,.fx-grid,.idx-grid { grid-template-columns: 1fr; } }
+
+    /* ═══ AI TECHNICAL & MACRO/SENTIMENT BOARDS ═══ */
+    .tech-board { margin-top: 18px; border-radius: 26px; padding: 18px 22px; display: grid; grid-template-columns: minmax(210px, .85fr) 2fr; gap: 18px; align-items: start; }
+    .tech-board h3 { font: 800 19px Manrope; margin: 4px 0 3px; letter-spacing: -.4px; }
+    .tech-board p { margin: 0; color: var(--muted); font-size: 12px; max-width: 360px; }
+    .tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .tech-card { background: rgba(4,15,23,.42); border: 1px solid var(--line); border-left: 3px solid var(--line); border-radius: 14px; padding: 12px 14px; font-size: 11px; }
+    .tech-card.buy { border-left-color: var(--green); } .tech-card.buy .tech-dir { color: var(--green); }
+    .tech-card.sell { border-left-color: var(--red); } .tech-card.sell .tech-dir { color: var(--red); }
+    .tech-card.wait { border-left-color: var(--amber); } .tech-card.wait .tech-dir { color: var(--amber); }
+    .tech-card .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font: 800 13px Manrope; }
+    .tech-card .tech-dir { font: 800 12px Manrope; letter-spacing: .4px; }
+    .tech-card .sub { color: var(--muted); margin: 3px 0 6px; font-size: 10.5px; }
+    .tech-tags { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+    .tech-tags span { background: rgba(4,14,21,.42); padding: 3px 7px; border-radius: 7px; color: #dff5fb; }
+    .tech-tags span.buy { color: var(--green); } .tech-tags span.sell { color: var(--red); } .tech-tags span.wait { color: var(--amber); }
+    .tech-levels { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 6px; color: #dff5fb; }
+    .tech-levels span { background: rgba(4,14,21,.42); padding: 3px 7px; border-radius: 7px; }
+    .tech-note { margin-top: 5px; color: var(--muted); font-size: 9.5px; }
+    .macro-body { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .macro-card { background: rgba(4,15,23,.42); border: 1px solid var(--line); border-left: 3px solid var(--blue); border-radius: 14px; padding: 12px 14px; font-size: 11px; }
+    .macro-card h5 { margin: 0 0 6px; font: 800 12px Manrope; color: #dff5fb; }
+    .macro-card .big { font: 800 20px Manrope; }
+    .macro-card .big.buy { color: var(--green); } .macro-card .big.sell { color: var(--red); } .macro-card .big.wait { color: var(--amber); }
+    .macro-bar { height: 10px; background: rgba(117,164,177,.16); border-radius: 99px; overflow: hidden; margin: 8px 0 4px; position: relative; }
+    .macro-bar i { position: absolute; top: 0; bottom: 0; background: var(--amber); border-radius: inherit; }
+    .macro-card .meta { color: var(--muted); font-size: 10.5px; line-height: 1.5; }
+    @media(max-width:760px){ .tech-board { grid-template-columns: 1fr; } .tech-grid,.macro-body { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body><main class="shell">
@@ -160,6 +188,22 @@
       <p>NAS100 and US500 react to the same USD catalyst, with event-aware mapping: growth/employment surprises are read as risk-on/risk-off, while inflation keeps its rate-pressure direction. BUY means risk-on/stronger index, SELL means risk-off/weaker index. Confirmed levels are locked with adaptive 1:2 R:R.</p>
     </div>
     <div class="idx-grid" id="idxGrid"></div>
+  </section>
+  <section class="tech-board glass" id="techBoard">
+    <div>
+      <div class="eyebrow">AI technical suite</div>
+      <h3>Indikator, Pola Candle &amp; ICT</h3>
+      <p>Confluence engine dari bar 1 menit (data/markets.json): EMA 20/50, RSI 14, ATR 1 menit, pola candle (bullish/bearish engulfing, pin bar/hammer, shooting star, inside bar, doji, pembalikan 2-1), dan pola ala ICT (Fair Value Gap, liquidity sweep/stop hunt, Break of Structure, zona OTE 0.618–0.79). BUY/SELL hanya tampil saat ≥3 konfirmasi searah; Entry/SL/TP dihitung dari harga live dengan kalibrasi ATR + spread yang sama seperti sinyal news.</p>
+    </div>
+    <div class="tech-grid" id="techGrid"></div>
+  </section>
+  <section class="tech-board glass" id="macroBoard">
+    <div>
+      <div class="eyebrow">Macro &amp; sentiment</div>
+      <h3>Faktor Makro, USD &amp; Fear–Greed</h3>
+      <p>Bias makro mikro: DXY sintetis dari bobot EUR 57.6%, JPY 13.6%, GBP 11.9%, CAD 9.1%, CHF 7.8% (diubah jadi pergerakan USD, USD kuat = tekanan jual emas), kalibrasi harga pra-rilis vs harga live, dan CNN Fear &amp; Greed Index — extreme fear (&lt;25) condong risk-on untuk emas, extreme greed (&gt;75) condong risk-off. Semua overlay ini adalah konteks, bukan pengganti konfirmasi harga.</p>
+    </div>
+    <div class="macro-body" id="macroBody"></div>
   </section>
   <nav class="toolbar glass"><div class="filters"><button class="chip active" data-filter="all">Full month</button><button class="chip" data-filter="upcoming">Upcoming</button><button class="chip" data-filter="high">High impact</button></div><span class="status" id="status">Loading calendar…</span><button class="refresh" id="refresh">↻ Refresh</button></nav>
   <div class="section-head"><div><h3 id="monthTitle">Economic calendar</h3><p>Oldest to newest • times shown in WITA</p></div></div>
@@ -1521,6 +1565,280 @@ function analyze(e) {
     };
 }
 
+// ═════════════════════════════════════════════════════════════════════════════
+// AI TECHNICAL SUITE — indikator, pola candle, dan pola ala ICT
+//
+// Sumber data: bar 1 menit per aset dari data/markets.json (sudah termasuk
+// volatilitas riil). Semua fungsinya murni: input bar, keluaran tag + arah,
+// supaya mudah diuji. BUY/SELL teknikal hanya muncul bila >= 3 konfirmasi
+// searah; kalau tidak, kartu tetap WAIT. Entry/SL/TP memakai jalur kalibrasi
+// yang sama dengan sinyal news (computeSignalLevels): harga live/broker
+// bid-ask + ATR 1 menit, bukan persentase kaku.
+// ═════════════════════════════════════════════════════════════════════════════
+const TECH_ASSETS = [
+    { asset: 'XAU/USD', kind: 'gold', name: 'XAU/USD (Gold)' },
+    { asset: 'BTC/USD', kind: 'crypto', name: 'BTC/USD' },
+    { asset: 'ETH/USD', kind: 'crypto', name: 'ETH/USD' },
+    { asset: 'EUR/USD', kind: 'forex', name: 'EUR/USD' },
+    { asset: 'NAS100', kind: 'index', name: 'NAS100' },
+    { asset: 'US500', kind: 'index', name: 'US500' }
+];
+
+function emaSeries(values, len) {
+    const rows = (values || []).filter(Number.isFinite);
+    if (rows.length < len) return null;
+    let e = rows.slice(0, len).reduce((a, b) => a + b, 0) / len;
+    const k = 2 / (len + 1);
+    for (let i = len; i < rows.length; i++) e = rows[i] * k + e * (1 - k);
+    return e;
+}
+
+function rsiValue(closes, len = 14) {
+    const rows = (closes || []).filter(Number.isFinite);
+    if (rows.length < len + 1) return null;
+    let gain = 0, loss = 0;
+    for (let i = rows.length - len; i < rows.length; i++) {
+        const d = rows[i] - rows[i - 1];
+        if (d >= 0) gain += d; else loss -= d;
+    }
+    if (loss === 0) return gain === 0 ? 50 : 100;
+    return 100 - 100 / (1 + gain / loss);
+}
+
+// Pola candle dari 3 bar terakhir (engulfing, pin bar, inside bar, doji, 2-1).
+function detectCandlePatterns(bars) {
+    const out = [];
+    const rows = (bars || []).filter(b => b && b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0);
+    if (rows.length < 3) return out;
+    const [p2, p1, cur] = rows.slice(-3);
+    const body = cur.c - cur.o;
+    const range = cur.h - cur.l;
+    if (!(range > 0)) return out;
+    const bodyPct = Math.abs(body) / range;
+    const upper = cur.h - Math.max(cur.o, cur.c);
+    const lower = Math.min(cur.o, cur.c) - cur.l;
+    if (bodyPct <= 0.1) out.push({ tag: 'Doji — ragu-ragu', dir: 'wait' });
+    if (lower >= range * 0.6 && bodyPct <= 0.35) out.push({ tag: 'Pin bar / hammer — rejection bawah', dir: 'buy' });
+    if (upper >= range * 0.6 && bodyPct <= 0.35) out.push({ tag: 'Shooting star — rejection atas', dir: 'sell' });
+    if (p1 && p1.c < p1.o && cur.c > cur.o && cur.c >= p1.o && cur.o <= p1.c) out.push({ tag: 'Bullish engulfing', dir: 'buy' });
+    if (p1 && p1.c > p1.o && cur.c < cur.o && cur.c <= p1.o && cur.o >= p1.c) out.push({ tag: 'Bearish engulfing', dir: 'sell' });
+    if (p1 && cur.h < p1.h && cur.l > p1.l) out.push({ tag: 'Inside bar — kompresi, tunggu breakout', dir: 'wait' });
+    if (p2 && p2.c < p2.o && p1.c < p1.o && cur.c > cur.o && cur.c > p1.c) out.push({ tag: 'Pembalikan 2-1 bullish', dir: 'buy' });
+    if (p2 && p2.c > p2.o && p1.c > p1.o && cur.c < cur.o && cur.c < p1.c) out.push({ tag: 'Pembalikan 2-1 bearish', dir: 'sell' });
+    return out.slice(0, 3);
+}
+
+// Pola ala ICT pada ~40 bar terakhir: FVG 3-candle, liquidity sweep/stop hunt,
+// break of structure (BOS), dan zona OTE 0.618–0.79.
+function detectICT(bars) {
+    const out = [];
+    const rows = (bars || []).filter(b => b && b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0);
+    if (rows.length < 30) return out;
+    const recent = rows.slice(-40);
+    const dec = v => Number(v).toFixed(Number(v) > 100 ? 2 : 5);
+    // 1. Fair Value Gap: gap antara high bar ke-1 dan low bar ke-3.
+    for (let i = recent.length - 3; i >= 1; i--) {
+        const a = recent[i - 1], g = recent[i], c = recent[i + 1];
+        if (a.l > c.h) { out.push({ tag: `Bullish FVG ${dec(c.h)}–${dec(a.l)}`, dir: 'buy' }); break; }
+        if (a.h < c.l) { out.push({ tag: `Bearish FVG ${dec(a.h)}–${dec(c.l)}`, dir: 'sell' }); break; }
+    }
+    // 2. Liquidity sweep: wick menembus swing lama lalu close kembali di dalam.
+    const swing = recent.slice(0, -8);
+    if (swing.length >= 10) {
+        const swingHi = Math.max(...swing.map(b => b.h));
+        const swingLo = Math.min(...swing.map(b => b.l));
+        for (let i = recent.length - 8; i < recent.length; i++) {
+            const b = recent[i];
+            if (b.h > swingHi && b.c < swingHi) { out.push({ tag: 'Sweep high — stop hunt atas', dir: 'sell' }); break; }
+            if (b.l < swingLo && b.c > swingLo) { out.push({ tag: 'Sweep low — stop hunt bawah', dir: 'buy' }); break; }
+        }
+    }
+    // 3. BOS: close terakhir menembus struktur (ekstrem 37 bar sebelumnya).
+    const last = recent[recent.length - 1];
+    const prior = recent.slice(0, -3);
+    const pHi = Math.max(...prior.map(b => b.h));
+    const pLo = Math.min(...prior.map(b => b.l));
+    if (last.c > pHi) out.push({ tag: 'BOS naik — struktur bullish', dir: 'buy' });
+    else if (last.c < pLo) out.push({ tag: 'BOS turun — struktur bearish', dir: 'sell' });
+    // 4. OTE: harga berada di zona retracement 0.618–0.79 leg terakhir.
+    const legHi = Math.max(...recent.map(b => b.h));
+    const legLo = Math.min(...recent.map(b => b.l));
+    const legRange = legHi - legLo;
+    if (legRange > 0) {
+        const hiIdx = recent.findIndex(b => b.h === legHi);
+        const loIdx = recent.findIndex(b => b.l === legLo);
+        if (hiIdx < loIdx) {
+            // Leg naik, harga sedang pullback: OTE = legHi - range * 0.618..0.79
+            const top = legHi - legRange * 0.618, bot = legHi - legRange * 0.79;
+            if (last.c <= top && last.c >= bot) out.push({ tag: `Zona OTE bullish ${dec(bot)}–${dec(top)}`, dir: 'buy' });
+        } else if (loIdx < hiIdx) {
+            const top = legLo + legRange * 0.79, bot = legLo + legRange * 0.618;
+            if (last.c >= bot && last.c <= top) out.push({ tag: `Zona OTE bearish ${dec(bot)}–${dec(top)}`, dir: 'sell' });
+        }
+    }
+    return out.slice(0, 3);
+}
+
+// Rangkuman konfluensi per aset: arah teknikal = mayoritas vote (EMA/RSI/pola/
+// ICT) dengan minimal 3 suara searah.
+function technicalView(kind, asset) {
+    const price = assetPrice(kind, asset);
+    if (!Number.isFinite(price) || price <= 0) return null;
+    const bars = assetBars(asset).slice(-120)
+        .map(b => ({ o: Number(b && b.o), h: Number(b && b.h), l: Number(b && b.l), c: Number(b && b.c) }))
+        .filter(b => b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0);
+    if (bars.length < 30) return null;
+    const closes = bars.map(b => b.c);
+    const emaFast = emaSeries(closes, 20);
+    const emaSlow = emaSeries(closes, 50);
+    const rsi = rsiValue(closes, 14);
+    const info = atrInfo(asset, price);
+    const candles = detectCandlePatterns(bars);
+    const ict = detectICT(bars);
+    const votes = [];
+    if (emaFast && emaSlow) votes.push(emaFast > emaSlow ? 'buy' : 'sell');
+    if (rsi !== null) { if (rsi <= 30) votes.push('buy'); else if (rsi >= 70) votes.push('sell'); }
+    candles.forEach(p => { if (p.dir !== 'wait') votes.push(p.dir); });
+    ict.forEach(p => votes.push(p.dir));
+    const buys = votes.filter(v => v === 'buy').length;
+    const sells = votes.filter(v => v === 'sell').length;
+    const dir = buys >= 3 && buys > sells ? 'buy' : sells >= 3 && sells > buys ? 'sell' : 'wait';
+    const trendText = emaFast && emaSlow
+        ? (emaFast > emaSlow ? 'tren naik (EMA20 > EMA50)' : 'tren turun (EMA20 < EMA50)') : 'tren n/a';
+    const rsiText = rsi === null ? 'RSI n/a' : `RSI ${rsi.toFixed(0)}${rsi <= 30 ? ' oversold' : rsi >= 70 ? ' overbought' : ' netral'}`;
+    const tags = [...candles.map(p => p.tag), ...ict.map(p => p.tag)];
+    return { price, emaFast, emaSlow, rsi, atrPct: info ? info.atrPct : null, candles, ict, dir, buys, sells, trendText, rsiText, tags, bars: bars.length };
+}
+
+function techPanelHtml() {
+    if (!MARKETS || !marketsFresh()) {
+        return '<div class="tech-card wait"><div class="head"><span>Menunggu data bar 1 menit…</span></div><div class="sub">Panel teknikal aktif otomatis setelah data/markets.json dimuat.</div></div>';
+    }
+    return TECH_ASSETS.map(cfg => {
+        const v = technicalView(cfg.kind, cfg.asset);
+        if (!v) {
+            return `<div class="tech-card wait"><div class="head"><span>${esc(cfg.name)}</span><span class="tech-dir">DATA</span></div><div class="sub">Bar 1 menit belum cukup untuk analisis teknikal.</div></div>`;
+        }
+        const dirText = v.dir === 'buy' ? 'BUY' : v.dir === 'sell' ? 'SELL' : 'WAIT';
+        const conf = `konfluensi ${v.dir === 'buy' ? v.buys : v.sells}/vote`;
+        let levels = '';
+        if (v.dir !== 'wait') {
+            const lv = computeSignalLevels(cfg.kind, cfg.asset, v.dir, v.price, { Importance: 2 }, { movePct: 0 });
+            if (lv) {
+                const f = n => Number(n).toFixed(lv.dec || 2);
+                levels = `<div class="tech-levels"><span>Entry ${f(lv.entry)}</span><span>SL ${f(lv.sl)}</span><span>TP ${f(lv.tp)}</span><span>TP1 ${f(lv.tp1)}</span>${lv.pullback ? `<span>Retest ${f(lv.pullback)}</span>` : ''}</div>`;
+            }
+        }
+        const tagHtml = v.tags.length
+            ? v.tags.map(t => {
+                const d = (v.candles.concat(v.ict).find(p => p.tag === t) || {}).dir;
+                return `<span class="${d || 'wait'}">${esc(t)}</span>`;
+            }).join('')
+            : '<span class="wait">Tidak ada pola khusus saat ini</span>';
+        return `<div class="tech-card ${v.dir}">
+            <div class="head"><span>${esc(cfg.name)}</span><span class="tech-dir">${dirText} · ${conf}</span></div>
+            <div class="sub">${esc(v.trendText)} • ${esc(v.rsiText)}${v.atrPct ? ` • ATR 1m ${v.atrPct.toFixed(3)}%` : ''} • ${v.bars} bar</div>
+            <div class="tech-tags">${tagHtml}</div>
+            ${levels}
+            <div class="tech-note">Entry dihitung dari harga live (ask utk BUY / bid utk SELL${lvBrokerNote(cfg.asset)}).</div>
+        </div>`;
+    }).join('');
+}
+
+function lvBrokerNote(asset) {
+    const b = brokerQuoteFor(asset);
+    return b && !b.stale ? ` — broker ${b.brokerName}` : '';
+}
+
+function renderTechBoard() {
+    const grid = $('#techGrid');
+    if (grid) grid.innerHTML = techPanelHtml();
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// MACRO & SENTIMENT — DXY sintetis, kalibrasi pra-rilis, CNN Fear & Greed
+// ═════════════════════════════════════════════════════════════════════════════
+let SENTIMENT = null;
+
+// DXY sintetis (tanpa SEK, bobot dinormalisasi): USD naik bila EUR/USD, GBP/USD
+// turun atau USD/JPY, USD/CAD, USD/CHF naik. Sumber: changePct harian scanner.
+const USD_WEIGHTS = { 'EUR/USD': 0.576, 'USD/JPY': 0.136, 'GBP/USD': 0.119, 'USD/CAD': 0.091, 'USD/CHF': 0.078 };
+
+function usdBias() {
+    let num = 0, den = 0;
+    for (const [pair, w] of Object.entries(USD_WEIGHTS)) {
+        const c = Number(FOREX_QUOTES && FOREX_QUOTES[pair] && FOREX_QUOTES[pair].changePct);
+        if (!Number.isFinite(c)) continue;
+        num += (pair.startsWith('USD/') ? c : -c) * w;
+        den += w;
+    }
+    if (!den) return null;
+    return { changePct: num / den };
+}
+
+// Kalibrasi: harga pra-rilis tersimpan vs harga live sekarang. Selisih inilah
+// yang dipakai engine momentum sebagai dasar arah pasca-rilis.
+function calibrationInfo(now = Date.now()) {
+    const { pick } = nextUsdCatalyst(now);
+    if (!pick) return null;
+    const base = preNewsPrice(pick.e);
+    const live = Number(LIVE_PRICE);
+    if (!Number.isFinite(base) || !Number.isFinite(live) || !(live > 0)) return { event: pick.e, base, live: null, driftPct: null };
+    return { event: pick.e, base, live, driftPct: (live - base) / base * 100, capturedAt: preNewsSnapshot(pick.e) && preNewsSnapshot(pick.e).capturedAt };
+}
+
+async function loadSentiment() {
+    const target = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
+    const grab = async url => {
+        const r = await fetch(url, { cache: 'no-store' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    };
+    let j = null;
+    try { j = await grab(target); } catch (e) { console.log('CNN F&G direct gagal', e.message || e); }
+    if (!j) {
+        try { j = await grab('https://api.allorigins.win/raw?url=' + encodeURIComponent(target)); } catch (e) { console.log('CNN F&G proxy gagal', e.message || e); }
+    }
+    const fg = j && j.fear_and_greed;
+    const score = Number(fg && fg.score);
+    if (!Number.isFinite(score)) { SENTIMENT = null; renderMacroBoard(); return; }
+    SENTIMENT = {
+        score: Math.round(score),
+        rating: fg.rating || '',
+        previousClose: Number.isFinite(Number(fg.previous_close)) ? Number(fg.previous_close) : null,
+        at: new Date().toISOString()
+    };
+    renderMacroBoard();
+}
+
+function macroPanelHtml() {
+    const bias = usdBias();
+    const cal = calibrationInfo();
+    const s = SENTIMENT;
+    const usdCard = bias
+        ? `<div class="macro-card"><h5>DXY sintetis (bias makro USD)</h5>
+            <div class="big ${bias.changePct >= 0.1 ? 'sell' : bias.changePct <= -0.1 ? 'buy' : 'wait'}">${bias.changePct >= 0 ? '+' : ''}${bias.changePct.toFixed(2)}% hari ini</div>
+            <div class="meta">${bias.changePct >= 0.1 ? 'USD menguat → tekanan jual emas / risk-off, non-USD melemah.' : bias.changePct <= -0.1 ? 'USD melemah → support emas / risk-on, non-USD menguat.' : 'USD relatif datar — arah ditentukan katalis berikutnya.'}</div></div>`
+        : `<div class="macro-card"><h5>DXY sintetis (bias makro USD)</h5><div class="big wait">—</div><div class="meta">Menunggu data kurs harian dari scanner…</div></div>`;
+    const fgCard = s
+        ? `<div class="macro-card"><h5>CNN Fear &amp; Greed — ${esc(s.rating || '')}</h5>
+            <div class="big ${s.score <= 25 ? 'buy' : s.score >= 75 ? 'sell' : 'wait'}">${s.score}/100</div>
+            <div class="macro-bar"><i style="left:0;width:${Math.max(0, Math.min(100, s.score))}%"></i></div>
+            <div class="meta">${s.score <= 25 ? 'Extreme fear → kondisi risk-on potensial untuk emas (sentimen kontrarian).' : s.score >= 75 ? 'Extreme greed → kondisi risk-off potensial; waspadai koreksi.' : 'Sentimen netral.'}${s.previousClose != null ? ` • tutup sebelumnya ${s.previousClose}` : ''}</div></div>`
+        : `<div class="macro-card"><h5>CNN Fear &amp; Greed</h5><div class="big wait">—</div><div class="meta">Sentimen belum termuat (akan dicoba ulang tiap 10 menit).</div></div>`;
+    const calCard = cal
+        ? `<div class="macro-card"><h5>Kalibrasi harga pra-rilis vs live</h5>
+            <div class="big ${cal.driftPct == null ? 'wait' : Math.abs(cal.driftPct) < 0.05 ? 'wait' : cal.driftPct > 0 ? 'buy' : 'sell'}">${cal.live ? '$' + Number(cal.live).toFixed(2) : '—'}</div>
+            <div class="meta">${cal.base ? `Base pra-rilis ${esc(cal.event.Event)}: $${Number(cal.base).toFixed(2)}` : 'Snapshot pra-rilis belum tersedia untuk katalis aktif.'}${cal.driftPct != null ? ` → selisih ${cal.driftPct >= 0 ? '+' : ''}${cal.driftPct.toFixed(2)}% (dasar perhitungan momentum pasca-rilis).` : ''}</div></div>`
+        : `<div class="macro-card"><h5>Kalibrasi harga pra-rilis vs live</h5><div class="big wait">—</div><div class="meta">Tidak ada katalis USD aktif.</div></div>`;
+    return usdCard + fgCard + calCard + `<div class="macro-card"><h5>Cara pakai bersama sinyal news</h5><div class="meta">1) Cek arah di kartu event / board pair (reaksi harga 1 menit &gt; momentum &gt; Actual). 2) Cocokkan dengan panel teknikal: searah = konfluensi penuh; berlawanan = kecilkan ukuran posisi atau tunggu retest OTE. 3) F&G dan DXY hanya konteks makro — jangan melawan harga.</div></div>`;
+}
+
+function renderMacroBoard() {
+    const body = $('#macroBody');
+    if (body) body.innerHTML = macroPanelHtml();
+}
+
 // ---------------------------------------------------------------------------
 // Unified signal engine (dipakai oleh kartu event DAN semua board)
 //
@@ -2181,6 +2499,19 @@ function tpSl(a, e) {
     html += `</div>`;
     return html;
 }
+// Ringkasan konfluensi teknikal per pair fokus — dipakai di kartu berita.
+// Hanya dipanggil dari card() (bukan dari fungsi yang diekstrak test).
+function techConfluenceText(kind, pair) {
+    if (kind === 'none' || !pair) return '';
+    const v = technicalView(kind, pair);
+    if (!v) return '';
+    const dirText = v.dir === 'buy' ? 'BUY' : v.dir === 'sell' ? 'SELL' : 'WAIT';
+    const conf = v.dir === 'buy' ? v.buys : v.sells;
+    const align = v.dir === 'buy' ? 'mendukung sinyal beli' : v.dir === 'sell' ? 'mendukung sinyal jual' : 'belum searah (netral)';
+    const topTags = v.tags.slice(0, 2).join('; ');
+    return ` Konfluensi teknikal ${pair}: ${dirText} (${conf} indikator) — ${v.trendText}, ${v.rsiText}, ${align}${topTags ? `, pola: ${topTags}` : ''}.`;
+}
+
 function card(e) {
     const a = analyze(e);
     const phase = newsPhase(e);
@@ -2206,11 +2537,13 @@ function card(e) {
     const meterScore = (focusData && focusData.dir)
         ? (focusData.basis === 'actual' && Number.isFinite(a.score) ? a.score : (focusData.basis === 'forecast' ? 75 : 80))
         : (phase === 'pre' ? 50 : null);
-    const reason = signalDir === 'wait'
+    let reason = signalDir === 'wait'
         ? `${a.reason || 'Arah belum terkonfirmasi.'}${phase === 'post' ? ' Arah pasca-rilis diambil dari Actual atau reaksi harga; bila belum jelas, level breakout OCO ditampilkan.' : ' Forecast vs Previous flat; strategi pending order Straddle (OCO) siap dipasang sebelum rilis.'}`
         : phase === 'post'
             ? `Arah ${signalLabel} untuk ${focus.pair || 'aset terkait'} diambil dari ${basisLabel(focusData.basis)}${focusData.note ? ` (${focusData.note})` : ''}. Entry/SL/TP dikunci saat sinyal pertama terkonfirmasi.`
             : `Bias pra-rilis ${signalLabel} untuk ${focus.pair || 'aset terkait'} dari ${basisLabel(focusData.basis)}${focusData.note ? ` (${focusData.note})` : ''}. Ini skenario sampai rilis tercetak, bukan kepastian.`;
+    const techNote = techConfluenceText(focus.kind, focus.pair);
+    if (techNote) reason += techNote;
     const color = signalDir === 'long' ? 'var(--green)' : signalDir === 'short' ? 'var(--red)' : 'var(--amber)';
     return `<article class="event glass">
         <div class="event-title">
@@ -2307,6 +2640,8 @@ function render() {
     renderForexBoard();
     renderCryptoBoard();
     renderIndicesBoard();
+    renderTechBoard();
+    renderMacroBoard();
 
     const totalEl = $('#total-events');
     const actualEl = $('#events-with-actual');
@@ -2340,13 +2675,18 @@ document.querySelector('.filters').addEventListener('click', ev => {
     render();
 });
 
-$('#refresh').onclick = () => { load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadTradeStats(); renderTradeStats(); };
+$('#refresh').onclick = () => { load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadTradeStats(); renderTradeStats(); loadSentiment(); };
 renderGoldBoard();
 renderCryptoBoard();
 renderForexBoard();
 renderIndicesBoard();
+renderTechBoard();
+renderMacroBoard();
+loadSentiment();
 load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadTradeStats(); renderTradeStats();
 setInterval(() => { loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); }, 60000);
+// Sentimen Fear & Greed jarang berubah; cukup ditarik ulang tiap 10 menit.
+setInterval(loadSentiment, 600000);
 // Harga pair: tarik scanner langsung tiap 20 detik supaya board benar-benar bergerak.
 setInterval(loadForexLive, 20000);
 // Kalender tidak terlalu sering berubah; cek setiap menit agar event Actual/Actual update muncul otomatis.
