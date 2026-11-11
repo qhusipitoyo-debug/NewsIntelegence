@@ -1,0 +1,2948 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#071018">
+  <title>shidiqpiy — XAUUSD News Terminal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--ink:#eefaff;--muted:#91aeb8;--line:rgba(92,190,214,.18);--aqua:#27d5e0;--blue:#5db7e8;--green:#18d19a;--red:#ff647d;--amber:#f2b84b;--glass:rgba(7,16,24,.48);--glass2:rgba(10,24,34,.58);--shadow:0 18px 55px rgba(0,0,0,.34)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);font:15px/1.55 "DM Sans",sans-serif;background:#03080d;min-height:100vh;overflow-x:hidden}
+    body:before{content:"";position:fixed;inset:0;z-index:-2;background:radial-gradient(circle at 9% 8%,rgba(12,92,125,.34) 0,transparent 34%),radial-gradient(circle at 90% 22%,rgba(17,64,96,.3) 0,transparent 29%),linear-gradient(150deg,#02070c 5%,#07151e 52%,#02070c 100%)}
+    body:after{content:"";position:fixed;inset:0;z-index:-1;opacity:.12;background-image:radial-gradient(#43c8dc 1px,transparent 1px);background-size:24px 24px;mask-image:linear-gradient(to bottom,black,transparent 85%)}
+    button,select{font:inherit}.shell{width:min(1380px,calc(100% - 32px));margin:auto;padding:22px 0 54px}.glass{background:var(--glass);border:1px solid rgba(94,199,222,.18);box-shadow:var(--shadow);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+    header{border-radius:28px;padding:24px 28px;display:flex;justify-content:space-between;gap:24px;align-items:center;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:14px}.logo{width:52px;height:52px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(145deg,#17c5c2,#20749c);color:#fff;font:800 22px Manrope;box-shadow:0 10px 28px rgba(32,185,210,.25)}.brand h1{font:800 clamp(20px,3vw,28px) Manrope;margin:0;letter-spacing:-.8px}.brand p{margin:2px 0 0;color:var(--muted)}.live{display:flex;align-items:center;gap:9px;color:var(--green);font-weight:700}.dot{width:9px;height:9px;border-radius:50%;background:currentColor;box-shadow:0 0 0 7px rgba(24,209,154,.1);animation:pulse 1.8s infinite}@keyframes pulse{50%{box-shadow:0 0 0 12px transparent}}
+    .hero{margin:22px 0;display:grid;grid-template-columns:1.5fr .8fr;gap:18px}.intro{border-radius:28px;padding:32px}.eyebrow{color:var(--aqua);text-transform:uppercase;font-size:12px;letter-spacing:1.6px;font-weight:800}.intro h2{font:800 clamp(30px,5vw,55px)/1.05 Manrope;margin:12px 0;letter-spacing:-2.3px;max-width:760px}.intro h2 span{color:var(--blue)}.intro p{color:var(--muted);max-width:690px;font-size:16px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:26px}.stat{padding:15px;border-radius:18px;background:rgba(4,15,23,.38);border:1px solid var(--line)}.stat b{display:block;font:700 20px Manrope}.stat span{color:var(--muted);font-size:12px}.next{border-radius:28px;padding:28px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(145deg,rgba(18,115,145,.68),rgba(8,151,159,.62));border:1px solid rgba(100,226,236,.24);color:#fff}.next .eyebrow{color:#c9ffff}.next h3{font:800 26px Manrope;margin:12px 0}.countdown{font:800 clamp(31px,5vw,48px) Manrope;letter-spacing:1px}.next small{color:#d7fbff}.toolbar{border-radius:22px;padding:14px 18px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;position:sticky;top:10px;z-index:5}.filters{display:flex;gap:9px;flex-wrap:wrap}.chip,.refresh{border:1px solid var(--line);background:rgba(5,17,25,.48);color:var(--ink);padding:9px 14px;border-radius:999px;cursor:pointer;font-weight:700}.chip.active{background:rgba(34,178,202,.25);color:#fff;border-color:rgba(80,210,226,.35)}.refresh{color:var(--blue)}.status{color:var(--muted);font-size:13px}
+    .section-head{display:flex;justify-content:space-between;align-items:end;margin:30px 4px 15px}.section-head h3{font:800 25px Manrope;margin:0}.section-head p{color:var(--muted);margin:3px 0}.timeline{position:relative}.day{margin-bottom:19px}.datebar{display:flex;gap:10px;align-items:center;margin:0 0 10px 15px}.datebar strong{font:800 17px Manrope}.datebar span{color:var(--muted)}
+    .event{border-radius:24px;padding:22px;display:grid;grid-template-columns:minmax(210px,1.5fr) repeat(3,minmax(90px,.55fr)) minmax(165px,.75fr);gap:16px;align-items:center;margin-bottom:11px;transition:.2s;background:rgba(5,15,23,.44)}.event:hover{transform:translateY(-2px);box-shadow:0 23px 58px rgba(0,0,0,.4);background:rgba(8,24,34,.58)}.event-title{display:flex;gap:14px;align-items:flex-start}.flag{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:rgba(24,78,94,.36);font-size:20px;flex:none}.event h4{font:700 17px Manrope;margin:0 0 3px}.event-title p,.metric span{color:var(--muted);font-size:12px;margin:0}.metric b{display:block;margin-top:3px;color:#e9f8fc}.impact{display:inline-flex;padding:4px 9px;border-radius:99px;background:rgba(43,157,181,.18);color:#72d4e4;font-size:11px;font-weight:800}.signal{border-radius:18px;padding:12px 14px;background:rgba(4,14,21,.42)}.signal.long{background:rgba(18,139,105,.2);color:var(--green)}.signal.short{background:rgba(181,44,66,.2);color:var(--red)}.signal.wait{background:rgba(177,122,33,.2);color:#ffc96b}.signal b{font:800 18px Manrope}.signal small{display:block}.expand{grid-column:1/-1;border-top:1px solid var(--line);padding-top:17px;display:grid;grid-template-columns:1.4fr .6fr;gap:20px}.reason b{display:block;margin-bottom:4px}.reason p{color:var(--muted);margin:0}.meter-row{display:flex;align-items:center;gap:12px}.meter{height:10px;background:rgba(117,164,177,.16);border-radius:99px;overflow:hidden;flex:1}.meter i{display:block;height:100%;width:var(--score);background:var(--meter);border-radius:inherit}.score{font:800 19px Manrope;color:var(--meter)}.empty{border-radius:24px;padding:45px;text-align:center;color:var(--muted)}.footer{margin-top:26px;padding:20px;text-align:center;color:var(--muted);font-size:12px}.hidden{display:none!important}
+    @media(max-width:950px){.hero{grid-template-columns:1fr}.event{grid-template-columns:1fr 1fr 1fr}.event-title{grid-column:1/-1}.signal{grid-column:2/4}.expand{grid-template-columns:1fr}}@media(max-width:620px){.shell{width:min(100% - 18px,1380px)}header{padding:18px;align-items:flex-start}.brand p{display:none}.live{font-size:12px}.intro{padding:23px}.intro h2{letter-spacing:-1.4px}.stats{grid-template-columns:1fr}.toolbar{top:5px}.status{width:100%}.event{grid-template-columns:1fr 1fr;padding:17px}.signal{grid-column:1/-1}.metric:nth-of-type(3){grid-column:1/-1}.expand{grid-column:1/-1}}
+    
+    /* STYLE UNTUK EXECUTION LEVELS & WARNING */
+    .tpsl{grid-column:1/-1;display:flex;gap:14px;flex-wrap:wrap;padding:10px 14px;border-radius:14px;background:rgba(43,157,181,.10);border:1px dashed rgba(114,212,228,.35);font-size:13px;color:#cfe9ef}.tpsl b{color:#72d4e4;margin-right:6px;font-weight:800}.tpsl span{background:rgba(4,14,21,.4);padding:5px 10px;border-radius:8px}
+    .warning-badge { background: rgba(255,100,125,0.15); color: var(--red); border: 1px solid rgba(255,100,125,0.3); padding: 5px 10px; border-radius: 8px; font-size: 11px; display: inline-block; margin-bottom: 10px; font-weight: bold; }
+    .expired-badge { background: rgba(145,174,184,0.15); color: var(--muted); border: 1px solid rgba(145,174,184,0.3); padding: 5px 10px; border-radius: 8px; font-size: 11px; display: inline-block; margin-bottom: 10px; font-weight: bold; }
+    .postnews-badge { background: rgba(24,209,154,0.12); color: var(--green); border: 1px solid rgba(24,209,154,0.35); padding: 6px 10px; border-radius: 8px; font-size: 11px; display: inline-block; font-weight: bold; }
+    .exec-box { width: 100%; margin-top: 10px; background: rgba(242, 184, 75, 0.05); border: 1px solid rgba(242, 184, 75, 0.3); border-radius: 12px; padding: 12px; }
+    .exec-box h5 { margin: 0 0 8px 0; color: var(--amber); font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+    .exec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .exec-card { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; font-size: 12px; border-left: 3px solid; }
+    .exec-card.buy { border-color: var(--green); }
+    .exec-card.sell { border-color: var(--red); }
+    .exec-card b { display: block; margin-bottom: 4px; }
+    .exec-card .val { color: #fff; margin-bottom: 2px; }
+    .oco-note { font-size: 11px; color: var(--muted); margin-top: 8px; font-style: italic; }
+
+    .forex-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; border-top: 1px dashed rgba(255,255,255,.1); padding-top: 10px; width: 100%; }
+    .forex-card { background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 8px; flex: 1 1 120px; font-size: 11px; }
+    .forex-card.long { border-left: 3px solid var(--green); }
+    .forex-card.long b { color: var(--green) !important; }
+    .forex-card.short { border-left: 3px solid var(--red); }
+    .forex-card.short b { color: var(--red) !important; }
+    .forex-card b { font-size: 12px; }
+    .forex-card .val { color: #fff; }
+    .validity { width: 100%; color: #ffc96b; font-weight: bold; margin-bottom: 5px; font-size:12px; }
+
+    .crypto-board,.market-board { margin-top: 18px; border-radius: 26px; padding: 18px 22px; display: grid; grid-template-columns: minmax(210px, .85fr) 2fr; gap: 18px; align-items: center; }
+    .crypto-board h3,.market-board h3 { font: 800 19px Manrope; margin: 4px 0 3px; letter-spacing: -.4px; }
+    .crypto-board p,.market-board p { margin: 0; color: var(--muted); font-size: 12px; max-width: 340px; }
+    .crypto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .mb-body { display: grid; gap: 6px; }
+    .mb-price { font: 800 26px Manrope; letter-spacing: -.6px; }
+    .mb-meta { color: var(--muted); font-size: 11px; }
+    .mb-levels { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .mb-level { background: rgba(4,15,23,.42); border: 1px solid var(--line); border-left: 3px solid var(--amber); border-radius: 12px; padding: 10px 12px; display: flex; gap: 12px; flex-wrap: wrap; align-items: baseline; font-size: 11px; }
+    .mb-level b { font: 800 12px Manrope; }
+    .mb-level.buy { border-left-color: var(--green); } .mb-level.buy b { color: var(--green); }
+    .mb-level.sell { border-left-color: var(--red); } .mb-level.sell b { color: var(--red); }
+    .mb-level span { color: #dff5fb; white-space: nowrap; }
+    .crypto-card { background: rgba(4,15,23,.42); border: 1px solid var(--line); border-left: 3px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+    .crypto-card .pair { display: flex; justify-content: space-between; align-items: center; font: 800 14px Manrope; }
+    .crypto-card .pair small { color: var(--muted); font: 500 11px "DM Sans",sans-serif; }
+    .crypto-card .price { font: 800 22px Manrope; margin: 4px 0 2px; }
+    .crypto-card .meta { color: var(--muted); font-size: 11px; }
+    .crypto-card .meta .sep { opacity: .5; margin: 0 3px; }
+    .crypto-card.buy { border-left-color: var(--green); }
+    .crypto-card.sell { border-left-color: var(--red); }
+    .crypto-card.wait { border-left-color: var(--amber); }
+    .crypto-card .levels { margin-top: 6px; }
+    .crypto-card .fx-badge { margin-left: 6px; }
+    .forex-board { margin-top: 18px; border-radius: 26px; padding: 18px 22px; display: grid; grid-template-columns: minmax(210px, .85fr) 2fr; gap: 18px; align-items: center; }
+    .forex-board h3 { font: 800 19px Manrope; margin: 4px 0 3px; letter-spacing: -.4px; }
+    .forex-board p { margin: 0; color: var(--muted); font-size: 12px; max-width: 340px; }
+    .fx-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .fx-source { grid-column: 1 / -1; color: var(--muted); font-size: 10px; line-height: 1.45; margin: 0 0 2px; }
+    .fx-source b { color: #dff5fb; }
+    .fx-card { background: rgba(4,15,23,.42); border: 1px solid var(--line); border-left: 3px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+    .fx-card.buy { border-left-color: var(--green); }
+    .fx-card.sell { border-left-color: var(--red); }
+    .fx-card.wait { border-left-color: var(--amber); }
+    .fx-card .pair { display: flex; justify-content: space-between; align-items: center; gap: 8px; font: 800 14px Manrope; }
+    .fx-badge { display: inline-block; padding: 3px 8px; border-radius: 999px; font: 800 10px "DM Sans",sans-serif; letter-spacing: .4px; }
+    .fx-badge.buy { background: rgba(24,209,154,.16); color: var(--green); }
+    .fx-badge.sell { background: rgba(255,100,125,.16); color: var(--red); }
+    .fx-badge.wait { background: rgba(242,184,75,.16); color: var(--amber); }
+    .fx-price { font: 800 22px Manrope; letter-spacing: -.5px; margin: 4px 0 6px; }
+    .fx-tick { font: 800 10.5px "DM Sans",sans-serif; margin-left: 6px; letter-spacing: 0; }
+    .fx-tick.up { color: var(--green); } .fx-tick.down { color: var(--red); }
+    .fx-live { color: var(--green); font-size: 9px; letter-spacing: .6px; } .fx-live.off { color: var(--muted); }
+    .fx-broker { margin: 0 0 6px; color: #9fdbe8; font-size: 9.5px; font-variant-numeric: tabular-nums; }
+    .fx-broker.stale { color: var(--amber); }
+    .fx-levels { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 11px; color: #dff5fb; }
+    .fx-levels span { background: rgba(4,14,21,.42); padding: 3px 7px; border-radius: 7px; }
+    .fx-event { margin-top: 7px; color: #cfe9ef; font-size: 10.5px; font-weight: 600; }
+    .fx-note { margin-top: 3px; color: var(--muted); font-size: 9.5px; }
+    .indices-board { margin-top: 18px; border-radius: 26px; padding: 18px 22px; display: grid; grid-template-columns: minmax(210px, .85fr) 2fr; gap: 18px; align-items: center; }
+    .indices-board h3 { font: 800 19px Manrope; margin: 4px 0 3px; letter-spacing: -.4px; }
+    .indices-board p { margin: 0; color: var(--muted); font-size: 12px; max-width: 340px; }
+    .idx-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .idx-card { background: rgba(4,15,23,.42); border: 1px solid var(--line); border-left: 3px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+    .idx-card.buy { border-left-color: var(--green); }
+    .idx-card.sell { border-left-color: var(--red); }
+    .idx-card.wait { border-left-color: var(--amber); }
+    .idx-card .pair { display: flex; justify-content: space-between; align-items: center; gap: 8px; font: 800 14px Manrope; }
+    .idx-card .pair small { color: var(--muted); font: 500 11px "DM Sans",sans-serif; }
+    .idx-price { font: 800 22px Manrope; letter-spacing: -.5px; margin: 4px 0 6px; }
+    .idx-levels { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 11px; color: #dff5fb; }
+    .idx-levels span { background: rgba(4,14,21,.42); padding: 3px 7px; border-radius: 7px; }
+    .idx-event { margin-top: 7px; color: #cfe9ef; font-size: 10.5px; font-weight: 600; }
+    .idx-note { margin-top: 3px; color: var(--muted); font-size: 9.5px; }
+    @media(max-width:760px){ .crypto-board,.market-board,.forex-board,.indices-board { grid-template-columns: 1fr; } .crypto-grid,.mb-levels,.fx-grid,.idx-grid { grid-template-columns: 1fr; } }
+
+    /* ═══ AI TECHNICAL & MACRO/SENTIMENT BOARDS ═══ */
+    .tech-board { margin-top: 18px; border-radius: 26px; padding: 18px 22px; display: grid; grid-template-columns: minmax(210px, .85fr) 2fr; gap: 18px; align-items: start; }
+    .tech-board h3 { font: 800 19px Manrope; margin: 4px 0 3px; letter-spacing: -.4px; }
+    .tech-board p { margin: 0; color: var(--muted); font-size: 12px; max-width: 360px; }
+    .tech-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .tech-card { background: rgba(4,15,23,.42); border: 1px solid var(--line); border-left: 3px solid var(--line); border-radius: 14px; padding: 12px 14px; font-size: 11px; }
+    .tech-card.buy { border-left-color: var(--green); } .tech-card.buy .tech-dir { color: var(--green); }
+    .tech-card.sell { border-left-color: var(--red); } .tech-card.sell .tech-dir { color: var(--red); }
+    .tech-card.wait { border-left-color: var(--amber); } .tech-card.wait .tech-dir { color: var(--amber); }
+    .tech-card .head { display: flex; justify-content: space-between; align-items: center; gap: 8px; font: 800 13px Manrope; }
+    .tech-card .tech-dir { font: 800 12px Manrope; letter-spacing: .4px; }
+    .tech-card .sub { color: var(--muted); margin: 3px 0 6px; font-size: 10.5px; }
+    .tech-tags { display: flex; flex-wrap: wrap; gap: 4px 6px; }
+    .tech-tags span { background: rgba(4,14,21,.42); padding: 3px 7px; border-radius: 7px; color: #dff5fb; }
+    .tech-tags span.buy { color: var(--green); } .tech-tags span.sell { color: var(--red); } .tech-tags span.wait { color: var(--amber); }
+    .tech-levels { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 6px; color: #dff5fb; }
+    .tech-levels span { background: rgba(4,14,21,.42); padding: 3px 7px; border-radius: 7px; }
+    .tech-note { margin-top: 5px; color: var(--muted); font-size: 9.5px; }
+    .macro-body { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .macro-card { background: rgba(4,15,23,.42); border: 1px solid var(--line); border-left: 3px solid var(--blue); border-radius: 14px; padding: 12px 14px; font-size: 11px; }
+    .macro-card h5 { margin: 0 0 6px; font: 800 12px Manrope; color: #dff5fb; }
+    .macro-card .big { font: 800 20px Manrope; }
+    .macro-card .big.buy { color: var(--green); } .macro-card .big.sell { color: var(--red); } .macro-card .big.wait { color: var(--amber); }
+    .macro-bar { height: 10px; background: rgba(117,164,177,.16); border-radius: 99px; overflow: hidden; margin: 8px 0 4px; position: relative; }
+    .macro-bar i { position: absolute; top: 0; bottom: 0; background: var(--amber); border-radius: inherit; }
+    .macro-card .meta { color: var(--muted); font-size: 10.5px; line-height: 1.5; }
+    @media(max-width:760px){ .tech-board { grid-template-columns: 1fr; } .tech-grid,.macro-body { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body><main class="shell">
+  <header class="glass">
+    <div class="brand">
+      <div class="logo">F</div>
+      <div>
+        <h1>shidiqpiy</h1>
+        <p>XAUUSD macro news intelligence, Forex, Crypto</p>
+      </div>
+    </div>
+    
+    <div style="display: flex; align-items: center; gap: 16px;">
+      <div id="xauusd-price-widget" style="background: rgba(0,0,0,0.2); border: 1px solid var(--line); padding: 10px 14px; border-radius: 12px; min-width: 140px;"></div>
+      <div class="live"><i class="dot"></i><span id="liveText">SYNCING DATA</span></div>
+    </div>
+  </header>
+  
+  <section class="hero"><article class="intro glass"><div class="eyebrow">Waktu Indonesia Tengah</div><h2>Global-moving news,<br><span>in the right order.</span></h2><p>A chronological monthly calendar focused on Global events that can move XAUUSD. Every scenario is converted to Waktu Indonesia Tengah and explained before a directional bias is shown.</p><div class="stats"><div class="stat"><b id="eventCount">—</b><span>events this month</span></div><div class="stat"><b id="highCount">—</b><span>high-impact releases</span></div><div class="stat"><b>WITA</b><span>Asia/Makassar • UTC+8</span></div></div></article><aside class="next"><div><div class="eyebrow">Next gold catalyst</div><h3 id="nextName">Finding next event…</h3><small id="nextTime">Waktu Indonesia Tengah</small></div><div><div class="countdown" id="countdown">--:--:--</div><small>until scheduled release</small></div></aside></section>
+  <section class="market-board glass" id="goldBoard">
+    <div>
+      <div class="eyebrow">Gold watch</div>
+      <h3>XAU/USD</h3>
+      <p>Live gold levels from the active USD catalyst. Before the release, BUY/SELL comes from the Forecast-vs-Previous bias. After it, entries wait 15 minutes, then direction follows price reaction first, momentum second, Actual last. Confirmed Entry/SL/TP are locked so they do not repaint; Straddle OCO stays as the fallback.</p>
+    </div>
+    <div class="mb-body" id="goldBoardBody"></div>
+  </section>
+  <section class="crypto-board glass" id="cryptoBoard">
+    <div>
+      <div class="eyebrow">Crypto watch</div>
+      <h3>BTC/USD &amp; ETH/USD</h3>
+      <p>Always-on crypto prices, independent of the event currency. BUY/SELL uses the same ladder as the other boards: wait 15 minutes after the release, then price reaction first, momentum second, Actual last. Confirmed Entry/SL/TP are locked with adaptive 1:2 R:R.</p>
+    </div>
+    <div class="crypto-grid" id="cryptoGrid"></div>
+  </section>
+  <section class="forex-board glass" id="forexBoard">
+    <div>
+      <div class="eyebrow">Forex watch</div>
+      <h3>Forex Majors &amp; JPY Crosses</h3>
+      <p>Pre-news market entry bias for EUR/USD, GBP/USD, USD/JPY, USD/CHF, AUD/USD, USD/CAD, NZD/USD, GBP/JPY and EUR/JPY. Prices use the live OANDA feed (TradingView) with a multi-broker cross-check. When the local MT5 bridge is running, the exact broker bid/ask is shown and used for the entry side (ask for BUY, bid for SELL). After a release, entries wait 15 minutes and the confirmed Entry/SL/TP are locked. It is a scenario, not a prediction.</p>
+    </div>
+    <div class="fx-grid" id="fxGrid"></div>
+  </section>
+  <section class="indices-board glass" id="indicesBoard">
+    <div>
+      <div class="eyebrow">Index watch</div>
+      <h3>Nasdaq 100 &amp; S&amp;P 500</h3>
+      <p>NAS100 and US500 react to the same USD catalyst, with event-aware mapping: growth/employment surprises are read as risk-on/risk-off, while inflation keeps its rate-pressure direction. BUY means risk-on/stronger index, SELL means risk-off/weaker index. Confirmed levels are locked with adaptive 1:2 R:R.</p>
+    </div>
+    <div class="idx-grid" id="idxGrid"></div>
+  </section>
+  
+  
+  <nav class="toolbar glass"><div class="filters"><button class="chip active" data-filter="all">Full month</button><button class="chip" data-filter="upcoming">Upcoming</button><button class="chip" data-filter="high">High impact</button></div><span class="status" id="status">Loading calendar…</span><button class="refresh" id="refresh">↻ Refresh</button></nav>
+  <div class="section-head"><div><h3 id="monthTitle">Economic calendar</h3><p>Oldest to newest • times shown in WITA</p></div></div>
+  <section id="calendar" class="timeline"></section>
+  <section class="stats-panel glass" style="margin-top: 24px; border-radius: 20px;">
+    <div style="padding: 20px;">
+      <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 18px; color: var(--aqua);">📊 Sistem Statistik &amp; Kalibrasi</h3>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 16px;">
+        <div class="stat-item" style="background:rgba(4,15,23,.42); padding:12px; border-radius:12px; border:1px solid var(--line);">
+          <div style="font-size: 24px; font-weight: 700; color: var(--green);" id="total-events">—</div>
+          <div style="color: var(--muted); font-size: 12px;">Total Event</div>
+        </div>
+        <div class="stat-item" style="background:rgba(4,15,23,.42); padding:12px; border-radius:12px; border:1px solid var(--line);">
+          <div style="font-size: 24px; font-weight: 700; color: var(--green);" id="events-with-actual">—</div>
+          <div style="color: var(--muted); font-size: 12px;">Dengan Actual</div>
+        </div>
+        <div class="stat-item" style="background:rgba(4,15,23,.42); padding:12px; border-radius:12px; border:1px solid var(--line);">
+          <div style="font-size: 24px; font-weight: 700; color: var(--amber);" id="high-importance">—</div>
+          <div style="color: var(--muted); font-size: 12px;">High Impact</div>
+        </div>
+        <div class="stat-item" style="background:rgba(4,15,23,.42); padding:12px; border-radius:12px; border:1px solid var(--line);">
+          <div style="font-size: 24px; font-weight: 700; color: var(--muted);" id="low-importance">—</div>
+          <div style="color: var(--muted); font-size: 12px;">Low Impact</div>
+        </div>
+      </div>
+      <div style="font-size: 12px; color: var(--muted); line-height: 1.6;" id="stats-summary">
+        <div>• <b>Kalibrasi Volatilitas &amp; Anti-Fakeout:</b> Threshold kejutan ekonomi disaring dari deviasi noise mikro.</div>
+        <div>• <b>Order Execution Bertingkat:</b> Entry Pasar / Breakout + Level Pullback (Retest OTE) untuk rasio RR terbaik.</div>
+        <div>• <b>Target Bertingkat:</b> TP1 (1:1 / BE Lock) amankan profit dini, TP2 (1:2 R:R) target ekspansi terkalibrasi.</div>
+        <div>• <b>Filter Spread &amp; Spike:</b> Delay konfirmasi 15 menit pasca-rilis mencegah terjebak di spike pertama.</div>
+        <div>• <b>Prioritas Arah:</b> Reaksi Harga 1M &gt; Momentum Terkalibrasi &gt; Actual Fundamental vs Forecast.</div>
+      </div>
+      <div id="tradeStats" style="margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px;"></div>
+    </div>
+  </section>
+  <div class="footer">Educational scenario analysis only—not financial advice. A scheduled event does not guarantee direction; wait for the actual release and price confirmation.</div>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function num(v) {
+    if (v === null || v === undefined || String(v).trim() === '' || v === '-' || v === '—') return null;
+    const raw = String(v).trim().replace(/,/g, '');
+    const m = raw.match(/^([+-]?\d*\.?\d+)\s*([KMB])?%?$/i);
+    let n, suf = '';
+    if (m) { n = Number(m[1]); suf = (m[2] || '').toUpperCase(); }
+    else n = Number(raw.replace(/[^0-9.-]/g, ''));
+    if (!Number.isFinite(n)) return null;
+    if (suf === 'K') n *= 1e3;
+    if (suf === 'M') n *= 1e6;
+    if (suf === 'B') n *= 1e9;
+    return n;
+}
+function countryCode(c) {
+    const u = String(c || 'USD').trim().toUpperCase();
+    return ({ 'UNITED STATES': 'USD', US: 'USD', USA: 'USD', CANADA: 'CAD', CA: 'CAD', EUROZONE: 'EUR', 'EURO AREA': 'EUR', UK: 'GBP', 'UNITED KINGDOM': 'GBP', JAPAN: 'JPY', AUSTRALIA: 'AUD', 'NEW ZEALAND': 'NZD' }[u] || u);
+}
+const WITA = 'Asia/Makassar';
+const FOREX_MAJORS = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'USD/CAD', 'NZD/USD'];
+const FOREX_CROSSES = ['GBP/JPY', 'EUR/JPY'];
+const FOREX_PAIRS = [...FOREX_MAJORS, ...FOREX_CROSSES];
+const INDICES = [
+    { symbol: 'NAS100', name: 'Nasdaq 100', yahoo: '^NDX', slPct: 1.0, tpPct: 2.0 },
+    { symbol: 'US500', name: 'S&P 500', yahoo: '^GSPC', slPct: 0.75, tpPct: 1.5 }
+];
+
+const CRYPTO_PAIRS = [
+    { pair: 'BTC/USD', name: 'Bitcoin', color: '#f7931a', slPct: 1.0, tpPct: 2.0 },
+    { pair: 'ETH/USD', name: 'Ethereum', color: '#627eea', slPct: 1.5, tpPct: 3.0 }
+];
+
+let events = [], filter = 'all', timer;
+let LIVE_PRICE = null;
+let FOREX_RATES = {};
+let FOREX_QUOTES = {};
+let FOREX_META = {};
+let FOREX_BROKER = null;
+let FOREX_TICK = {};
+let FOREX_LIVE = false;
+let CRYPTO_RATES = {};
+let CRYPTO_CHANGE = {};
+let INDEX_RATES = {};
+let INDEX_CHANGE = {};
+let PRE_NEWS = {};
+let REACTION = null;
+// Histori bar 1 menit per aset dari workflow (data/markets.json) — dipakai
+// untuk mengukur ATR/volatilitas riil saat menghitung lebar SL/TP.
+let MARKETS = null;
+let TRADE_STATS = { generatedAt: null, source: '', totals: { total: 0, wins: 0, losses: 0, win_rate: 0, profit_factor: null, gross_win: 0, gross_loss: 0, net_pnl: 0, avg_win: 0, avg_loss: 0, expectancy: 0 }, byPair: [] };
+const REACTION_MAX_AGE_MS = 45 * 60 * 1000;
+// Entry/SL/TP yang sudah dikonfirmasi disimpan per event+aset supaya tidak berubah
+// setiap tick. Level yang bergerak-gerak membuat order tidak pernah cocok dengan
+// harga yang dilihat saat entry.
+const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
+window.applyLiveXauPrice = function (price) {
+    const p = Number(price);
+    if (!Number.isFinite(p) || p <= 0) return;
+    if (LIVE_PRICE === p) return;
+    LIVE_PRICE = p;
+    if (events.length) render();
+};
+
+const fmtDate = d => new Intl.DateTimeFormat('en-IN', { timeZone: WITA, weekday: 'short', day: '2-digit', month: 'short' }).format(d);
+const fmtTime = d => new Intl.DateTimeFormat('en-IN', { timeZone: WITA, hour: '2-digit', minute: '2-digit', hour12: false }).format(d) + ' WITA';
+
+const POST_NEWS_HOLD_MS = 6 * 60 * 60 * 1000;
+// Jangan entry di spike pertama. Spread masih lebar dan arah 1 menit belum stabil.
+// Sinyal post-news baru dipublikasikan setelah 15 menit konfirmasi.
+const NEWS_SETTLE_MS = 15 * 60 * 1000;
+const MOMENTUM_WINDOW_MS = 90 * 60 * 1000;
+
+function dateEventKey(e) {
+    return String(e.Date) + '|' + String(e.Event);
+}
+
+function eventKey(e) {
+    return 'feriha:prenews:' + dateEventKey(e);
+}
+
+function normalizeSnapshot(raw) {
+    if (raw == null) return null;
+    if (typeof raw === 'number') return Number.isFinite(raw) && raw > 0 ? { gold: raw } : null;
+    if (typeof raw !== 'object') return null;
+    const snap = { ...raw };
+    if (snap.gold == null && snap.price != null) snap.gold = Number(snap.price);
+    delete snap.price;
+    return snap;
+}
+
+function preNewsSnapshot(e) {
+    let local = null;
+    try {
+        const raw = localStorage.getItem(eventKey(e));
+        if (raw !== null && raw !== undefined && String(raw).trim() !== '') {
+            local = normalizeSnapshot(JSON.parse(raw));
+        }
+    } catch {}
+    const repo = normalizeSnapshot(PRE_NEWS[dateEventKey(e)]);
+    if (!local || !repo) return local || repo;
+    return {
+        ...repo,
+        ...local,
+        forex: { ...(repo.forex || {}), ...(local.forex || {}) },
+        crypto: { ...(repo.crypto || {}), ...(local.crypto || {}) },
+        indices: { ...(repo.indices || {}), ...(local.indices || {}) }
+    };
+}
+
+function rememberPreNewsPrice(e) {
+    const t = new Date(e.Date).getTime();
+    if (!Number.isFinite(t)) return;
+    const now = Date.now();
+    // Simpan tick terakhir sebelum rilis (maks. 2 jam) sebagai basis momentum per pair.
+    if (now >= t || t - now > 2 * 60 * 60 * 1000) return;
+    const prev = preNewsSnapshot(e) || {};
+    const snap = { ...prev };
+    if (LIVE_PRICE) snap.gold = LIVE_PRICE;
+    const fx = {};
+    ['EUR', 'GBP', 'JPY', 'CHF', 'AUD', 'CAD'].forEach(c => {
+        const v = Number(FOREX_RATES[c]);
+        if (Number.isFinite(v) && v > 0) fx[c] = v;
+    });
+    if (Object.keys(fx).length) snap.forex = fx;
+    const fxQuotes = {};
+    FOREX_PAIRS.forEach(pair => {
+        const v = Number(pairRate(pair));
+        if (Number.isFinite(v) && v > 0) fxQuotes[pair] = v;
+    });
+    if (Object.keys(fxQuotes).length) snap.forexQuotes = { ...(prev.forexQuotes || {}), ...fxQuotes };
+    if (Object.keys(CRYPTO_RATES).length) snap.crypto = { ...CRYPTO_RATES };
+    const idx = {};
+    Object.keys(INDEX_RATES).forEach(symbol => {
+        const v = Number(INDEX_RATES[symbol] && INDEX_RATES[symbol].price);
+        if (Number.isFinite(v) && v > 0) idx[symbol] = v;
+    });
+    if (Object.keys(idx).length) snap.indices = { ...(snap.indices || {}), ...idx };
+    if (snap.gold == null && !snap.forex && !snap.forexQuotes && !snap.crypto && !snap.indices) return;
+    snap.capturedAt = new Date(now).toISOString();
+    try { localStorage.setItem(eventKey(e), JSON.stringify(snap)); } catch {}
+}
+
+function preNewsPrice(e) {
+    const snap = preNewsSnapshot(e);
+    const v = Number(snap && snap.gold);
+    return Number.isFinite(v) && v > 0 ? v : null;
+}
+
+function newsPhase(e) {
+    const t = new Date(e.Date).getTime();
+    if (!Number.isFinite(t)) return 'pre';
+    const now = Date.now();
+    if (now < t) return 'pre';
+    if (now < t + NEWS_SETTLE_MS) return 'live';
+    return 'post';
+}
+
+function momentumFloor(kind, pair) {
+    // Noise floor per aset: 0.1% di EUR/USD hanya 11 pip, sedangkan 0.1% di emas
+    // cuma ~$4. Tanpa batas ini, pergerakan kecil pasca-rilis dianggap arah.
+    if (kind === 'gold') return 0.15;
+    if (kind === 'crypto') return 0.25;
+    if (kind === 'index') return 0.12;
+    return /JPY$/i.test(String(pair)) ? 0.10 : 0.07;
+}
+
+// Harga dasar = close bar 1 menit TEPAT sebelum rilis (bar yang selesai <= waktu rilis).
+// Snapshot pra-news dari workflow diambil sampai 2 jam sebelum rilis (data nyata:
+// 82–88 mnt sebelum rilis), jadi hanya dipakai bila segar (<= 15 mnt). Kalau tidak,
+// "momentum" mencampur drift pra-rilis dengan reaksi berita.
+function barsOf(asset) {
+    const cfg = MARKETS && MARKETS.pairs && MARKETS.pairs[String(asset).toUpperCase()];
+    return cfg && Array.isArray(cfg.bars) ? cfg.bars : [];
+}
+
+function barBaseBefore(asset, releaseMs, maxGapMin = 10) {
+    if (!Number.isFinite(releaseMs)) return null;
+    let best = null;
+    for (const b of barsOf(asset)) {
+        const end = (Number(b && b.k) + 1) * 60000, c = Number(b && b.c);
+        if (!(c > 0) || !Number.isFinite(end) || end > releaseMs) continue;
+        if (!best || end > best.end) best = { end, c };
+    }
+    return best && releaseMs - best.end <= maxGapMin * 60000 ? best.c : null;
+}
+
+// ATR 1 menit (%) dari 60 bar SEBELUM rilis = baseline volatilitas tenang, tidak
+// terkontaminasi spike berita. Dipakai untuk menormalkan ambang reaksi.
+function preReleaseAtrPct(asset, releaseMs) {
+    if (!Number.isFinite(releaseMs)) return null;
+    const rows = barsOf(asset)
+        .map(b => ({ end: (Number(b && b.k) + 1) * 60000, h: Number(b && b.h), l: Number(b && b.l), c: Number(b && b.c) }))
+        .filter(r => r.end <= releaseMs && r.h > 0 && r.l > 0 && r.c > 0)
+        .sort((x, y) => x.end - y.end)
+        .slice(-60);
+    if (rows.length < 20) return null;
+    let sum = 0;
+    for (let i = 1; i < rows.length; i++) {
+        sum += Math.max(rows[i].h - rows[i].l, Math.abs(rows[i].h - rows[i - 1].c), Math.abs(rows[i].l - rows[i - 1].c));
+    }
+    const atr = sum / (rows.length - 1), px = rows[rows.length - 1].c;
+    return atr > 0 ? atr / px * 100 : null;
+}
+
+function momentumFor(e, kind, pair) {
+    const releaseMs = Date.parse(e.Date);
+    const key = kind === 'gold' ? 'XAU/USD' : pair;
+    let base = barBaseBefore(key, releaseMs);
+    if (!(base > 0)) {
+        const snap = preNewsSnapshot(e);
+        const cap = snap ? Date.parse(snap.capturedAt) : NaN;
+        if (!snap || !Number.isFinite(cap) || releaseMs - cap > 15 * 60000 || cap > releaseMs + 60000) return null;
+        if (kind === 'gold') base = Number(snap.gold);
+        else if (kind === 'forex') base = Number(snap.forexQuotes && snap.forexQuotes[pair]) || pairRateFrom(snap.forex, pair);
+        else if (kind === 'crypto') base = Number(snap.crypto && snap.crypto[pair]);
+        else if (kind === 'index') base = Number(snap.indices && snap.indices[pair]);
+    }
+    let cur = null;
+    if (kind === 'gold') cur = Number(LIVE_PRICE);
+    else if (kind === 'forex') cur = pairRate(pair);
+    else if (kind === 'crypto') cur = Number(CRYPTO_RATES[pair]);
+    else if (kind === 'index') cur = Number(INDEX_RATES[pair] && INDEX_RATES[pair].price);
+    if (!Number.isFinite(base) || base <= 0 || !Number.isFinite(cur) || cur <= 0) return null;
+    const changePct = (cur - base) / base * 100;
+    return { dir: Math.abs(changePct) < momentumFloor(kind, pair) ? null : (changePct > 0 ? 'long' : 'short'), changePct, base };
+}
+
+function postNewsMomentum(e) {
+    return momentumFor(e, 'gold');
+}
+
+// Reaksi harga pasca-rilis yang dihitung workflow dari bar 1 menit (data/reaction.json).
+// `dir` di sini sudah per-aset: 'long' = harga aset itu sendiri naik setelah rilis,
+// jadi TIDAK boleh dilewatkan mapPairBias.
+function reactionFloor(pair) {
+    // Reaksi di bawah ambang ini hanyalah noise spread, bukan arah.
+    const key = String(pair).toUpperCase();
+    if (key === 'XAU/USD') return 0.12;
+    if (key === 'BTC/USD') return 0.18;
+    if (key === 'ETH/USD') return 0.22;
+    if (key === 'NAS100') return 0.12;
+    if (key === 'US500') return 0.10;
+    return /JPY$/.test(key) ? 0.08 : 0.06;
+}
+
+function reactionFor(e, pair) {
+    const entry = REACTION && REACTION.events ? REACTION.events[dateEventKey(e)] : null;
+    const hit = entry && entry.pairs ? entry.pairs[pair] : null;
+    if (!hit) return null;
+    const generatedAt = Date.parse(REACTION && REACTION.generatedAt);
+    if (!Number.isFinite(generatedAt) || Date.now() - generatedAt > REACTION_MAX_AGE_MS) return null;
+    const movePct = Number(hit.movePct);
+    if (!Number.isFinite(movePct)) return null;
+    const minutes = Number(hit.minutes);
+    const measuredMinutes = Number.isFinite(minutes) ? minutes : null;
+    let dir = hit.dir === 'long' || hit.dir === 'short' ? hit.dir : (movePct > 0 ? 'long' : 'short');
+    // Ambang = max(floor tetap, ~1.5 sigma gerak acak T menit dari ATR 1-menit PRA-rilis).
+    // Floor tetap saja meloloskan noise saat pasar liar dan menolak gerak nyata saat tenang.
+    const atrPct = preReleaseAtrPct(pair, Date.parse(e.Date));
+    const T = Math.max(1, measuredMinutes || 15);
+    const floor = Math.min(reactionFloor(pair) * 3, Math.max(reactionFloor(pair), atrPct ? atrPct * Math.sqrt(T) : 0));
+    if (Math.abs(movePct) < floor) dir = null;
+    // Pengukuran < 10 menit masih bagian dari spike, bukan arah yang bisa dipakai.
+    if (measuredMinutes !== null && measuredMinutes < 10) dir = null;
+    return { dir, movePct, minutes: measuredMinutes, via: hit.via ? String(hit.via) : null, faded: hit.faded === true, floor };
+}
+
+function moveNote(label, changePct, minutes) {
+    const signed = `${changePct >= 0 ? '+' : ''}${Number(changePct).toFixed(2)}%`;
+    return minutes ? `${label} ${signed} dalam ${minutes} mnt pasca-rilis` : `${label} ${signed} pasca-rilis`;
+}
+
+// Pair yang relevan dengan negara news. USD adalah driver global, jadi cross non-USD
+// juga ikut bereaksi terhadap event USD.
+function pairCurrencies(pair) {
+    const [base, quote] = String(pair).toUpperCase().split('/');
+    const list = [base, quote].filter(Boolean);
+    if (base && quote && base !== 'USD' && quote !== 'USD' && !list.includes('USD')) list.push('USD');
+    return list;
+}
+
+function eventAssets(e) {
+    const c = countryCode(e.Country);
+    return {
+        gold: c === 'USD',
+        forex: FOREX_PAIRS.filter(pair => pairCurrencies(pair).includes(c)),
+        crypto: c === 'USD',
+        indices: c === 'USD'
+    };
+}
+
+function focusPair(e) {
+    const c = countryCode(e.Country);
+    if (c === 'USD') return { kind: 'gold', pair: 'XAU/USD' };
+    const pair = ({ AUD: 'AUD/USD', EUR: 'EUR/USD', GBP: 'GBP/USD', JPY: 'USD/JPY', CHF: 'USD/CHF', CAD: 'USD/CAD', NZD: 'NZD/USD' })[c];
+    return pair ? { kind: 'forex', pair } : { kind: 'none', pair: '' };
+}
+
+function postNewsExpiry(e) {
+    return new Date(new Date(e.Date).getTime() + POST_NEWS_HOLD_MS);
+}
+
+async function loadPreNews() {
+    try {
+        const r = await fetch(`data/prenews.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (!r.ok) return;
+        const j = await r.json();
+        if (j && typeof j === 'object') { PRE_NEWS = j; render(); }
+    } catch (e) { console.log('Pre-news snapshots unavailable', e); }
+}
+
+async function loadReaction() {
+    try {
+        const r = await fetch(`data/reaction.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (!r.ok) return;
+        const j = await r.json();
+        if (j && j.events) { REACTION = j; render(); }
+    } catch (e) { console.log('Reaction data unavailable', e); }
+}
+
+// Bar 1 menit per aset untuk kalibrasi ATR. File ~700KB dan berubah tiap run
+// workflow; cukup ditarik sekali di awal lalu dipoles setiap 5 menit.
+async function loadMarkets() {
+    try {
+        const r = await fetch(`data/markets.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (!r.ok) return;
+        const j = await r.json();
+        if (j && j.pairs) { MARKETS = j; render(); }
+    } catch (e) { console.log('Markets history unavailable', e); }
+}
+
+async function loadTradeStats() {
+    try {
+        const r = await fetch(`data/trade-stats.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (!r.ok) return;
+        const j = await r.json();
+        if (j && j.byPair) { TRADE_STATS = j; renderTradeStats(); }
+    } catch (e) { console.log('Trade stats unavailable', e); }
+}
+
+function renderTradeStats() {
+    const el = document.querySelector('#tradeStats');
+    if (!el) return;
+    const totals = TRADE_STATS.totals || {};
+    const byPair = Array.isArray(TRADE_STATS.byPair) ? TRADE_STATS.byPair : [];
+    const total = Number(totals.total) || 0;
+    const winRate = (Number(totals.win_rate) || 0) * 100;
+    const profitFactor = totals.profit_factor == null ? 'n/a' : Number(totals.profit_factor).toFixed(2);
+    let html = `<div style="display:flex;gap:16px;flex-wrap:wrap;">`
+        + `<div>Closed: <b>${total}</b></div>`
+        + `<div>Win rate: <b>${winRate.toFixed(0)}%</b></div>`
+        + `<div>Profit factor: <b>${profitFactor}</b></div>`
+        + `<div>Net P/L: <b>$${Number(totals.net_pnl || 0).toFixed(2)}</b></div>`
+        + `<div>Expectancy: <b>$${Number(totals.expectancy || 0).toFixed(2)}</b></div>`
+        + `</div>`
+        + `<div style="font-size:11px;color:var(--muted);margin-bottom:10px;">Source: ${esc(TRADE_STATS.source || 'mt5_grid_hft_paper')} • Generated: ${esc(TRADE_STATS.generatedAt || '—')}</div>`;
+    if (!byPair.length) {
+        html += `<div class="empty" style="padding:18px;">Menunggu closed trade dari executor grid…</div>`;
+    } else {
+        html += `<div style="display:grid;gap:8px;">${byPair.map(it => `
+            <div style="display:flex;gap:12px;flex-wrap:wrap;background:rgba(4,15,23,.42);border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:12px;">
+                <b>${esc(it.pair)}</b>
+                <span>Closed <b>${Number(it.total || 0)}</b></span>
+                <span>Win rate <b>${((Number(it.win_rate) || 0) * 100).toFixed(0)}%</b></span>
+                <span>PF <b>${it.profit_factor == null ? 'n/a' : Number(it.profit_factor).toFixed(2)}</b></span>
+                <span>Net <b>$${Number(it.net_pnl || 0).toFixed(2)}</b></span>
+            </div>`).join('')}</div>`;
+    }
+    el.innerHTML = html;
+}
+
+function applyForexPayload(j, fallbackSource, live) {
+    if (!j || typeof j !== 'object') return false;
+    const quotes = j.quotes && typeof j.quotes === 'object' ? j.quotes : {};
+    const rates = j.rates && typeof j.rates === 'object' ? j.rates : {};
+    if (!Object.keys(quotes).length && !Object.keys(rates).length) return false;
+    FOREX_TICK = forexTicks(quotes);
+    FOREX_QUOTES = quotes;
+    FOREX_RATES = rates;
+    FOREX_LIVE = Boolean(live);
+    FOREX_META = {
+        source: j.source || fallbackSource || 'unknown',
+        generatedAt: j.generatedAt || null,
+        live: Boolean(live),
+        providers: j.providers && typeof j.providers === 'object' ? j.providers : {}
+    };
+    render();
+    return true;
+}
+
+// Selisih harga antar-pull, supaya board terlihat bergerak dan bukan angka beku.
+function forexTicks(quotes) {
+    const ticks = {};
+    for (const pair of Object.keys(quotes || {})) {
+        const price = Number(quotes[pair] && quotes[pair].price);
+        const prev = Number(FOREX_QUOTES[pair] && FOREX_QUOTES[pair].price);
+        if (!Number.isFinite(price) || price <= 0) continue;
+        if (!Number.isFinite(prev) || prev <= 0 || prev === price) continue;
+        const pip = price > 10 ? 0.01 : 0.0001;
+        ticks[pair] = {
+            dir: price > prev ? 'up' : 'down',
+            pip: Number(Math.abs(price - prev) / pip)
+        };
+    }
+    return ticks;
+}
+
+const FOREX_SCANNER_URL = 'https://scanner.tradingview.com/forex/scan';
+const FOREX_FEED_IDS = ['OANDA', 'GOMARKETS', 'CMCMARKETS', 'FBS', 'SAXO', 'FOREXCOM', 'CAPITALCOM', 'PEPPERSTONE', 'VANTAGE', 'FPMARKETS', 'EIGHTCAP', 'BLACKBULL', 'THINKMARKETS', 'SKILLING'];
+const FOREX_FEED_NAMES = { OANDA: 'OANDA', GOMARKETS: 'GO Markets', CMCMARKETS: 'CMC Markets', FBS: 'FBS', SAXO: 'Saxo', FOREXCOM: 'FOREX.com', CAPITALCOM: 'Capital.com', PEPPERSTONE: 'Pepperstone', VANTAGE: 'Vantage', FPMARKETS: 'FP Markets', EIGHTCAP: 'Eightcap', BLACKBULL: 'BlackBull Markets', THINKMARKETS: 'ThinkMarkets', SKILLING: 'Skilling' };
+
+function forexScanTickers() {
+    const tickers = [];
+    for (const feed of FOREX_FEED_IDS) {
+        for (const pair of FOREX_PAIRS) tickers.push(feed + ':' + pair.replace('/', ''));
+    }
+    return tickers;
+}
+
+function parseForexScan(payload) {
+    const feeds = {};
+    const rows = payload && Array.isArray(payload.data) ? payload.data : [];
+    for (const row of rows) {
+        const parts = String(row && row.s || '').split(':');
+        const feed = parts[0], symbol = parts[1];
+        if (!feed || !symbol) continue;
+        if (FOREX_FEED_IDS.indexOf(feed) === -1) continue;
+        let pair = null;
+        for (const p of FOREX_PAIRS) { if (p.replace('/', '') === symbol) { pair = p; break; } }
+        if (!pair) continue;
+        const price = Number(row.d && row.d[1]);
+        if (!Number.isFinite(price) || price <= 0) continue;
+        const change = Number(row.d && row.d[2]);
+        if (!feeds[feed]) feeds[feed] = {};
+        feeds[feed][pair] = { price, changePct: Number.isFinite(change) ? change : null };
+    }
+    return feeds;
+}
+
+function forexMedian(values) {
+    const sorted = [...values].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+}
+
+function forexRatesFromQuotes(quotes) {
+    const rates = { USD: 1 };
+    for (const pair of Object.keys(quotes || {})) {
+        const price = Number(quotes[pair] && quotes[pair].price);
+        if (!Number.isFinite(price) || price <= 0) continue;
+        const legs = pair.split('/');
+        const base = legs[0], term = legs[1];
+        if (!base || !term) continue;
+        if (term === 'USD' && base !== 'USD') rates[base] = 1 / price;
+        else if (base === 'USD' && term !== 'USD') rates[term] = price;
+    }
+    return rates;
+}
+
+function buildForexScanPayload(feeds, now) {
+    const quotes = {};
+    for (const pair of FOREX_PAIRS) {
+        const prices = [];
+        const providers = {};
+        for (const id of FOREX_FEED_IDS) {
+            const price = Number(feeds && feeds[id] && feeds[id][pair] && feeds[id][pair].price);
+            if (!Number.isFinite(price) || price <= 0) continue;
+            providers[id] = price;
+            prices.push(price);
+        }
+        if (!prices.length) continue;
+        const oanda = Number(feeds && feeds.OANDA && feeds.OANDA[pair] && feeds.OANDA[pair].price);
+        const anchored = Number.isFinite(oanda) && oanda > 0;
+        const anchor = anchored ? oanda : forexMedian(prices);
+        const references = prices.filter(p => Math.abs(p - anchor) > 1e-12);
+        const crossCheckPct = references.length
+            ? Math.max(...references.map(p => (Math.abs(p - anchor) / anchor) * 100))
+            : 0;
+        const change = feeds && feeds.OANDA && feeds.OANDA[pair] && feeds.OANDA[pair].changePct;
+        quotes[pair] = {
+            price: anchor,
+            consensus: forexMedian(prices),
+            source: anchored ? 'OANDA' : 'broker consensus',
+            changePct: Number.isFinite(Number(change)) ? Number(change) : null,
+            crossCheckPct: Number(crossCheckPct.toFixed(3)),
+            providers,
+            updatedAt: now.toISOString()
+        };
+    }
+    const providerStatus = {};
+    for (const id of FOREX_FEED_IDS) {
+        const count = feeds && feeds[id] ? Object.keys(feeds[id]).length : 0;
+        providerStatus[id] = { name: FOREX_FEED_NAMES[id] || id, status: count > 0 ? 'ok' : 'unavailable', pairs: count };
+    }
+    return {
+        generatedAt: now.toISOString(),
+        source: 'OANDA (live scanner)',
+        anchor: 'OANDA',
+        quotes,
+        rates: forexRatesFromQuotes(quotes),
+        providers: providerStatus
+    };
+}
+
+const FOREX_LIVE_BACKOFF_MS = 5 * 60 * 1000;
+let forexLiveFails = 0, forexLiveRetryAt = 0;
+
+async function loadForexLive(now = Date.now()) {
+    // TradingView scanner menerima request lintas-origin asal dikirim sebagai
+    // "simple request": tanpa header custom, content-type text/plain.
+    if (now < forexLiveRetryAt) return false;
+    try {
+        const r = await fetch(FOREX_SCANNER_URL, {
+            method: 'POST',
+            headers: { 'content-type': 'text/plain;charset=UTF-8' },
+            body: JSON.stringify({ symbols: { tickers: forexScanTickers() }, columns: ['name', 'close', 'change', 'update_mode'] }),
+            cache: 'no-store'
+        });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const feeds = parseForexScan(await r.json());
+        const payload = buildForexScanPayload(feeds, new Date(now));
+        if (!Object.keys(payload.quotes).length) throw new Error('no quotes');
+        forexLiveFails = 0; forexLiveRetryAt = 0;
+        return applyForexPayload(payload, 'OANDA (live scanner)', true);
+    } catch (e) {
+        forexLiveFails++;
+        forexLiveRetryAt = now + FOREX_LIVE_BACKOFF_MS * Math.min(forexLiveFails, 4);
+        console.log('Live forex scanner unavailable', e);
+        return false;
+    }
+}
+
+async function loadForex() {
+    // Sumber utama: scanner TradingView langsung dari browser (harga bergerak).
+    if (await loadForexLive()) return;
+
+    // Cadangan: snapshot OANDA + cross-check broker dari workflow (data/forex.json).
+    try {
+        const r = await fetch(`data/forex.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (r.ok) {
+            const j = await r.json();
+            if (applyForexPayload(j)) return;
+        }
+    } catch (e) { console.log('Live forex feed unavailable', e); }
+
+    // Fallback terakhir: kurs harian er-api (akan diberi label harian di UI).
+    try {
+        const r = await fetch('https://open.er-api.com/v6/latest/USD');
+        const j = await r.json();
+        if (j && j.rates) {
+            applyForexPayload({
+                rates: j.rates,
+                source: 'er-api (daily fallback)',
+                generatedAt: j.time_last_update_utc || null,
+                providers: { 'er-api': { name: 'open.er-api.com', status: 'fallback' } }
+            }, 'er-api');
+        }
+    } catch (e) { console.log('Forex API failed', e); }
+}
+
+const BROKER_QUOTE_MAX_AGE_MS = 30 * 60 * 1000;
+
+function applyBrokerPayload(j) {
+    if (!j || typeof j !== 'object') return false;
+    const quotes = j.quotes && typeof j.quotes === 'object' ? j.quotes : {};
+    if (!Object.keys(quotes).length) return false;
+    FOREX_BROKER = j;
+    renderForexBoard();
+    return true;
+}
+
+async function loadBrokerForex() {
+    // Exact broker bid/ask, pushed by the local MT5 bridge on the user's PC.
+    try {
+        const r = await fetch(`data/forex-broker.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (r.ok) applyBrokerPayload(await r.json());
+    } catch (e) { console.log('MT5 broker quote feed unavailable', e); }
+}
+
+function brokerQuoteFor(pair, now = Date.now()) {
+    const payload = FOREX_BROKER;
+    const quotes = payload && payload.quotes;
+    if (!quotes || typeof quotes !== 'object') return null;
+    const q = quotes[String(pair).toUpperCase()];
+    if (!q || typeof q !== 'object') return null;
+    const bid = Number(q.bid), ask = Number(q.ask);
+    if (!Number.isFinite(bid) || !Number.isFinite(ask) || bid <= 0 || ask < bid) return null;
+    const meta = payload.broker && typeof payload.broker === 'object' ? payload.broker : {};
+    const at = Date.parse(payload.generatedAt || '');
+    const ageMin = Number.isFinite(at) ? Math.max(0, (now - at) / 60000) : null;
+    const maxAgeMs = Number(payload.staleAfterSec) > 0 ? Number(payload.staleAfterSec) * 1000 : BROKER_QUOTE_MAX_AGE_MS;
+    return {
+        bid, ask, mid: (bid + ask) / 2,
+        spreadPips: Number(q.spreadPips),
+        brokerName: meta.name || meta.id || 'MT5',
+        brokerId: meta.id || '',
+        server: meta.server || '',
+        accountType: meta.accountType || 'unknown',
+        ageMin,
+        stale: ageMin === null || ageMin * 60000 > maxAgeMs
+    };
+}
+
+function brokerSourceText(now = Date.now()) {
+    const payload = FOREX_BROKER;
+    const meta = payload && payload.broker;
+    if (!meta) return '';
+    const at = Date.parse(payload.generatedAt || '');
+    const ageMin = Number.isFinite(at) ? Math.max(0, Math.round((now - at) / 60000)) : null;
+    const maxAgeMs = Number(payload.staleAfterSec) > 0 ? Number(payload.staleAfterSec) * 1000 : BROKER_QUOTE_MAX_AGE_MS;
+    const state = ageMin === null || ageMin * 60000 > maxAgeMs
+        ? `stale${ageMin === null ? '' : ' ' + ageMin + ' mnt'}`
+        : `fresh ${ageMin} mnt`;
+    const server = meta.server ? ' ' + meta.server : '';
+    return `Quote broker ${meta.name || meta.id}${server} (${meta.accountType || 'account'}) ${state}`;
+}
+
+function goldBoardState(now = Date.now()) {
+    const { pick, upcoming, label } = nextUsdCatalyst(now);
+    const idle = { status: 'idle', next: upcoming ? label : '' };
+
+    const price = Number(LIVE_PRICE);
+    if (!Number.isFinite(price) || price <= 0) return { status: 'loading' };
+    if (!pick) return idle;
+
+    const impact = +pick.e.Importance || 1;
+    const phase = newsPhase(pick.e);
+    if (phase === 'live') return { status: 'live', event: label };
+
+    if (phase === 'pre') {
+        // Straddle tetap level pending (memang harus bergerak mengikuti harga),
+        // sedangkan entry market memakai engine yang sama dengan kartu event.
+        const info = atrInfo('XAU/USD', price);
+        const buffer = Math.max(price * (0.0015 * (1 + 0.25 * Math.max(0, impact - 2))), info ? info.atr * 1.5 : 0);
+        const ex = execEntries('XAU/USD', price);
+        const midBuy = ex ? ex.buy : price, midSell = ex ? ex.sell : price;
+        const buy = { entry: midBuy + buffer, sl: midBuy + buffer - buffer * 2, tp: midBuy + buffer + buffer * 4 };
+        const sell = { entry: midSell - buffer, sl: midSell - buffer + buffer * 2, tp: midSell - buffer - buffer * 4 };
+        const data = signalCardData(pick.e, 'XAU/USD', 'gold', now);
+        if (!data.dir || !data.levels) return { status: 'pre', event: label, buy, sell, note: data.note };
+        return {
+            status: 'pre', event: label, dir: data.dir, levels: data.levels,
+            note: data.note, buy, sell, locked: data.locked, lockedAt: data.lockedAt, missed: data.missed
+        };
+    }
+
+    const validUntil = fmtDate(postNewsExpiry(pick.e)) + ' ' + fmtTime(postNewsExpiry(pick.e));
+    const data = signalCardData(pick.e, 'XAU/USD', 'gold', now);
+    if (data.dir && data.levels) {
+        return {
+            status: 'post', event: label, dir: data.dir, changePct: data.movePct, validUntil,
+            note: data.note, levels: data.levels, locked: data.locked, lockedAt: data.lockedAt,
+            conflict: data.conflict, missed: data.missed
+        };
+    }
+
+    const info = atrInfo('XAU/USD', price);
+    const buffer = Math.max(price * (0.0025 * (1 + 0.25 * Math.max(0, impact - 2))), info ? info.atr * 2 : 0);
+    const ex = execEntries('XAU/USD', price);
+    const midBuy = ex ? ex.buy : price, midSell = ex ? ex.sell : price;
+    return {
+        status: 'post', event: label, dir: null, changePct: data.movePct, validUntil,
+        note: data.note || 'Arah belum terkonfirmasi — tunggu reaksi harga.',
+        buy: { entry: midBuy + buffer, sl: midBuy + buffer - buffer * 1.5, tp: midBuy + buffer + buffer * 3 },
+        sell: { entry: midSell - buffer, sl: midSell - buffer + buffer * 1.5, tp: midSell - buffer - buffer * 3 }
+    };
+}
+
+function goldBoardHtml(price, state) {
+    const f = n => Number(n).toFixed(2);
+    const p = Number(price);
+    const money = n => '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const st = state || { status: 'idle' };
+    let html = `<div class="mb-price">${Number.isFinite(p) && p > 0 ? money(p) : '—'}</div>`;
+    if (!Number.isFinite(p) || p <= 0) return html + `<div class="mb-meta">Menunggu harga gold live…</div>`;
+    if (st.event) html += `<div class="mb-meta">${st.event}</div>`;
+    const lv = (cls, title, o) => {
+        const tp1 = o && o.tp1 ? `<span>TP1 ${f(o.tp1)}</span>` : '';
+        const pb = o && o.pullback ? `<span>Retest ${f(o.pullback)}</span>` : '';
+        return `<div class="mb-level ${cls}"><b>${title}</b><span>Entry ${f(o.entry)}</span><span>SL ${f(o.sl)}</span>${tp1}<span>TP ${f(o.tp)}</span>${pb}</div>`;
+    };
+    const lockNote = st.locked && st.lockedAt ? ` • entry terkunci ${fmtTime(new Date(st.lockedAt))}` : '';
+    const warn = st.stopped
+        ? `<div class="warning-badge" style="background:rgba(255,100,125,0.25);border-color:var(--red);color:var(--red);">🛑 Stop Loss tersentuh — batalkan order lama / setup selesai.</div>`
+        : (st.tpReached
+            ? `<div class="postnews-badge">🎯 Take Profit tercapai — setup berhasil, amankan profit!</div>`
+            : (st.conflict
+                ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama, jangan flip mengejar harga.</div>`
+                : (st.missed ? `<div class="warning-badge">⚠️ Entry sudah terlewat — jangan kejar harga, tunggu pullback ke entry.</div>` : '')));
+
+    if (st.status === 'live') return html + `<div class="mb-meta">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit sebelum entry.</div>`;
+    if (st.status === 'pre' && st.buy && st.sell) {
+        const armed = st.dir && st.levels
+            ? lv(st.dir === 'long' ? 'buy' : 'sell', (st.dir === 'long' ? 'BUY' : 'SELL') + ' · MARKET', st.levels)
+            : '';
+        const meta = st.dir
+            ? `${st.note || 'Bias pra-rilis Forecast vs Previous'} • Straddle OCO tetap tersedia bila arah tidak diambil.`
+            : 'Straddle OCO — jika satu arah tersentuh, batalkan arah lainnya.';
+        return html + warn + `<div class="mb-levels">${armed}${lv('buy', 'BUY STOP', st.buy)}${lv('sell', 'SELL STOP', st.sell)}</div><div class="mb-meta">${meta}</div>`;
+    }
+    if (st.status === 'post' && st.dir && st.levels) {
+        const long = st.dir === 'long';
+        const mom = st.changePct == null ? '' : ` • reaksi ${st.changePct >= 0 ? '+' : ''}${Number(st.changePct).toFixed(2)}%`;
+        return html + warn + `<div class="mb-levels">${lv(long ? 'buy' : 'sell', (long ? 'BUY' : 'SELL') + mom, st.levels)}</div><div class="mb-meta">${st.note || 'Post-news terkonfirmasi'}${lockNote} • R:R 1:${st.levels.rr || 2} • valid s/d ${st.validUntil || '6 jam setelah rilis'}</div>`;
+    }
+    if (st.status === 'post' && st.buy && st.sell) {
+        return html + `<div class="mb-levels">${lv('buy', 'BUY BREAKOUT', st.buy)}${lv('sell', 'SELL BREAKOUT', st.sell)}</div><div class="mb-meta">${st.note || 'Arah belum terkonfirmasi'} • breakout OCO valid s/d ${st.validUntil || '6 jam setelah rilis'}</div>`;
+    }
+    return html + `<div class="mb-meta">Tidak ada katalis USD aktif. ${st.next ? 'Berikutnya: ' + st.next : 'Tunggu kalender berikutnya.'}</div>`;
+}
+
+function renderGoldBoard() {
+    const body = $('#goldBoardBody');
+    if (body) body.innerHTML = goldBoardHtml(LIVE_PRICE, goldBoardState());
+}
+
+// Board crypto memakai tangga arah yang sama dengan board pair: Actual vs
+// Forecast/Previous, lalu reaksi harga 1 menit, lalu momentum pra-rilis.
+function cryptoBoardState(now = Date.now()) {
+    const items = CRYPTO_PAIRS.map(cfg => ({
+        pair: cfg.pair,
+        name: cfg.name,
+        slPct: cfg.slPct,
+        tpPct: cfg.tpPct,
+        price: Number(CRYPTO_RATES[cfg.pair]),
+        changePct: Number(CRYPTO_CHANGE[cfg.pair]),
+        dir: null,
+        momPct: null,
+        levels: null,
+        note: '',
+        locked: false,
+        conflict: false,
+        missed: false
+    }));
+    const { pick, upcoming, label } = nextUsdCatalyst(now);
+    if (!pick) return { status: 'idle', items, event: '', next: upcoming ? label : '', note: '' };
+
+    const phase = newsPhase(pick.e);
+    if (phase === 'live') return { status: 'live', items, event: label, next: '', note: '' };
+
+    items.forEach(it => {
+        const data = signalCardData(pick.e, it.pair, 'crypto', now);
+        it.dir = data.dir;
+        it.levels = data.levels;
+        it.momPct = data.movePct;
+        it.note = data.note || '';
+        it.locked = data.locked;
+        it.lockedAt = data.lockedAt;
+        it.conflict = data.conflict;
+        it.missed = data.missed;
+        it.basis = data.basis;
+    });
+
+    return {
+        status: 'active',
+        phase,
+        items,
+        event: label,
+        note: '',
+        next: upcoming ? label : '',
+        validUntil: phase === 'post' ? fmtDate(postNewsExpiry(pick.e)) + ' ' + fmtTime(postNewsExpiry(pick.e)) : label
+    };
+}
+
+function cryptoBoardHtml(rates, change, state) {
+    const table = CRYPTO_PAIRS;
+    const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const st = state && Array.isArray(state.items) ? state : null;
+    const byPair = {};
+    if (st) st.items.forEach(it => { byPair[String(it.pair).toUpperCase()] = it; });
+    const cards = table.map(cfg => {
+        const { pair, name, color, slPct, tpPct } = cfg;
+        const it = st ? byPair[pair] : null;
+        const rate = Number(it ? it.price : (rates && rates[pair]));
+        if (!Number.isFinite(rate) || rate <= 0) return '';
+        const chg = Number(it ? it.changePct : (change && change[pair]));
+        const chgHtml = Number.isFinite(chg)
+            ? `<span style="color:${chg >= 0 ? 'var(--green)' : 'var(--red)'}">${chg >= 0 ? '▲ +' : '▼ '}${chg.toFixed(2)}% 24h</span>`
+            : '<span>24h change n/a</span>';
+        if (!st) {
+            return `<div class="crypto-card" style="border-left-color:${color}"><div class="pair"><span>${pair}</span><small>${name}</small></div><div class="price">$${fmt(rate)}</div><div class="meta">${chgHtml}<span class="sep">•</span>SL/TP ${slPct}% / ${tpPct}%</div></div>`;
+        }
+        const dir = it.dir === 'long' ? 'buy' : it.dir === 'short' ? 'sell' : 'wait';
+        const label = dir === 'buy' ? 'BUY' : dir === 'sell' ? 'SELL' : 'WAIT';
+        const badge = `<span class="fx-badge ${dir}">${label}${dir === 'wait' ? '' : (st.phase === 'post' ? ' · POST-NEWS' : ' · MARKET')}</span>`;
+        const lockNote = it.locked && it.lockedAt ? ` • entry terkunci ${fmtTime(new Date(it.lockedAt))}` : '';
+        const warn = it && it.stopped
+            ? `<div class="warning-badge" style="background:rgba(255,100,125,0.25);border-color:var(--red);color:var(--red);">🛑 SL tersentuh — batalkan order.</div>`
+            : (it && it.tpReached
+                ? `<div class="postnews-badge">🎯 TP tercapai — amankan profit!</div>`
+                : (it && it.conflict
+                    ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>`
+                    : (it && it.missed ? `<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>` : '')));
+        let levels;
+        if (st.status === 'live') {
+            levels = `<div class="idx-note">⏳ Level entry ditahan sampai konfirmasi 15 menit.</div>`;
+        } else if (dir !== 'wait' && it.levels) {
+            const tp1Span = it.levels.tp1 ? `<span>TP1 $${fmt(it.levels.tp1)}</span>` : '';
+            levels = `<div class="levels idx-levels"><span>Entry ${fmt(it.levels.entry)}</span><span>SL ${fmt(it.levels.sl)}</span>${tp1Span}<span>TP ${fmt(it.levels.tp)}</span><span>R:R 1:${it.levels.rr || 2}</span></div>`;
+        } else {
+            const info = atrInfo(pair, rate);
+            const buffer = Math.max(slPct / 2, info ? info.atrPct * 1.5 : 0);
+            const ex = execEntries(pair, rate);
+            levels = `<div class="levels idx-levels"><span>BUY &gt; ${fmt((ex ? ex.buy : rate) * (1 + buffer / 100))}</span><span>SELL &lt; ${fmt((ex ? ex.sell : rate) * (1 - buffer / 100))}</span></div>`;
+        }
+        const itemNote = it.note || st.note;
+        return `<div class="crypto-card ${dir}">
+            <div class="pair"><span>${esc(pair)}</span><small>${esc(name)}</small>${badge}</div>
+            <div class="price">$${fmt(rate)}</div>
+            <div class="meta">${chgHtml}<span class="sep">•</span>SL/TP ${slPct}% / ${tpPct}%</div>
+            ${warn}
+            ${levels}
+            <div class="idx-event">${esc(st.event || 'Tidak ada katalis USD aktif')}</div>
+            ${itemNote ? `<div class="idx-note">${esc(itemNote)}${lockNote}</div>` : ''}
+            ${st.status === 'live' ? '<div class="idx-note">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit.</div>' : ''}
+            ${st.phase === 'post' && st.validUntil ? `<div class="idx-note">Post-news • valid s/d ${esc(st.validUntil)}</div>` : ''}
+        </div>`;
+    }).filter(Boolean).join('');
+    return cards || '<div class="crypto-card"><div class="pair"><span>BTC/USD · ETH/USD</span></div><div class="meta">Menunggu harga crypto…</div></div>';
+}
+
+function renderCryptoBoard() {
+    const grid = $('#cryptoGrid');
+    if (grid) grid.innerHTML = cryptoBoardHtml(CRYPTO_RATES, CRYPTO_CHANGE, cryptoBoardState());
+}
+
+// Rilis terakhir yang masih berada dalam jendela pasca-news menang atas event
+// berikutnya; board pair harus menampilkan katalis yang sama dengan kartu event.
+function pairCatalystDirection(e, pair) {
+    const sig = signalDirection(e, pair, 'forex');
+    return { dir: sig.dir, basis: sig.basis, note: sig.note, noData: sig.basis === 'no-actual' || sig.basis === 'settling' };
+}
+
+function nextPairCatalyst(pair, now = Date.now()) {
+    const currencies = pairCurrencies(pair);
+    const pool = events
+        .filter(e => (+e.Importance || 1) >= 1 && currencies.includes(countryCode(e.Country)))
+        .map(e => ({ e, t: new Date(e.Date).getTime() }))
+        .filter(x => Number.isFinite(x.t))
+        .sort((a, b) => a.t - b.t);
+    const recent = pool.filter(x => x.t <= now && now <= x.t + POST_NEWS_HOLD_MS);
+    const upcoming = pool.find(x => x.t > now);
+    if (recent.length) {
+        const last = recent[recent.length - 1];
+        const sig = signalDirection(last.e, pair, 'forex', now);
+        const upcomingImminent = upcoming && (upcoming.t - now <= 45 * 60 * 1000 || (!sig.dir && upcoming.t - now <= 120 * 60 * 1000));
+        if (upcomingImminent) return { ...upcoming, phase: 'pre' };
+        return { ...last, phase: 'post' };
+    }
+    return upcoming ? { ...upcoming, phase: 'pre' } : null;
+}
+
+function forexSourceText(meta) {
+    if (!meta || !meta.source) return '';
+    const at = meta.generatedAt ? new Date(meta.generatedAt) : null;
+    const when = at && Number.isFinite(at.getTime())
+        ? ' | diambil ' + new Intl.DateTimeFormat('en-GB', {
+            timeZone: typeof WITA !== 'undefined' ? WITA : 'Asia/Makassar',
+            day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: false
+        }).format(at) + ' WITA'
+        : '';
+    const refs = Object.entries(meta.providers || {})
+        .filter(([id, p]) => id !== 'OANDA' && p && p.status === 'ok')
+        .map(([, p]) => p.name)
+        .filter(Boolean)
+        .slice(0, 4);
+    const mode = meta.live
+        ? 'LIVE — scanner TradingView ditarik ulang tiap 20 detik'
+        : 'SNAPSHOT 15 MENIT — scanner live sedang tidak terjangkau';
+    return `${mode}${when}. Harga acuan ${meta.source}${refs.length ? ' | cross-check ' + refs.join(', ') : ''}. Quote broker MT5 tampil per pair bila bridge lokal aktif.`;
+}
+
+function forexBoardState(now = Date.now()) {
+    const items = FOREX_PAIRS.map(pair => {
+        const rate = pairRate(pair);
+        const next = nextPairCatalyst(pair, now);
+        let dir = null, note = '', eventLabel = '', phase = '', validUntil = '', noData = false;
+        let levels = null, locked = false, lockedAt = null, missed = false, conflict = false, basis = '';
+        if (next) {
+            eventLabel = `${next.e.Event} · ${fmtDate(new Date(next.e.Date))} ${fmtTime(new Date(next.e.Date))}`;
+            phase = next.phase;
+            const data = signalCardData(next.e, pair, 'forex', now);
+            dir = data.dir;
+            levels = data.levels;
+            note = data.note || '';
+            locked = data.locked;
+            lockedAt = data.lockedAt;
+            missed = data.missed;
+            conflict = data.conflict;
+            basis = data.basis;
+            phase = data.phase || next.phase;
+            noData = !dir && (basis === 'no-actual' || basis === 'settling');
+            if (phase === 'post') validUntil = `${fmtDate(postNewsExpiry(next.e))} ${fmtTime(postNewsExpiry(next.e))}`;
+        }
+        const quote = FOREX_QUOTES[pair] || null;
+        return {
+            pair, rate, dir, note, eventLabel, phase, validUntil, noData,
+            levels, locked, lockedAt, missed, conflict, basis,
+            source: quote && quote.source,
+            tick: FOREX_TICK[pair] || null,
+            crossCheckPct: quote && quote.crossCheckPct,
+            broker: brokerQuoteFor(pair, now)
+        };
+    });
+    const source = forexSourceText(FOREX_META);
+    const cross = Math.max(0, ...items.map(it => Number(it.crossCheckPct) || 0));
+    const broker = brokerSourceText(now);
+    return {
+        items,
+        source: [
+            source && cross > 0 ? `${source} | deviasi broker maks ${cross.toFixed(3)}%` : source,
+            broker
+        ].filter(Boolean).join(' | ')
+    };
+}
+
+function brokerLineHtml(b) {
+    if (!b) return '';
+    const dec = Number(b.ask) > 10 ? 3 : 5;
+    const spread = Number.isFinite(Number(b.spreadPips)) ? ` · spread ${Number(b.spreadPips).toFixed(1)} pip` : '';
+    const age = b.stale
+        ? ` · STALE${Number.isFinite(b.ageMin) ? ' ' + Math.round(b.ageMin) + ' mnt' : ''}`
+        : (Number.isFinite(b.ageMin) ? ` · ${Math.round(b.ageMin)} mnt` : '');
+    return `<div class="fx-broker${b.stale ? ' stale' : ''}">${esc(b.brokerName)}${b.accountType && b.accountType !== 'unknown' ? ' · ' + esc(b.accountType) : ''} · bid ${Number(b.bid).toFixed(dec)} / ask ${Number(b.ask).toFixed(dec)}${spread}${age}</div>`;
+}
+
+function fxTickHtml(tick) {
+    if (!tick || !Number.isFinite(Number(tick.pip))) return '';
+    const up = tick.dir === 'up';
+    return `<span class="fx-tick ${up ? 'up' : 'down'}">${up ? '▲' : '▼'} ${Number(tick.pip).toFixed(1)} pip</span>`;
+}
+
+function forexBoardHtml(state) {
+    const items = state && Array.isArray(state.items) ? state.items : [];
+    const sourceLine = state && state.source ? `<div class="fx-source">${esc(state.source)}</div>` : '';
+    if (!items.length) return sourceLine + '<div class="fx-card wait"><div class="pair"><span>Forex Majors</span></div><div class="fx-note">Menunggu data forex…</div></div>';
+    const fmt = (n, dec) => Number(n).toFixed(dec);
+    return sourceLine + items.map(it => {
+        const rate = Number(it.rate);
+        if (!Number.isFinite(rate) || rate <= 0) {
+            return `<div class="fx-card wait"><div class="pair"><span>${esc(it.pair)}</span><span class="fx-badge wait">WAIT</span></div><div class="fx-price">—</div><div class="fx-note">Menunggu harga live…</div></div>`;
+        }
+        const isJpyStyle = rate > 10;
+        const dec = isJpyStyle ? 3 : 5;
+        const dir = it.dir === 'long' ? 'buy' : it.dir === 'short' ? 'sell' : 'wait';
+        const label = dir === 'buy' ? 'BUY' : dir === 'sell' ? 'SELL' : 'WAIT';
+        const suffix = dir === 'wait' ? '' : (it.phase === 'post' ? ' · POST-NEWS' : ' · MARKET');
+        const broker = it.broker && !it.broker.stale ? it.broker : null;
+        const lockNote = it.locked && it.lockedAt ? ` • entry terkunci ${fmtTime(new Date(it.lockedAt))}` : '';
+        let levels;
+        if (it.phase === 'live') {
+            levels = `<div class="fx-levels"><span>⏳ Tunggu konfirmasi 15 menit</span></div>`;
+        } else if ((dir === 'buy' || dir === 'sell') && it.levels) {
+            const tp1Span = it.levels.tp1 ? `<span>TP1 ${fmt(it.levels.tp1, dec)}</span>` : '';
+            const pbSpan = it.levels.pullback ? `<span>Retest ${fmt(it.levels.pullback, dec)}</span>` : '';
+            levels = `<div class="fx-levels"><span>Entry ${fmt(it.levels.entry, dec)}</span><span>SL ${fmt(it.levels.sl, dec)}</span>${tp1Span}<span>TP ${fmt(it.levels.tp, dec)}</span>${pbSpan}<span>R:R 1:2</span></div>`;
+        } else {
+            const buffer = isJpyStyle ? 0.15 : 0.0015;
+            const buyRef = broker ? Number(broker.ask) : rate + buffer;
+            const sellRef = broker ? Number(broker.bid) : rate - buffer;
+            levels = `<div class="fx-levels"><span>BUY ${fmt(buyRef, dec)}</span><span>SELL ${fmt(sellRef, dec)}</span></div>`;
+        }
+        const warn = it.stopped
+            ? `<div class="warning-badge" style="background:rgba(255,100,125,0.25);border-color:var(--red);color:var(--red);">🛑 SL tersentuh — batalkan order.</div>`
+            : (it.tpReached
+                ? `<div class="postnews-badge">🎯 TP tercapai — amankan profit!</div>`
+                : (it.conflict
+                    ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>`
+                    : (it.missed ? `<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>` : '')));
+        return `<div class="fx-card ${dir}">
+            <div class="pair"><span>${esc(it.pair)}</span><span class="fx-badge ${dir}">${label}${suffix}</span></div>
+            <div class="fx-price">${fmt(rate, dec)}${fxTickHtml(it.tick)}</div>
+            ${brokerLineHtml(it.broker)}
+            ${warn}
+            ${levels}
+            <div class="fx-event">${it.eventLabel ? esc(it.eventLabel) : 'Tidak ada katalis aktif'}</div>
+            ${it.note ? `<div class="fx-note">${esc(it.note)}${lockNote}${it.phase === 'post' && it.validUntil ? ` • valid s/d ${esc(it.validUntil)}` : ''}</div>` : ''}
+        </div>`;
+    }).join('');
+}
+
+function renderForexBoard() {
+    const grid = $('#fxGrid');
+    if (grid) grid.innerHTML = forexBoardHtml(forexBoardState());
+}
+
+function indexRate(symbol) {
+    const v = Number(INDEX_RATES[symbol] && INDEX_RATES[symbol].price);
+    return Number.isFinite(v) && v > 0 ? v : null;
+}
+
+function nextUsdCatalyst(now = Date.now()) {
+    const usd = events
+        .filter(e => countryCode(e.Country) === 'USD' && (+e.Importance || 1) >= 2)
+        .map(e => ({ e, t: new Date(e.Date).getTime() }))
+        .filter(x => Number.isFinite(x.t))
+        .sort((a, b) => a.t - b.t);
+    const upcoming = usd.find(x => x.t > now);
+    const released = usd.filter(x => x.t <= now && now <= postNewsExpiry(x.e).getTime());
+    let pick = null;
+    if (released.length) {
+        const last = released[released.length - 1];
+        const sig = signalDirection(last.e, 'XAU/USD', 'gold', now);
+        const upcomingImminent = upcoming && (upcoming.t - now <= 45 * 60 * 1000 || (!sig.dir && upcoming.t - now <= 120 * 60 * 1000));
+        pick = upcomingImminent ? upcoming : last;
+    } else {
+        pick = upcoming;
+    }
+    const label = pick ? `${pick.e.Event} · ${fmtDate(new Date(pick.e.Date))} ${fmtTime(new Date(pick.e.Date))}` : '';
+    return { pick, upcoming, label };
+}
+
+function indicesBoardState(now = Date.now()) {
+    const items = INDICES.map(cfg => {
+        const rate = INDEX_RATES[cfg.symbol] || {};
+        return {
+            symbol: cfg.symbol,
+            name: cfg.name,
+            slPct: cfg.slPct,
+            tpPct: cfg.tpPct,
+            price: Number(rate.price),
+            changePct: Number(rate.changePct),
+            dir: null,
+            momPct: null,
+            levels: null,
+            note: '',
+            locked: false,
+            conflict: false,
+            missed: false
+        };
+    });
+    const { pick, upcoming, label } = nextUsdCatalyst(now);
+    if (!pick) return { status: 'idle', items, event: '', next: upcoming ? label : '', note: '' };
+
+    const phase = newsPhase(pick.e);
+    if (phase === 'live') return { status: 'live', items, event: label, next: '', note: '' };
+
+    items.forEach(it => {
+        const data = signalCardData(pick.e, it.symbol, 'index', now);
+        it.dir = data.dir;
+        it.levels = data.levels;
+        it.momPct = data.movePct;
+        it.note = data.note || '';
+        it.locked = data.locked;
+        it.lockedAt = data.lockedAt;
+        it.conflict = data.conflict;
+        it.missed = data.missed;
+        it.basis = data.basis;
+    });
+
+    return {
+        status: 'active',
+        phase,
+        items,
+        event: label,
+        note: '',
+        next: upcoming ? label : '',
+        validUntil: phase === 'post' ? fmtDate(postNewsExpiry(pick.e)) + ' ' + fmtTime(postNewsExpiry(pick.e)) : label
+    };
+}
+
+function indicesBoardHtml(state) {
+    const st = state || {};
+    const items = Array.isArray(st.items) ? st.items : [];
+    const fmt = n => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const cards = items.map(it => {
+        const price = Number(it.price);
+        if (!Number.isFinite(price) || price <= 0) {
+            return `<div class="idx-card wait"><div class="pair"><span>${esc(it.symbol)}</span><small>${esc(it.name)}</small><span class="fx-badge wait">WAIT</span></div><div class="idx-price">—</div><div class="idx-note">Menunggu harga index…</div></div>`;
+        }
+        const dir = it.dir === 'long' ? 'buy' : it.dir === 'short' ? 'sell' : 'wait';
+        const label = dir === 'buy' ? 'BUY' : dir === 'sell' ? 'SELL' : 'WAIT';
+        let levels;
+        if (it.phase === 'live' || st.status === 'live') {
+            levels = `<div class="idx-note">⏳ Level entry ditahan sampai konfirmasi 15 menit.</div>`;
+        } else if ((dir === 'buy' || dir === 'sell') && it.levels) {
+            const tp1Span = it.levels.tp1 ? `<span>TP1 ${fmt(it.levels.tp1)}</span>` : '';
+            levels = `<div class="idx-levels"><span>Entry ${fmt(it.levels.entry)}</span><span>SL ${fmt(it.levels.sl)}</span>${tp1Span}<span>TP ${fmt(it.levels.tp)}</span><span>R:R 1:2</span></div>`;
+        } else {
+            const info = atrInfo(it.symbol, price);
+            const buffer = Math.max(it.slPct / 2, info ? info.atrPct * 1.5 : 0);
+            const ex = execEntries(it.symbol, price);
+            levels = `<div class="idx-levels"><span>BUY &gt; ${fmt((ex ? ex.buy : price) * (1 + buffer / 100))}</span><span>SELL &lt; ${fmt((ex ? ex.sell : price) * (1 - buffer / 100))}</span></div>`;
+        }
+        const chg = Number(it.changePct);
+        const mom = it.momPct === null || it.momPct === undefined ? null : Number(it.momPct);
+        const changeHtml = Number.isFinite(chg)
+            ? `<span style="color:${chg >= 0 ? 'var(--green)' : 'var(--red)'}">${chg >= 0 ? '▲ +' : '▼ '}${chg.toFixed(2)}%</span>`
+            : '';
+        const momHtml = mom !== null && Number.isFinite(mom) ? ` <small style="color:var(--muted);">${mom >= 0 ? '+' : ''}${mom.toFixed(2)}%</small>` : '';
+        const eventLine = st.event ? `<div class="idx-event">${esc(st.event)}</div>` : '<div class="idx-event">Tidak ada katalis USD aktif</div>';
+        const itemNote = it.note || st.note;
+        const lockNote = it.locked && it.lockedAt ? ` • entry terkunci ${fmtTime(new Date(it.lockedAt))}` : '';
+        const noteLine = itemNote ? `<div class="idx-note">${esc(itemNote)}${lockNote}</div>` : '';
+        const warn = it.stopped
+            ? '<div class="warning-badge" style="background:rgba(255,100,125,0.25);border-color:var(--red);color:var(--red);">🛑 SL tersentuh — batalkan order.</div>'
+            : (it.tpReached
+                ? '<div class="postnews-badge">🎯 TP tercapai — amankan profit!</div>'
+                : (it.conflict
+                    ? '<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>'
+                    : (it.missed ? '<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>' : '')));
+        const liveLine = st.status === 'live' ? '<div class="idx-note">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit.</div>' : '';
+        const postLine = st.phase === 'post' && st.validUntil ? `<div class="idx-note">Post-news • valid s/d ${esc(st.validUntil)}</div>` : '';
+        return `<div class="idx-card ${dir}">
+            <div class="pair"><span>${esc(it.symbol)}</span><small>${esc(it.name)}</small><span class="fx-badge ${dir}">${label}${dir === 'wait' ? '' : (st.phase === 'post' ? ' · POST-NEWS' : ' · MARKET')}${momHtml}</span></div>
+            <div class="idx-price">${fmt(price)}</div>
+            <div class="idx-levels">${changeHtml ? `<span>${changeHtml}</span>` : ''}<span>SL/TP ${it.slPct}% / ${it.tpPct}%</span></div>
+            ${warn}
+            ${levels}
+            ${eventLine}
+            ${noteLine}
+            ${liveLine}
+            ${postLine}
+        </div>`;
+    }).join('');
+    return cards || '<div class="idx-card wait"><div class="pair"><span>NAS100 · US500</span></div><div class="idx-note">Menunggu data index…</div></div>';
+}
+
+function renderIndicesBoard() {
+    const grid = $('#idxGrid');
+    if (grid) grid.innerHTML = indicesBoardHtml(indicesBoardState());
+}
+
+function applyIndexItems(items) {
+    if (!Array.isArray(items)) return 0;
+    const nextRates = {}, nextChange = {};
+    items.forEach(it => {
+        const symbol = String((it && it.symbol) || '').toUpperCase();
+        if (!INDICES.some(cfg => cfg.symbol === symbol)) return;
+        const price = Number(it && it.price);
+        if (!Number.isFinite(price) || price <= 0) return;
+        const previousClose = Number(it.previousClose);
+        const rawChange = it && it.changePct;
+        const changePct = (rawChange === null || rawChange === undefined || String(rawChange).trim() === '') ? NaN : Number(rawChange);
+        nextRates[symbol] = {
+            price,
+            previousClose: Number.isFinite(previousClose) && previousClose > 0 ? previousClose : null,
+            changePct: Number.isFinite(changePct) ? changePct : null
+        };
+        if (Number.isFinite(changePct)) nextChange[symbol] = changePct;
+    });
+    const count = Object.keys(nextRates).length;
+    if (!count) return 0;
+    INDEX_RATES = { ...INDEX_RATES, ...nextRates };
+    INDEX_CHANGE = { ...INDEX_CHANGE, ...nextChange };
+    return count;
+}
+
+async function fetchIndexLive(cfg) {
+    const target = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(cfg.yahoo)}?interval=1m&range=1d`;
+    const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
+    const r = await fetch(url, { cache: 'no-store' });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const meta = j && j.chart && j.chart.result && j.chart.result[0] && j.chart.result[0].meta;
+    if (!meta) return null;
+    const price = Number(meta.regularMarketPrice);
+    const previousClose = Number(meta.chartPreviousClose ?? meta.previousClose);
+    if (!Number.isFinite(price) || price <= 0) return null;
+    return {
+        symbol: cfg.symbol,
+        name: cfg.name,
+        yahoo: cfg.yahoo,
+        price,
+        previousClose: Number.isFinite(previousClose) && previousClose > 0 ? previousClose : null,
+        changePct: Number.isFinite(previousClose) && previousClose > 0 ? ((price - previousClose) / previousClose) * 100 : null
+    };
+}
+
+async function loadIndices() {
+    let count = 0;
+    try {
+        const r = await fetch(`data/indices.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (r.ok) {
+            const j = await r.json();
+            count = applyIndexItems(j && j.items);
+        }
+    } catch (e) { console.log('Index snapshot unavailable', e); }
+    if (count < INDICES.length) {
+        try {
+            const live = await Promise.all(INDICES.map(cfg => fetchIndexLive(cfg).catch(() => null)));
+            applyIndexItems(live.filter(Boolean));
+        } catch (e) { console.log('Live index API failed', e); }
+    }
+    renderIndicesBoard();
+    render();
+}
+
+async function loadCrypto() {
+    const apply = (btc, eth, btcChg, ethChg) => {
+        const b = Number(btc), e = Number(eth);
+        if (!Number.isFinite(b) || !Number.isFinite(e) || b <= 0 || e <= 0) return false;
+        CRYPTO_RATES = { 'BTC/USD': b, 'ETH/USD': e };
+        const chg = {};
+        const bc = Number(btcChg), ec = Number(ethChg);
+        if (Number.isFinite(bc)) chg['BTC/USD'] = bc;
+        if (Number.isFinite(ec)) chg['ETH/USD'] = ec;
+        CRYPTO_CHANGE = chg;
+        renderCryptoBoard();
+        render();
+        return true;
+    };
+    try {
+        const r = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=["BTCUSDT","ETHUSDT"]');
+        const j = await r.json();
+        if (Array.isArray(j)) {
+            const btc = j.find(x => x.symbol === 'BTCUSDT');
+            const eth = j.find(x => x.symbol === 'ETHUSDT');
+            if (btc && eth && apply(btc.lastPrice, eth.lastPrice, btc.priceChangePercent, eth.priceChangePercent)) return;
+        }
+    } catch (e) { console.log('Binance 24h crypto API failed', e); }
+    try {
+        const r = await fetch('https://api.binance.com/api/v3/ticker/price?symbols=["BTCUSDT","ETHUSDT"]');
+        const j = await r.json();
+        if (Array.isArray(j)) {
+            const btc = j.find(x => x.symbol === 'BTCUSDT');
+            const eth = j.find(x => x.symbol === 'ETHUSDT');
+            if (btc && eth && apply(btc.price, eth.price)) return;
+        }
+    } catch (e) { console.log('Binance crypto API failed', e); }
+    try {
+        const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true');
+        const j = await r.json();
+        apply(j.bitcoin?.usd, j.ethereum?.usd, j.bitcoin?.usd_24h_change, j.ethereum?.usd_24h_change);
+    } catch (e) { console.log('Crypto API failed', e); }
+}
+
+// BEGIN CALIBRATION CORE
+// Fungsi murni (tanpa DOM) supaya bisa diuji: lihat test-signal-logic.mjs.
+// Angka thr/sigma = titik awal kalibrasi (kira-kira 1 sigma surprise historis per
+// indikator). WAJIB divalidasi dengan backtest riwayat rilis Anda sendiri.
+
+// false = Forecast vs Previous HANYA jadi "lean" informatif, bukan BUY/SELL.
+// Alasan: konsensus sudah priced-in; edge arah ada pada surprise (Actual - Forecast).
+const PRE_NEWS_DIRECTIONAL = false;
+
+const SOFT_IF_HIGH = /unemployment rate|unemployment|initial claims|continuing claims|jobless|claimant count|job cuts/i;
+const FIRM_IF_HIGH = /\bcpi\b|inflation|\bpce\b|\bppi\b|consumer price|producer price|import price|export price|\bpmi\b|\bism\b|retail sales|consumer confidence|consumer sentiment|michigan|conference board|fed funds|funds rate|interest rate|rate decision|cash rate|bank rate|refinancing rate|jolts|durable goods|non-?farm|\bnfp\b|payroll|\badp\b|employment|hourly earnings|wages|\bgdp\b|trade balance|current account|industrial production|manufacturing production|factory orders|\bifo\b|\bzew\b|sentix|\bkof\b|economic optimism|consumer optimism|building permits|housing starts|existing home sales|new home sales|pending home sales|house price|home price|capacity utilization|leading index/i;
+// Sengaja TIDAK dipetakan (bukan penggerak emas/USD): inventories, natural gas storage,
+// crude oil inventories, federal budget balance, pidato tanpa angka.
+
+// +1: angka lebih tinggi = mata uang menguat (hawkish); -1: lebih tinggi = melemah.
+function usdSign(name) {
+    const n = String(name || '').toLowerCase();
+    if (SOFT_IF_HIGH.test(n)) return -1;
+    if (FIRM_IF_HIGH.test(n)) return +1;
+    return null;
+}
+
+// thr = batas noise (di bawahnya = FLAT). sigma = skala surprise tipikal (untuk z-score).
+const SURPRISE_SPECS = [
+    [/\badp\b.*weekly|weekly.*\badp\b/, { thr: 5000, sigma: 10000 }],
+    [/\badp\b/, { thr: 25000, sigma: 60000 }],
+    [/non-?farm|\bnfp\b|payroll/, { thr: 30000, sigma: 75000 }],
+    [/unemployment rate/, { thr: 0.1, sigma: 0.12 }],
+    [/claims|jobless/, { thr: 8000, sigma: 12000 }],
+    [/jolts/, { thr: 150000, sigma: 300000 }],
+    [/average hourly|hourly earnings|wages/, { thr: 0.1, sigma: 0.1 }],
+    [/\bppi\b|producer price/, { thr: 0.2, sigma: 0.25 }],
+    [/\bcpi\b|\bpce\b|inflation|consumer price|import price|export price/, { thr: 0.1, sigma: 0.12 }],
+    [/retail sales/, { thr: 0.3, sigma: 0.45 }],
+    [/\bgdp\b/, n => /m\/m/.test(n) ? { thr: 0.1, sigma: 0.15 } : { thr: 0.2, sigma: 0.35 }],
+    [/\bism\b|\bpmi\b|\bifo\b/, { thr: 1.0, sigma: 1.5 }],
+    [/\bzew\b|sentix|\bkof\b/, { thr: 5, sigma: 8 }],
+    [/michigan|consumer sentiment|\buom\b/, { thr: 2, sigma: 3 }],
+    [/consumer confidence|conference board/, { thr: 3, sigma: 5 }],
+    [/rate decision|interest rate|funds rate|cash rate|bank rate|refinancing/, { thr: 0.1, sigma: 0.125 }]
+];
+
+function surpriseSpec(name, ref) {
+    const n = String(name || '').toLowerCase();
+    const a = Math.abs(Number(ref) || 0);
+    for (const [re, spec] of SURPRISE_SPECS) {
+        if (re.test(n)) return { ...(typeof spec === 'function' ? spec(n, a) : spec), calibrated: true };
+    }
+    // Indikator tanpa spesifikasi: fallback relatif, ditandai belum terkalibrasi.
+    if (a >= 1000) return { thr: a * 0.02, sigma: a * 0.04, calibrated: false };
+    return { thr: Math.max(0.1, a * 0.05), sigma: Math.max(0.2, a * 0.12), calibrated: false };
+}
+
+function surpriseCalc(name, actual, ref) {
+    const spec = surpriseSpec(name, ref);
+    const surprise = actual - ref;
+    return { surprise, spec, flat: Math.abs(surprise) + 1e-9 < spec.thr, zAbs: Math.abs(surprise) / spec.sigma };
+}
+
+function releaseWeight(name) {
+    const n = String(name || '').toLowerCase();
+    if (/core/.test(n)) return 1.0;
+    if (/\bcpi\b|\bpce\b|\bppi\b/.test(n)) return 0.7;
+    if (/non-?farm|\bnfp\b|payroll/.test(n)) return 1.0;
+    if (/unemployment rate|hourly earnings|wages/.test(n)) return 0.6;
+    if (/\badp\b/.test(n)) return 0.4;
+    return 0.6;
+}
+
+// z bertanda: >0 = hawkish untuk mata uang event (data lebih kuat dari Forecast).
+function signedZ(ev) {
+    const name = ev && (ev.Event || ev.Category) || '';
+    const sign = usdSign(name);
+    const f = num(ev && (ev.Forecast || ev.TEForecast)), a = num(ev && ev.Actual);
+    if (sign === null || f === null || a === null) return null;
+    const c = surpriseCalc(name.toLowerCase(), a, f);
+    return { name, w: releaseWeight(name), z: sign * c.surprise / c.spec.sigma };
+}
+
+// Rilis berbarengan (CPI + Core CPI, NFP + Unemployment + AHE) dinilai sebagai SATU paket.
+// Rata-rata berbobot: sinyal campur -> mendekati 0 -> WAIT, bukan dua sinyal yang bertabrakan.
+function combinedZ(e, pool) {
+    const c = countryCode(e.Country);
+    const peers = (Array.isArray(pool) ? pool : []).filter(o => o && o.Date === e.Date && countryCode(o.Country) === c);
+    const list = (peers.some(o => o.Event === e.Event) ? peers : peers.concat([e])).map(signedZ).filter(Boolean);
+    if (!list.length) return null;
+    const wsum = list.reduce((t, x) => t + x.w, 0);
+    return { z: list.reduce((t, x) => t + x.w * x.z, 0) / wsum, parts: list };
+}
+
+// Bahasa emas/USD: 'long' = USD lemah / mata uang non-USD kuat.
+function dirFromZ(z, country) {
+    if (!(Math.abs(z) > 0)) return null;
+    return country === 'USD' ? (z > 0 ? 'short' : 'long') : (z > 0 ? 'long' : 'short');
+}
+
+// Kalibrasi sentimen: bukan pengganti arah berita, hanya filter konteks.
+//  - emas: fear ekstrem = bid safe-haven (searah BUY); DXY sintetis = konfirmasi USD
+//  - indeks/crypto: F&G ekstrem bersifat kontrarian (bukti statistik lemah -> hanya kurangi ukuran)
+//  - forex: selaras/tidak dengan arah USD sintetis hari ini
+function contextAlignment({ kind, asset, dir, fg, cryptoFg, usdChgPct }) {
+    const buy = dir === 'long';
+    let score = 0;
+    const notes = [];
+    const usd = Number.isFinite(usdChgPct) ? usdChgPct : null;
+    const usdTxt = usd === null ? '' : `${usd >= 0 ? '+' : ''}${usd.toFixed(2)}%`;
+    if (kind === 'gold') {
+        if (Number.isFinite(fg) && fg <= 25) { score += buy ? 1 : -1; notes.push(`F&G ${fg} extreme fear: safe-haven ${buy ? 'mendukung BUY' : 'melawan SELL'}`); }
+        else if (Number.isFinite(fg) && fg >= 75) { score += buy ? -1 : 1; notes.push(`F&G ${fg} extreme greed: safe-haven melemah, ${buy ? 'melawan BUY' : 'mendukung SELL'}`); }
+        if (usd !== null && Math.abs(usd) >= 0.25) {
+            const ok = buy ? usd < 0 : usd > 0;
+            score += ok ? 1 : -1;
+            notes.push(`DXY sintetis ${usdTxt} ${ok ? 'selaras' : 'berlawanan'} dengan arah emas`);
+        }
+    } else if (kind === 'index' || kind === 'crypto') {
+        const idx = kind === 'crypto' && Number.isFinite(cryptoFg) ? cryptoFg : fg;
+        if (Number.isFinite(idx) && idx <= 20) { score += buy ? 1 : -1; notes.push(`F&G ${idx} extreme fear (kontrarian): ${buy ? 'rebound mendukung BUY' : 'SELL rawan reversal'}`); }
+        else if (Number.isFinite(idx) && idx >= 80) { score += buy ? -1 : 1; notes.push(`F&G ${idx} extreme greed (kontrarian): ${buy ? 'BUY rawan crowded' : 'koreksi mendukung SELL'}`); }
+    } else if (kind === 'forex') {
+        const [b, q] = String(asset).toUpperCase().split('/');
+        if ((b === 'USD' || q === 'USD') && usd !== null && Math.abs(usd) >= 0.25) {
+            const usdDir = b === 'USD' ? (buy ? 1 : -1) : (buy ? -1 : 1);
+            const ok = usdDir * usd > 0;
+            score += ok ? 1 : -1;
+            notes.push(`DXY sintetis ${usdTxt} ${ok ? 'selaras' : 'berlawanan'}`);
+        }
+    }
+    const align = score >= 1 ? 'with' : score <= -1 ? 'against' : 'neutral';
+    return { align, score, size: score <= -2 ? 0.25 : score <= -1 ? 0.5 : 1, notes };
+}
+// END CALIBRATION CORE
+
+// "long" = USD lemah / mata uang non-USD kuat (bahasa emas & FX). Pemetaan memakai
+// usdSign() + surprise; tidak ada lagi daftar regex yang terbalik atau tumpang tindih.
+function goldBias(name, surprise, country) {
+    const sign = usdSign(name);
+    if (sign === null) return null;
+    const hawkish = sign * surprise > 0;
+    return country === 'USD' ? !hawkish : hawkish;
+}
+
+// Pre-news bias: Forecast vs Previous is the only directional information available before a release.
+// "long" = USD weaker / non-USD currency stronger, "short" = USD stronger / non-USD currency weaker.
+function forecastBias(e) {
+    const name = (e.Event || e.Category || '').toLowerCase();
+    const country = countryCode(e.Country);
+    const forecast = num(e.Forecast || e.TEForecast);
+    const previous = num(e.Previous);
+    if (forecast === null || previous === null) return null;
+    const surprise = forecast - previous;
+    // Threshold dari spesifikasi indikator yang sama dengan analyze() (pasca-rilis).
+    if (surpriseCalc(name, forecast, previous).flat) return null;
+    const bullish = goldBias(name, surprise, country);
+    if (bullish === null) return null;
+    return { dir: bullish ? 'long' : 'short', forecast, previous, surprise };
+}
+
+// When this event's own Forecast equals Previous, borrow the nearest same-currency
+// medium/high-impact expectation (within 6 hours) so the board can still show a bias.
+function preNewsBias(e) {
+    const own = forecastBias(e);
+    if (own) return own;
+    const pool = (typeof events !== 'undefined' && Array.isArray(events)) ? events : [];
+    const country = countryCode(e.Country);
+    const t = new Date(e.Date).getTime();
+    if (!Number.isFinite(t) || !pool.length) return null;
+    const now = Date.now();
+    const near = pool
+        .filter(o => o && !(o.Date === e.Date && o.Event === e.Event))
+        .filter(o => countryCode(o.Country) === country && (+o.Importance || 1) >= 2)
+        .map(o => ({ o, t: new Date(o.Date).getTime() }))
+        .filter(x => Number.isFinite(x.t) && x.t > now && Math.abs(x.t - t) <= 6 * 60 * 60 * 1000)
+        .map(x => ({ ...x, b: forecastBias(x.o) }))
+        .filter(x => x.b)
+        .sort((a, b) => (Math.abs(a.t - t) - Math.abs(b.t - t)) || ((+b.o.Importance || 1) - (+a.o.Importance || 1)));
+    if (!near.length) return null;
+    return { ...near[0].b, source: near[0].o.Event };
+}
+
+// Map the event bias to a pair. "long" means USD weaker / non-USD currency stronger.
+// For a cross (e.g. GBP/JPY) the event currency decides the leg: base strengthens = BUY,
+// quote strengthens = SELL. A USD event is treated as a risk-on/off driver.
+function invertDir(dir) {
+    return dir === 'long' ? 'short' : dir === 'short' ? 'long' : null;
+}
+
+function mapPairBias(pair, dir, country) {
+    if (dir !== 'long' && dir !== 'short') return null;
+    const [base, quote] = String(pair).toUpperCase().split('/');
+    if (!base || !quote) return null;
+    const c = country ? countryCode(country) : '';
+    // USD event: "long" already means USD weaker, not USD stronger.
+    if (!c || c === 'USD') {
+        // Cross tanpa USD (GBP/JPY, EUR/JPY): event USD tidak menentukan arah (kedua leg
+        // bereaksi terhadap USD). Arah hanya boleh dari reaksi harga.
+        if (base !== 'USD' && quote !== 'USD') return null;
+        return base === 'USD' ? invertDir(dir) : dir;
+    }
+    if (c === base) return dir;
+    if (c === quote) return invertDir(dir);
+    return base === 'USD' ? invertDir(dir) : dir;
+}
+
+// Actual adalah satu-satunya dasar klaim "kejutan ekonomi". Kalau Forecast belum
+// tercetak, bandingkan Actual dengan Previous; kalau Actual tidak ada sama sekali,
+// jangan pernah mengembalikan angka confidence sintetis.
+function analyze(e) {
+    const name = (e.Event || e.Category || '').toLowerCase();
+    const country = countryCode(e.Country);
+    const forecast = num(e.Forecast || e.TEForecast);
+    const previous = num(e.Previous);
+    const actual = num(e.Actual);
+    const releasedAt = new Date(e.Date).getTime();
+    const released = Number.isFinite(releasedAt) ? releasedAt <= Date.now() : actual !== null;
+
+    if (actual === null) {
+        if (!released) {
+            return { dir: 'wait', score: 0, basis: 'forecast-pending', reason: 'Belum rilis — hanya lean pra-rilis dari Forecast vs Previous; arah baru valid setelah Actual tercetak dan harga bereaksi.' };
+        }
+        return { dir: 'wait', score: 0, noData: true, basis: 'no-actual', reason: 'Rilis sudah lewat tetapi Actual tidak dipublikasikan, jadi kejutan ekonomi tidak bisa dihitung dari kalender.' };
+    }
+    // Surprise = Actual - FORECAST. Actual vs Previous hanyalah tren, bukan kejutan:
+    // pasar sudah memperhitungkan Previous, jadi tanpa Forecast tidak ada sinyal berita.
+    if (forecast === null) {
+        return { dir: 'wait', score: 0, noData: false, basis: 'no-forecast', reason: `Actual ${actual} tercetak tanpa Forecast — kejutan tidak terukur (Actual vs Previous hanya tren, bukan surprise). Tunggu reaksi harga.` };
+    }
+
+    const fmtVal = v => Math.abs(v) >= 1e6 ? `${(v / 1e6).toFixed(2)}M` : Math.abs(v) >= 1e4 ? Math.round(v).toLocaleString('en-US') : v;
+    const comparison = `Actual ${fmtVal(actual)} vs Forecast ${fmtVal(forecast)}`;
+    const calc = surpriseCalc(name, actual, forecast);
+    if (calc.flat) {
+        return { dir: 'wait', score: 45, basis: 'flat', reason: `${comparison}: kejutan di bawah batas noise (${calc.spec.thr}) — tidak ada edge berita.` };
+    }
+    if (usdSign(name) === null) {
+        return { dir: 'wait', score: 40, basis: 'unmapped', reason: `${name} tidak dipetakan sebagai penggerak emas/USD (bukan katalis makro utama).` };
+    }
+
+    const pool = (typeof events !== 'undefined' && Array.isArray(events)) ? events : [];
+    const pack = combinedZ(e, pool) || { z: usdSign(name) * calc.surprise / calc.spec.sigma, parts: [] };
+    if (Math.abs(pack.z) < 0.6) {
+        return { dir: 'wait', score: 45, basis: 'mixed', surprise: calc.surprise, z: pack.z, reason: `${comparison}. Paket rilis campur/lemah (z=${pack.z.toFixed(2)}) — tidak ada arah makro yang tegas.` };
+    }
+    const dir = dirFromZ(pack.z, country);
+    const score = Math.min(92, Math.max(55, Math.round(55 + Math.abs(pack.z) * 14)));
+    const hawkish = pack.z > 0;
+    const parts = pack.parts.length > 1 ? ` Paket: ${pack.parts.map(p => `${p.name} z=${p.z.toFixed(1)}`).join(', ')}.` : '';
+    return {
+        dir, score, surprise: calc.surprise, z: pack.z,
+        comparedTo: comparison, reference: 'Forecast', basis: 'actual-forecast',
+        calibrated: calc.spec.calibrated,
+        reason: `${comparison} (z=${pack.z.toFixed(2)}).${parts} ${hawkish ? `Data ${country} lebih hawkish dari konsensus → ${country === 'USD' ? 'USD menguat, bias bearish emas' : `${country} menguat`}.` : `Data ${country} lebih dovish dari konsensus → ${country === 'USD' ? 'USD melemah, bias bullish emas' : `${country} melemah`}.`}${calc.spec.calibrated ? '' : ' (threshold indikator ini belum terkalibrasi)'}`
+    };
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// AI TECHNICAL SUITE — indikator, pola candle, dan pola ala ICT
+//
+// Sumber data: bar 1 menit per aset dari data/markets.json (sudah termasuk
+// volatilitas riil). Semua fungsinya murni: input bar, keluaran tag + arah,
+// supaya mudah diuji. BUY/SELL teknikal hanya muncul bila >= 3 konfirmasi
+// searah; kalau tidak, kartu tetap WAIT. Entry/SL/TP memakai jalur kalibrasi
+// yang sama dengan sinyal news (computeSignalLevels): harga live/broker
+// bid-ask + ATR 1 menit, bukan persentase kaku.
+// ═════════════════════════════════════════════════════════════════════════════
+const TECH_ASSETS = [
+    { asset: 'XAU/USD', kind: 'gold', name: 'XAU/USD (Gold)' },
+    { asset: 'BTC/USD', kind: 'crypto', name: 'BTC/USD' },
+    { asset: 'ETH/USD', kind: 'crypto', name: 'ETH/USD' },
+    { asset: 'EUR/USD', kind: 'forex', name: 'EUR/USD' },
+    { asset: 'NAS100', kind: 'index', name: 'NAS100' },
+    { asset: 'US500', kind: 'index', name: 'US500' }
+];
+
+function emaSeries(values, len) {
+    const rows = (values || []).filter(Number.isFinite);
+    if (rows.length < len) return null;
+    let e = rows.slice(0, len).reduce((a, b) => a + b, 0) / len;
+    const k = 2 / (len + 1);
+    for (let i = len; i < rows.length; i++) e = rows[i] * k + e * (1 - k);
+    return e;
+}
+
+function rsiValue(closes, len = 14) {
+    const rows = (closes || []).filter(Number.isFinite);
+    if (rows.length < len + 1) return null;
+    let gain = 0, loss = 0;
+    for (let i = rows.length - len; i < rows.length; i++) {
+        const d = rows[i] - rows[i - 1];
+        if (d >= 0) gain += d; else loss -= d;
+    }
+    if (loss === 0) return gain === 0 ? 50 : 100;
+    return 100 - 100 / (1 + gain / loss);
+}
+
+// Pola candle dari 3 bar terakhir (engulfing, pin bar, inside bar, doji, 2-1).
+function detectCandlePatterns(bars) {
+    const out = [];
+    const rows = (bars || []).filter(b => b && b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0);
+    if (rows.length < 3) return out;
+    const [p2, p1, cur] = rows.slice(-3);
+    const body = cur.c - cur.o;
+    const range = cur.h - cur.l;
+    if (!(range > 0)) return out;
+    const bodyPct = Math.abs(body) / range;
+    const upper = cur.h - Math.max(cur.o, cur.c);
+    const lower = Math.min(cur.o, cur.c) - cur.l;
+    if (bodyPct <= 0.1) out.push({ tag: 'Doji — ragu-ragu', dir: 'wait' });
+    if (lower >= range * 0.6 && bodyPct <= 0.35) out.push({ tag: 'Pin bar / hammer — rejection bawah', dir: 'buy' });
+    if (upper >= range * 0.6 && bodyPct <= 0.35) out.push({ tag: 'Shooting star — rejection atas', dir: 'sell' });
+    if (p1 && p1.c < p1.o && cur.c > cur.o && cur.c >= p1.o && cur.o <= p1.c) out.push({ tag: 'Bullish engulfing', dir: 'buy' });
+    if (p1 && p1.c > p1.o && cur.c < cur.o && cur.c <= p1.o && cur.o >= p1.c) out.push({ tag: 'Bearish engulfing', dir: 'sell' });
+    if (p1 && cur.h < p1.h && cur.l > p1.l) out.push({ tag: 'Inside bar — kompresi, tunggu breakout', dir: 'wait' });
+    if (p2 && p2.c < p2.o && p1.c < p1.o && cur.c > cur.o && cur.c > p1.c) out.push({ tag: 'Pembalikan 2-1 bullish', dir: 'buy' });
+    if (p2 && p2.c > p2.o && p1.c > p1.o && cur.c < cur.o && cur.c < p1.c) out.push({ tag: 'Pembalikan 2-1 bearish', dir: 'sell' });
+    return out.slice(0, 3);
+}
+
+// Pola ala ICT pada ~40 bar terakhir: FVG 3-candle, liquidity sweep/stop hunt,
+// break of structure (BOS), dan zona OTE 0.618–0.79.
+function detectICT(bars) {
+    const out = [];
+    const rows = (bars || []).filter(b => b && b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0);
+    if (rows.length < 30) return out;
+    const recent = rows.slice(-40);
+    const dec = v => Number(v).toFixed(Number(v) > 100 ? 2 : 5);
+    // 1. Fair Value Gap: gap antara high bar ke-1 dan low bar ke-3.
+    for (let i = recent.length - 3; i >= 1; i--) {
+        const a = recent[i - 1], g = recent[i], c = recent[i + 1];
+        // Bullish FVG: high candle-1 < low candle-3 (gap naik). Bearish: sebaliknya.
+        if (a.h < c.l) { out.push({ tag: `Bullish FVG ${dec(a.h)}–${dec(c.l)}`, dir: 'buy' }); break; }
+        if (a.l > c.h) { out.push({ tag: `Bearish FVG ${dec(c.h)}–${dec(a.l)}`, dir: 'sell' }); break; }
+    }
+    // 2. Liquidity sweep: wick menembus swing lama lalu close kembali di dalam.
+    const swing = recent.slice(0, -8);
+    if (swing.length >= 10) {
+        const swingHi = Math.max(...swing.map(b => b.h));
+        const swingLo = Math.min(...swing.map(b => b.l));
+        for (let i = recent.length - 8; i < recent.length; i++) {
+            const b = recent[i];
+            if (b.h > swingHi && b.c < swingHi) { out.push({ tag: 'Sweep high — stop hunt atas', dir: 'sell' }); break; }
+            if (b.l < swingLo && b.c > swingLo) { out.push({ tag: 'Sweep low — stop hunt bawah', dir: 'buy' }); break; }
+        }
+    }
+    // 3. BOS: close terakhir menembus struktur (ekstrem 37 bar sebelumnya).
+    const last = recent[recent.length - 1];
+    const prior = recent.slice(0, -3);
+    const pHi = Math.max(...prior.map(b => b.h));
+    const pLo = Math.min(...prior.map(b => b.l));
+    if (last.c > pHi) out.push({ tag: 'BOS naik — struktur bullish', dir: 'buy' });
+    else if (last.c < pLo) out.push({ tag: 'BOS turun — struktur bearish', dir: 'sell' });
+    // 4. OTE: harga berada di zona retracement 0.618–0.79 leg terakhir.
+    const legHi = Math.max(...recent.map(b => b.h));
+    const legLo = Math.min(...recent.map(b => b.l));
+    const legRange = legHi - legLo;
+    if (legRange > 0) {
+        const hiIdx = recent.findIndex(b => b.h === legHi);
+        const loIdx = recent.findIndex(b => b.l === legLo);
+        // Leg naik = low lebih dulu, lalu high. Retrace 0.618–0.79 dari high = zona BUY.
+        // Leg turun = high lebih dulu, lalu low. Retrace naik 0.618–0.79 dari low = zona SELL.
+        if (loIdx < hiIdx) {
+            const top = legHi - legRange * 0.618, bot = legHi - legRange * 0.79;
+            if (last.c <= top && last.c >= bot) out.push({ tag: `Zona OTE bullish ${dec(bot)}–${dec(top)}`, dir: 'buy' });
+        } else if (hiIdx < loIdx) {
+            const bot = legLo + legRange * 0.618, top = legLo + legRange * 0.79;
+            if (last.c >= bot && last.c <= top) out.push({ tag: `Zona OTE bearish ${dec(bot)}–${dec(top)}`, dir: 'sell' });
+        }
+    }
+    return out.slice(0, 3);
+}
+
+// Rangkuman konfluensi per aset: arah teknikal = mayoritas vote (EMA/RSI/pola/
+// ICT) dengan minimal 3 suara searah.
+function technicalView(kind, asset) {
+    const price = assetPrice(kind, asset);
+    if (!Number.isFinite(price) || price <= 0) return null;
+    const bars = assetBars(asset).slice(-120)
+        .map(b => ({ o: Number(b && b.o), h: Number(b && b.h), l: Number(b && b.l), c: Number(b && b.c) }))
+        .filter(b => b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0);
+    if (bars.length < 30) return null;
+    const closes = bars.map(b => b.c);
+    const emaFast = emaSeries(closes, 20);
+    const emaSlow = emaSeries(closes, 50);
+    const rsi = rsiValue(closes, 14);
+    const info = atrInfo(asset, price);
+    const candles = detectCandlePatterns(bars);
+    const ict = detectICT(bars);
+    const votes = [];
+    if (emaFast && emaSlow) votes.push(emaFast > emaSlow ? 'buy' : 'sell');
+    if (rsi !== null) { if (rsi <= 30) votes.push('buy'); else if (rsi >= 70) votes.push('sell'); }
+    candles.forEach(p => { if (p.dir !== 'wait') votes.push(p.dir); });
+    ict.forEach(p => votes.push(p.dir));
+    const buys = votes.filter(v => v === 'buy').length;
+    const sells = votes.filter(v => v === 'sell').length;
+    const dir = buys >= 3 && buys > sells ? 'buy' : sells >= 3 && sells > buys ? 'sell' : 'wait';
+    const trendText = emaFast && emaSlow
+        ? (emaFast > emaSlow ? 'tren naik (EMA20 > EMA50)' : 'tren turun (EMA20 < EMA50)') : 'tren n/a';
+    const rsiText = rsi === null ? 'RSI n/a' : `RSI ${rsi.toFixed(0)}${rsi <= 30 ? ' oversold' : rsi >= 70 ? ' overbought' : ' netral'}`;
+    const tags = [...candles.map(p => p.tag), ...ict.map(p => p.tag)];
+    return { price, emaFast, emaSlow, rsi, atrPct: info ? info.atrPct : null, candles, ict, dir, buys, sells, trendText, rsiText, tags, bars: bars.length };
+}
+
+function techPanelHtml() {
+    if (!MARKETS || !marketsFresh()) {
+        return '<div class="tech-card wait"><div class="head"><span>Menunggu data bar 1 menit…</span></div><div class="sub">Panel teknikal aktif otomatis setelah data/markets.json dimuat.</div></div>';
+    }
+    return TECH_ASSETS.map(cfg => {
+        const v = technicalView(cfg.kind, cfg.asset);
+        if (!v) {
+            return `<div class="tech-card wait"><div class="head"><span>${esc(cfg.name)}</span><span class="tech-dir">DATA</span></div><div class="sub">Bar 1 menit belum cukup untuk analisis teknikal.</div></div>`;
+        }
+        const dirText = v.dir === 'buy' ? 'BUY' : v.dir === 'sell' ? 'SELL' : 'WAIT';
+        const conf = `konfluensi ${v.dir === 'buy' ? v.buys : v.sells}/vote`;
+        let levels = '';
+        if (v.dir !== 'wait') {
+            const lv = computeSignalLevels(cfg.kind, cfg.asset, v.dir, v.price, { Importance: 2 }, { movePct: 0 });
+            if (lv) {
+                const f = n => Number(n).toFixed(lv.dec || 2);
+                levels = `<div class="tech-levels"><span>Entry ${f(lv.entry)}</span><span>SL ${f(lv.sl)}</span><span>TP ${f(lv.tp)}</span><span>TP1 ${f(lv.tp1)}</span>${lv.pullback ? `<span>Retest ${f(lv.pullback)}</span>` : ''}</div>`;
+            }
+        }
+        const tagHtml = v.tags.length
+            ? v.tags.map(t => {
+                const d = (v.candles.concat(v.ict).find(p => p.tag === t) || {}).dir;
+                return `<span class="${d || 'wait'}">${esc(t)}</span>`;
+            }).join('')
+            : '<span class="wait">Tidak ada pola khusus saat ini</span>';
+        return `<div class="tech-card ${v.dir}">
+            <div class="head"><span>${esc(cfg.name)}</span><span class="tech-dir">${dirText} · ${conf}</span></div>
+            <div class="sub">${esc(v.trendText)} • ${esc(v.rsiText)}${v.atrPct ? ` • ATR 1m ${v.atrPct.toFixed(3)}%` : ''} • ${v.bars} bar</div>
+            <div class="tech-tags">${tagHtml}</div>
+            ${levels}
+            <div class="tech-note">Entry dihitung dari harga live (ask utk BUY / bid utk SELL${lvBrokerNote(cfg.asset)}).</div>
+        </div>`;
+    }).join('');
+}
+
+function lvBrokerNote(asset) {
+    const b = brokerQuoteFor(asset);
+    return b && !b.stale ? ` — broker ${b.brokerName}` : '';
+}
+
+function renderTechBoard() {
+    const grid = $('#techGrid');
+    if (grid) grid.innerHTML = techPanelHtml();
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// MACRO & SENTIMENT — DXY sintetis, kalibrasi pra-rilis, CNN Fear & Greed
+// ═════════════════════════════════════════════════════════════════════════════
+let SENTIMENT = null;
+let SENTIMENT_CRYPTO = null;
+
+// DXY sintetis (tanpa SEK, bobot dinormalisasi): USD naik bila EUR/USD, GBP/USD
+// turun atau USD/JPY, USD/CAD, USD/CHF naik. Sumber: changePct harian scanner.
+const USD_WEIGHTS = { 'EUR/USD': 0.576, 'USD/JPY': 0.136, 'GBP/USD': 0.119, 'USD/CAD': 0.091, 'USD/CHF': 0.078 };
+
+function usdBias() {
+    let num = 0, den = 0;
+    for (const [pair, w] of Object.entries(USD_WEIGHTS)) {
+        const c = Number(FOREX_QUOTES && FOREX_QUOTES[pair] && FOREX_QUOTES[pair].changePct);
+        if (!Number.isFinite(c)) continue;
+        num += (pair.startsWith('USD/') ? c : -c) * w;
+        den += w;
+    }
+    if (!den) return null;
+    return { changePct: num / den };
+}
+
+// Kalibrasi: harga pra-rilis tersimpan vs harga live sekarang. Selisih inilah
+// yang dipakai engine momentum sebagai dasar arah pasca-rilis.
+function calibrationInfo(now = Date.now()) {
+    const { pick } = nextUsdCatalyst(now);
+    if (!pick) return null;
+    const base = preNewsPrice(pick.e);
+    const live = Number(LIVE_PRICE);
+    if (!Number.isFinite(base) || !Number.isFinite(live) || !(live > 0)) return { event: pick.e, base, live: null, driftPct: null };
+    return { event: pick.e, base, live, driftPct: (live - base) / base * 100, capturedAt: preNewsSnapshot(pick.e) && preNewsSnapshot(pick.e).capturedAt };
+}
+
+async function loadCryptoFng() {
+    try {
+        const r = await fetch('https://api.alternative.me/fng/?limit=1', { cache: 'no-store' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        const d = j && j.data && j.data[0];
+        const sc = Number(d && d.value);
+        if (!Number.isFinite(sc)) throw new Error('payload tidak valid');
+        SENTIMENT_CRYPTO = { score: Math.round(sc), rating: d.value_classification || '', at: new Date().toISOString() };
+    } catch (err) {
+        console.log('Crypto F&G gagal', err.message || err);
+        SENTIMENT_CRYPTO = null;
+    }
+    renderMacroBoard();
+}
+
+async function loadSentiment() {
+    loadCryptoFng();
+    const target = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
+    const grab = async url => {
+        const r = await fetch(url, { cache: 'no-store' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    };
+    let j = null;
+    try { j = await grab(target); } catch (e) { console.log('CNN F&G direct gagal', e.message || e); }
+    if (!j) {
+        try { j = await grab('https://api.allorigins.win/raw?url=' + encodeURIComponent(target)); } catch (e) { console.log('CNN F&G proxy gagal', e.message || e); }
+    }
+    const fg = j && j.fear_and_greed;
+    // Number(null) === 0 (finite): tanpa guard ini fg null lolos dan fg.rating melempar TypeError.
+    const score = fg ? Number(fg.score) : NaN;
+    if (!Number.isFinite(score)) { SENTIMENT = null; renderMacroBoard(); return; }
+    SENTIMENT = {
+        score: Math.round(score),
+        rating: fg.rating || '',
+        previousClose: Number.isFinite(Number(fg.previous_close)) ? Number(fg.previous_close) : null,
+        at: new Date().toISOString()
+    };
+    renderMacroBoard();
+}
+
+function macroPanelHtml() {
+    const bias = usdBias();
+    const cal = calibrationInfo();
+    const s = SENTIMENT;
+    const usdCard = bias
+        ? `<div class="macro-card"><h5>DXY sintetis (bias makro USD)</h5>
+            <div class="big ${bias.changePct >= 0.1 ? 'sell' : bias.changePct <= -0.1 ? 'buy' : 'wait'}">${bias.changePct >= 0 ? '+' : ''}${bias.changePct.toFixed(2)}% hari ini</div>
+            <div class="meta">${bias.changePct >= 0.1 ? 'USD menguat → tekanan jual emas / risk-off, non-USD melemah.' : bias.changePct <= -0.1 ? 'USD melemah → support emas / risk-on, non-USD menguat.' : 'USD relatif datar — arah ditentukan katalis berikutnya.'}</div></div>`
+        : `<div class="macro-card"><h5>DXY sintetis (bias makro USD)</h5><div class="big wait">—</div><div class="meta">Menunggu data kurs harian dari scanner…</div></div>`;
+    const fgCard = s
+        ? `<div class="macro-card"><h5>CNN Fear &amp; Greed — ${esc(s.rating || '')}</h5>
+            <div class="big ${s.score <= 25 ? 'buy' : s.score >= 75 ? 'sell' : 'wait'}">${s.score}/100</div>
+            <div class="macro-bar"><i style="left:0;width:${Math.max(0, Math.min(100, s.score))}%"></i></div>
+            <div class="meta">${s.score <= 25 ? 'Extreme fear → bid safe-haven mendukung emas; indeks/crypto rawan rebound (kontrarian).' : s.score >= 75 ? 'Extreme greed → risk-on/crowded: bid safe-haven emas melemah; indeks/crypto rawan koreksi.' : 'Sentimen netral.'}${s.previousClose != null ? ` • tutup sebelumnya ${s.previousClose}` : ''}</div></div>`
+        : `<div class="macro-card"><h5>CNN Fear &amp; Greed</h5><div class="big wait">—</div><div class="meta">Sentimen belum termuat (akan dicoba ulang tiap 10 menit).</div></div>`;
+    const calCard = cal
+        ? `<div class="macro-card"><h5>Kalibrasi harga pra-rilis vs live</h5>
+            <div class="big ${cal.driftPct == null ? 'wait' : Math.abs(cal.driftPct) < 0.05 ? 'wait' : cal.driftPct > 0 ? 'buy' : 'sell'}">${cal.live ? '$' + Number(cal.live).toFixed(2) : '—'}</div>
+            <div class="meta">${cal.base ? `Base pra-rilis ${esc(cal.event.Event)}: $${Number(cal.base).toFixed(2)}` : 'Snapshot pra-rilis belum tersedia untuk katalis aktif.'}${cal.driftPct != null ? ` → selisih ${cal.driftPct >= 0 ? '+' : ''}${cal.driftPct.toFixed(2)}% (dasar perhitungan momentum pasca-rilis).` : ''}</div></div>`
+        : `<div class="macro-card"><h5>Kalibrasi harga pra-rilis vs live</h5><div class="big wait">—</div><div class="meta">Tidak ada katalis USD aktif.</div></div>`;
+    const cf = SENTIMENT_CRYPTO;
+    const cfgCard = cf
+        ? `<div class="macro-card"><h5>Crypto Fear &amp; Greed — ${esc(cf.rating || '')}</h5>
+            <div class="big ${cf.score <= 20 ? 'buy' : cf.score >= 80 ? 'sell' : 'wait'}">${cf.score}/100</div>
+            <div class="macro-bar"><i style="left:0;width:${Math.max(0, Math.min(100, cf.score))}%"></i></div>
+            <div class="meta">Dipakai sebagai filter konteks BTC/ETH (kontrarian di ekstrem ≤20 / ≥80), bukan penentu arah.</div></div>`
+        : `<div class="macro-card"><h5>Crypto Fear &amp; Greed</h5><div class="big wait">—</div><div class="meta">Belum termuat.</div></div>`;
+    return usdCard + fgCard + cfgCard + calCard + `<div class="macro-card"><h5>Cara pakai bersama sinyal news</h5><div class="meta">1) Cek arah di kartu event / board pair (reaksi harga 1 menit &gt; momentum &gt; Actual). 2) Cocokkan dengan panel teknikal: searah = konfluensi penuh; berlawanan = kecilkan ukuran posisi atau tunggu retest OTE. 3) F&G dan DXY hanya konteks makro — jangan melawan harga.</div></div>`;
+}
+
+function renderMacroBoard() {
+    const body = $('#macroBody');
+    if (body) body.innerHTML = macroPanelHtml();
+}
+
+// ---------------------------------------------------------------------------
+// Unified signal engine (dipakai oleh kartu event DAN semua board)
+//
+// Urutan arah pasca-rilis:
+//   1. Reaksi harga 1 menit yang sudah melewati noise floor (paling penting).
+//   2. Momentum pra-rilis -> sekarang, hanya dalam 90 menit pertama.
+//   3. Actual vs Forecast/Previous, hanya kalau tidak ada data harga.
+//   4. WAIT.
+//
+// Actual yang berlawanan dengan harga TIDAK dipakai untuk melawan pasar. Kalau
+// keduanya bertabrakan, sinyal mengikuti harga dan catatan menjelaskan konflik.
+// ---------------------------------------------------------------------------
+const RISK_SENSITIVE_EVENT = /nonfarm|non-farm|nfp|payroll|gdp|retail sales|pmi|ism|adp|employment|durable goods|consumer confidence|consumer sentiment|unemployment|jobless|claims|industrial production/i;
+
+// Event yang arahnya jelas untuk aset berisiko (indeks/crypto): inflasi, upah, suku bunga.
+// Data pertumbuhan/tenaga kerja (NFP, claims, GDP, PMI) TIDAK dipetakan: tandanya
+// bergantung rezim (data kuat bisa risk-on atau justru menekan karena yield naik),
+// jadi arah indeks/crypto untuk event itu hanya boleh datang dari reaksi harga.
+const RATE_DRIVEN_EVENT = /\bcpi\b|\bpce\b|\bppi\b|inflation|consumer price|producer price|hourly earnings|wages|employment cost|rate decision|interest rate|funds rate|cash rate|bank rate/i;
+
+function mapAssetBias(kind, asset, dir, e) {
+    if (dir !== 'long' && dir !== 'short') return null;
+    const name = (e && (e.Event || e.Category)) || '';
+    if (kind === 'forex') return mapPairBias(asset, dir, e && e.Country);
+    if (kind === 'index' || kind === 'crypto') return RATE_DRIVEN_EVENT.test(name) ? dir : null;
+    return dir;
+}
+
+// "dir" dari analyze() adalah bahasa emas/USD: long = USD lemah / non-USD kuat.
+function mapActualBias(kind, asset, dir, e) {
+    return mapAssetBias(kind, asset, dir, e);
+}
+
+function signalDirectionCore(e, asset, kind, now = Date.now()) {
+    const phase = newsPhase(e);
+    if (phase === 'pre') {
+        const bias = preNewsBias(e);
+        const lean = bias ? mapAssetBias(kind, asset, bias.dir, e) : null;
+        const directional = PRE_NEWS_DIRECTIONAL && lean;
+        return {
+            phase, dir: directional ? lean : null, lean, basis: directional ? 'forecast' : 'none',
+            movePct: null, minutes: null, conf: directional ? 50 : null,
+            note: bias
+                ? `Lean ringan, BUKAN sinyal (Forecast ${bias.forecast} vs Previous ${bias.previous}${bias.source ? ' • ' + bias.source : ''}): sudah priced-in. Arah baru valid dari surprise Actual + reaksi harga.`
+                : 'Forecast vs Previous flat — tunggu rilis'
+        };
+    }
+    if (phase === 'live') {
+        return { phase, dir: null, basis: 'settling', note: 'Rilis berlangsung — tunggu konfirmasi 15 menit sebelum entry.' };
+    }
+
+    const a = analyze(e);
+    const impact = +e.Importance || 1;
+    const actualDir = (a.dir === 'long' || a.dir === 'short') ? mapActualBias(kind, asset, a.dir, e) : null;
+    const reaction = reactionFor(e, asset);
+    const reactionDir = reaction && reaction.dir ? reaction.dir : null;
+    const releasedAt = new Date(e.Date).getTime();
+    const ageMin = Number.isFinite(releasedAt) ? (now - releasedAt) / 60000 : Infinity;
+    const mom = ageMin <= MOMENTUM_WINDOW_MS / 60000 ? momentumFor(e, kind, asset) : null;
+    const momentumDir = mom && mom.dir ? mom.dir : null;
+    const priceDir = reactionDir || momentumDir;
+    const floor = reaction && Number.isFinite(reaction.floor) ? reaction.floor : reactionFloor(asset);
+    let blocked = null;
+
+    if (priceDir) {
+        // Momentum saja harus 1.5x lebih besar dari noise floor; kalau tidak,
+        // itu retracement kecil yang akan berbalik.
+        const strongMomentum = !reactionDir && mom && Math.abs(mom.changePct) >= momentumFloor(kind, asset) * 1.5;
+        if (reactionDir || strongMomentum) {
+            const mv = Math.abs(reactionDir ? reaction.movePct : mom.changePct);
+            const conflict = Boolean(actualDir && actualDir !== priceDir);
+            if (impact < 2 && mv < floor * 2) {
+                blocked = 'Event low-impact: gerak harga belum cukup besar (butuh ≥ 2× noise floor).';
+            } else if (conflict && mv < floor * 2) {
+                blocked = 'KONFLIK/FAKEOUT: harga berlawanan dengan surprise Actual dan geraknya belum cukup kuat → WAIT.';
+            } else {
+                const agree = Boolean(actualDir && actualDir === priceDir);
+                let conf = (reactionDir ? 62 : 54) + Math.min(20, Math.max(0, (mv / floor - 1) * 8)) + (agree ? 8 : 0) - (conflict ? 10 : 0) - (reaction && reaction.faded ? 8 : 0);
+                conf = Math.round(Math.min(90, Math.max(35, conf)));
+                return {
+                    phase, dir: priceDir, conf,
+                    basis: reactionDir ? 'reaction' : 'momentum',
+                    movePct: reactionDir ? reaction.movePct : mom.changePct,
+                    minutes: reaction ? reaction.minutes : null,
+                    actualDir, conflict,
+                    note: reactionDir
+                        ? `${moveNote('Reaksi harga', reaction.movePct, reaction.minutes)}${a.noData ? ' — Actual tidak dipublikasikan' : (a.basis === 'flat' ? ' — Actual sesuai perkiraan' : '')}${reaction.via ? ` (bar ${reaction.via})` : ''}${reaction.faded ? ' — spike awal sudah berbalik (fade)' : ''}${conflict ? ' — berlawanan dengan Actual tetapi gerak harga cukup kuat, sinyal mengikuti harga' : ''}`
+                        : `Momentum ${mom.changePct >= 0 ? '+' : ''}${mom.changePct.toFixed(2)}% dari harga tepat sebelum rilis${conflict ? ' — berlawanan dengan Actual, gerak cukup kuat' : ''}`
+                };
+            }
+        }
+    }
+
+    // Actual dipakai bila tidak ada arah harga sama sekali, hanya event impact >= 2 dan
+    // hanya 3 jam pertama (setelahnya sinyal yang sudah terkonfirmasi dibawa signal lock).
+    if (!blocked && actualDir && impact >= 2 && ageMin <= 180) {
+        return {
+            phase, dir: actualDir, basis: 'actual', movePct: null, minutes: null, conf: a.score,
+            actualDir, note: a.comparedTo ? `${a.comparedTo} (z=${Number(a.z).toFixed(2)})` : (a.reason || 'Arah dari Actual vs Forecast')
+        };
+    }
+
+    return {
+        phase, dir: null,
+        basis: blocked ? 'conflict' : (a.noData ? 'no-actual' : (a.basis || 'wait')),
+        movePct: null, minutes: null,
+        note: blocked || (a.noData
+            ? 'NO ACTUAL DATA — belum ada reaksi harga yang bisa dikonfirmasi.'
+            : `${a.reason || 'Arah belum terkonfirmasi'} Tunggu reaksi harga 15 menit pertama.`)
+    };
+}
+
+// Lapisan konteks pasar: sentimen (Fear & Greed) + USD sintetis. Basis lemah
+// (Actual/momentum) yang MELAWAN konteks dibatalkan; basis reaksi harga (kebenaran
+// pasar) tetap jalan tetapi ukuran posisi dikurangi.
+function applyMarketContext(sig, kind, asset) {
+    if (!sig || (sig.dir !== 'long' && sig.dir !== 'short') || sig.phase !== 'post') return sig;
+    const usd = usdBias();
+    const ctx = contextAlignment({
+        kind, asset, dir: sig.dir,
+        fg: SENTIMENT ? SENTIMENT.score : null,
+        cryptoFg: SENTIMENT_CRYPTO ? SENTIMENT_CRYPTO.score : null,
+        usdChgPct: usd ? usd.changePct : null
+    });
+    const ctxNote = ctx.notes.length ? ' • Konteks: ' + ctx.notes.join('; ') : '';
+    if (ctx.align === 'against' && (sig.basis === 'actual' || sig.basis === 'momentum')) {
+        return { ...sig, dir: null, blocked: true, basis: 'context-block', ctx, conf: null,
+            note: `Sinyal dibatalkan: basis ${sig.basis === 'actual' ? 'Actual' : 'momentum'} lemah dan melawan konteks pasar.${ctxNote}` };
+    }
+    const conf = Number.isFinite(sig.conf) ? Math.round(clampNum(sig.conf + (ctx.align === 'with' ? 6 : ctx.align === 'against' ? -12 : 0), 30, 92)) : sig.conf;
+    return { ...sig, ctx, conf, sizeFactor: ctx.size, note: `${sig.note || ''}${ctxNote}${ctx.size < 1 ? ` • ukuran posisi ${ctx.size}× (melawan konteks)` : ''}` };
+}
+
+function signalDirection(e, asset, kind, now = Date.now()) {
+    return applyMarketContext(signalDirectionCore(e, asset, kind, now), kind, asset);
+}
+
+function signalLockKey(e, asset) {
+    return SIGNAL_LOCK_PREFIX + dateEventKey(e) + '|' + String(asset).toUpperCase();
+}
+
+function readSignalLock(e, asset) {
+    try {
+        const raw = localStorage.getItem(signalLockKey(e, asset));
+        if (!raw) return null;
+        const j = JSON.parse(raw);
+        if (!j || (j.dir !== 'long' && j.dir !== 'short')) return null;
+        const entry = Number(j.entry), sl = Number(j.sl), tp = Number(j.tp);
+        if (![entry, sl, tp].every(n => Number.isFinite(n) && n > 0)) return null;
+        return { ...j, entry, sl, tp };
+    } catch { return null; }
+}
+
+function writeSignalLock(e, asset, payload) {
+    try { localStorage.setItem(signalLockKey(e, asset), JSON.stringify(payload)); } catch {}
+}
+
+function assetPrice(kind, asset) {
+    if (kind === 'gold') {
+        const p = Number(LIVE_PRICE);
+        return Number.isFinite(p) && p > 0 ? p : null;
+    }
+    if (kind === 'crypto') {
+        const p = Number(CRYPTO_RATES[asset]);
+        return Number.isFinite(p) && p > 0 ? p : null;
+    }
+    if (kind === 'index') return indexRate(asset);
+    const p = pairRate(asset);
+    return Number.isFinite(p) && p > 0 ? p : null;
+}
+
+function clampNum(v, lo, hi) {
+    return Math.min(hi, Math.max(lo, Number(v)));
+}
+
+// data/markets.json menyimpan 270 bar 1 menit per aset. Dipakai untuk mengukur
+// volatilitas SEBENARNYA (ATR 1 menit) supaya lebar SL/TP mengikuti regime
+// pasar, bukan persentase tetap yang melar saat rilis besar dan mengunci saat
+// pasar tenang.
+function marketsFresh(now = Date.now()) {
+    const at = Date.parse((MARKETS && MARKETS.generatedAt) || '');
+    return Number.isFinite(at) && now - at < 2 * 60 * 60 * 1000;
+}
+
+function assetBars(asset) {
+    const pairs = MARKETS && MARKETS.pairs;
+    const cfg = pairs && pairs[String(asset).toUpperCase()];
+    return cfg && Array.isArray(cfg.bars) ? cfg.bars : [];
+}
+
+// ATR rata-rata dari maksimal 60 bar 1 menit terakhir. Bar terbaru sudah
+// mencakup spike pasca-rilis bila rilis baru lewat, jadi SL otomatis melebar
+// saat pasar sedang liar dan menyempit saat tenang.
+function atrInfo(asset, price) {
+    if (!marketsFresh()) return null;
+    const rows = assetBars(asset).slice(-60)
+        .map(b => ({ h: Number(b && b.h), l: Number(b && b.l), c: Number(b && b.c) }))
+        .filter(r => r.h > 0 && r.l > 0 && r.c > 0 && Number.isFinite(r.h) && Number.isFinite(r.l) && Number.isFinite(r.c));
+    if (rows.length < 20) return null;
+    let sum = 0;
+    for (let i = 1; i < rows.length; i++) {
+        sum += Math.max(rows[i].h - rows[i].l, Math.abs(rows[i].h - rows[i - 1].c), Math.abs(rows[i].l - rows[i - 1].c));
+    }
+    const atr = sum / (rows.length - 1);
+    const p = Number(price);
+    if (!(atr > 0) || !(p > 0)) return null;
+    return { atr, atrPct: atr / p * 100 };
+}
+
+// Setengah-spread yang wajar saat bid/ask broker tidak tersedia. Spread dari
+// quote broker tetap dipakai walau sudah basi — spread jauh lebih stabil
+// daripada level harganya. Ini HANYA estimasi; sumber utama tetap MT5 bridge.
+const DEFAULT_SPREAD_PCT = { 'XAU/USD': 0.0075, 'BTC/USD': 0.045, 'ETH/USD': 0.055, 'NAS100': 0.004, 'US500': 0.004 };
+function halfSpreadEstimate(asset, price) {
+    const p = Number(price);
+    if (!Number.isFinite(p) || p <= 0) return null;
+    const b = brokerQuoteFor(asset);
+    if (b && Number.isFinite(b.ask) && Number.isFinite(b.bid) && b.bid > 0 && b.ask >= b.bid) {
+        return (b.ask - b.bid) / 2;
+    }
+    const pct = DEFAULT_SPREAD_PCT[String(asset).toUpperCase()];
+    if (Number.isFinite(pct)) return p * pct / 100 / 2;
+    // Forex tanpa data broker: ~1 pip spread penuh (setengahnya dikembalikan).
+    return p > 10 ? 0.005 : 0.00005;
+}
+
+// Harga eksekusi realistis: BUY dieksekusi di ask, SELL di bid. Bid/ask broker
+// (MT5 bridge) hanya dipakai bila segar; quote basi TIDAK boleh jadi harga
+// entry karena levelnya sudah jauh dari pasar — jatuh ke harga live ± estimasi
+// spread supaya entry tetap berkalibrasi dengan harga eksekusi yang sesungguhnya.
+function execEntries(asset, price) {
+    const p = Number(price);
+    if (!Number.isFinite(p) || p <= 0) return null;
+    const b = brokerQuoteFor(asset);
+    if (b && !b.stale) return { buy: b.ask, sell: b.bid, spread: b.ask - b.bid, source: 'broker' };
+    const half = halfSpreadEstimate(asset, p);
+    if (!Number.isFinite(half) || !(half > 0)) return { buy: p, sell: p, spread: 0, source: 'estimated' };
+    return { buy: p + half, sell: p - half, spread: half * 2, source: 'estimated' };
+}
+
+// Jarak ke ekstrem struktur sejak rilis (low untuk BUY, high untuk SELL) + 0.25 ATR.
+// SL di sisi dekat entry tapi di dalam struktur = invalidasi palsu; SL di luar struktur
+// = invalidasi nyata. Dibatasi 2x stop ATR supaya risiko tidak melebar tanpa batas.
+function structureStopDistance(asset, isBuy, entry, releaseMs, atrAbs) {
+    if (!Number.isFinite(releaseMs)) return null;
+    let ext = null;
+    for (const b of barsOf(asset)) {
+        if (Number(b && b.k) * 60000 < releaseMs - 60000) continue;
+        const v = Number(isBuy ? b.l : b.h);
+        if (!(v > 0)) continue;
+        ext = ext === null ? v : (isBuy ? Math.min(ext, v) : Math.max(ext, v));
+    }
+    if (ext === null) return null;
+    const dist = isBuy ? entry - ext : ext - entry;
+    return dist > 0 ? dist + (atrAbs > 0 ? atrAbs * 0.25 : 0) : null;
+}
+
+// SL/TP adaptif & terkalibrasi: batas risiko dinamis berdasarkan volatilitas aktual,
+// dengan TP bertingkat (TP1 1:1 untuk amankan profit / BE, TP2 1:2 untuk target penuh)
+// serta zona Pullback/Retest (OTE) agar tidak terjebak membeli di pucuk candle rilis.
+function computeSignalLevels(kind, asset, dir, price, e, signal) {
+    const impact = +e.Importance || 1;
+    const vol = Math.abs(Number(signal && signal.movePct) || 0);
+    const isBuy = dir === 'long';
+    const ex = execEntries(asset, price);
+    const entry = ex ? (isBuy ? ex.buy : ex.sell) : price;
+
+    if (kind === 'forex') {
+        const pip = entry > 10 ? 0.01 : 0.0001;
+        const basePips = /JPY$/i.test(asset) ? (/\/JPY$/.test(asset) && !/^USD/.test(asset) ? 35 : 30) : 25;
+        const volPips = vol / 100 * entry / pip;
+        const info = atrInfo(asset, entry);
+        const atrPips = info ? info.atr / pip : 0;
+        const spreadPips = ex && ex.spread > 0 ? ex.spread / pip : 0;
+        // Lantai volatilitas: SL minimal harus menampung ATR 1 menit + spread.
+        // Saat pasar tenang formula tetap yang menang; saat rilis high-impact
+        // SL melebar mengikuti pasar, dan tetap di-clamp agar tidak melar.
+        const stopPips = clampNum(
+            Math.max(basePips * (1 + 0.35 * Math.max(0, impact - 2)) + 0.25 * volPips, atrPips * 1.2 + spreadPips * 1.5),
+            basePips, basePips * 1.8
+        );
+        let stop = stopPips * pip;
+        const structD = structureStopDistance(asset, isBuy, entry, Date.parse(e.Date), info ? info.atr : 0);
+        if (structD && structD > stop) stop = Math.min(structD, stop * 2);
+        const sl = isBuy ? entry - stop : entry + stop;
+        const tp = isBuy ? entry + stop * 2 : entry - stop * 2;
+        const tp1 = isBuy ? entry + stop : entry - stop;
+        const pullback = isBuy ? entry - stop * 0.4 : entry + stop * 0.4;
+        const dec = entry > 10 ? 3 : 5;
+        const bq = ex && ex.source === 'broker' ? brokerQuoteFor(asset) : null;
+        return { entry, sl, tp, tp1, pullback, stopPips: Number((stop / pip).toFixed(1)), riskPct: null, rr: 2, dec, broker: bq ? bq.brokerName : null, brokerAgeMin: bq && Number.isFinite(bq.ageMin) ? Math.round(bq.ageMin) : null, entrySource: ex ? ex.source : null };
+    }
+
+    const base = kind === 'gold' ? 0.55
+        : kind === 'crypto' ? (asset === 'BTC/USD' ? 1.2 : 1.5)
+        : (asset === 'NAS100' ? 0.8 : 0.6);
+    const riskPctFixed = clampNum(base * (1 + 0.30 * Math.max(0, impact - 2)) + 0.20 * vol, base, base * 2.0);
+    const info = atrInfo(asset, price);
+    // Lantai ATR diterapkan SETELAH clamp pola tetap: kalau volatilitas riil
+    // 1 menit melebihi pola (rilis besar), SL mengikuti pasar — bukan sebaliknya.
+    let riskPct = info ? Math.max(riskPctFixed, info.atrPct * 1.6) : riskPctFixed;
+    const structD = structureStopDistance(asset, isBuy, entry, Date.parse(e.Date), info ? info.atr : 0);
+    if (structD) {
+        const structPct = structD / entry * 100;
+        if (structPct > riskPct) riskPct = Math.min(structPct, riskPct * 2);
+    }
+    // BUY ditutup di bid, SELL di ask: tambahkan spread ke jarak stop supaya SL tidak lebih sempit dari rencana.
+    if (ex && ex.spread > 0) riskPct += ex.spread / entry * 100;
+    const sl = isBuy ? entry * (1 - riskPct / 100) : entry * (1 + riskPct / 100);
+    const tp = isBuy ? entry * (1 + riskPct * 2 / 100) : entry * (1 - riskPct * 2 / 100);
+    const tp1 = isBuy ? entry * (1 + riskPct / 100) : entry * (1 - riskPct / 100);
+    const pullback = isBuy ? entry * (1 - (riskPct * 0.4) / 100) : entry * (1 + (riskPct * 0.4) / 100);
+    return { entry, sl, tp, tp1, pullback, stopPips: null, riskPct: Number(riskPct.toFixed(2)), rr: 2, dec: null, broker: null, entrySource: ex ? ex.source : null };
+}
+
+function levelsFromLock(lock, kind) {
+    return {
+        entry: lock.entry, sl: lock.sl, tp: lock.tp, tp1: lock.tp1 || null, pullback: lock.pullback || null, rr: 2, kind,
+        dec: lock.dec || null, stopPips: lock.stopPips || null, riskPct: lock.riskPct ?? null
+    };
+}
+
+function missedFromLevels(levels, dir, price) {
+    const risk = Math.abs(Number(levels.sl) - Number(levels.entry));
+    if (!(risk > 0)) return false;
+    const beyond = dir === 'long' ? (price - levels.entry) : (levels.entry - price);
+    return beyond > risk * 0.8;
+}
+
+function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
+    const price = assetPrice(kind, asset);
+    if (!signal || !price) return { ...signal, price: price || null, levels: null, locked: false };
+
+    // Arah bisa hilang setelah jendela momentum/Actual lewat, tetapi sinyal yang
+    // sudah dikonfirmasi tetap berlaku sampai POST_NEWS_HOLD_MS habis. Tanpa ini
+    // level bisa hilang-timbul dan entry yang sudah terpasang jadi tidak cocok.
+    if (!signal.dir) {
+        const held = readSignalLock(e, asset);
+        if (held && held.phase === 'post' && signal.phase === 'post') {
+            const levels = levelsFromLock(held, kind);
+            const isBuy = held.dir === 'long';
+            const stopped = isBuy ? price <= levels.sl : price >= levels.sl;
+            const tpReached = isBuy ? price >= levels.tp : price <= levels.tp;
+            const tp1Reached = levels.tp1 ? (isBuy ? price >= levels.tp1 : price <= levels.tp1) : false;
+            return {
+                ...signal,
+                dir: held.dir,
+                price,
+                levels,
+                locked: true,
+                lockedAt: held.at || null,
+                conflict: false,
+                missed: missedFromLevels(levels, held.dir, price),
+                stopped,
+                tpReached,
+                tp1Reached,
+                carried: true,
+                note: 'Sinyal pasca-rilis yang sudah terkonfirmasi tetap aktif sampai batas validitas.'
+            };
+        }
+        return { ...signal, price, levels: null, locked: false };
+    }
+
+    let lock = readSignalLock(e, asset);
+    // Hanya sinyal pasca-rilis yang dikunci. Bias pra-rilis adalah entry pasar
+    // yang harus mengikuti harga terakhir sampai rilis, bukan order pending.
+    const canLock = signal.phase === 'post';
+    // Fase pra -> pasca rilis adalah skenario baru. Actual -> reaksi juga boleh
+    // diganti karena reaksi harga lebih baru dan lebih dapat dipercaya.
+    const replace = lock && (lock.phase !== signal.phase || (lock.basis === 'actual' && signal.basis === 'reaction'));
+    let conflict = false;
+    let levels = null;
+
+    if (lock && !replace && lock.dir !== signal.dir) {
+        // Jangan flip arah dan mengejar harga. Level lama tetap ditampilkan dengan
+        // peringatan supaya order yang sudah terpasang bisa dibatalkan.
+        conflict = true;
+        levels = levelsFromLock(lock, kind);
+    } else if (lock && !replace) {
+        levels = levelsFromLock(lock, kind);
+    } else {
+        levels = computeSignalLevels(kind, asset, signal.dir, price, e, signal);
+        if (canLock) {
+            lock = {
+                ...levels, dir: signal.dir, phase: signal.phase, basis: signal.basis,
+                movePct: signal.movePct ?? null, at: new Date(now).toISOString()
+            };
+            writeSignalLock(e, asset, lock);
+        } else {
+            lock = null;
+        }
+    }
+
+    const lockedDir = conflict ? lock.dir : signal.dir;
+    const isBuy = lockedDir === 'long';
+    const stopped = levels ? (isBuy ? price <= levels.sl : price >= levels.sl) : false;
+    const tpReached = levels ? (isBuy ? price >= levels.tp : price <= levels.tp) : false;
+    const tp1Reached = levels && levels.tp1 ? (isBuy ? price >= levels.tp1 : price <= levels.tp1) : false;
+
+    return {
+        ...signal,
+        dir: lockedDir,
+        price,
+        levels,
+        locked: Boolean(lock && lock.at),
+        lockedAt: lock && lock.at ? lock.at : null,
+        conflict: conflict || Boolean(signal.conflict),
+        missed: missedFromLevels(levels, lockedDir, price),
+        stopped,
+        tpReached,
+        tp1Reached
+    };
+}
+
+function signalCardData(e, asset, kind, now = Date.now()) {
+    return resolveSignalLevels(e, asset, kind, signalDirection(e, asset, kind, now), now);
+}
+
+function normalize(e) {
+    return { ...e, Date: e.Date || e.date, Event: e.Event || e.event || e.Category || 'Economic release', Country: countryCode(e.Country || e.country), Importance: +e.Importance || +e.importance || 1, Forecast: e.Forecast || e.forecast || e.TEForecast || '', Previous: e.Previous || e.previous || '', Actual: e.Actual || e.actual || '' };
+}
+
+function pairRateFrom(rates, pair) {
+    if (!rates) return null;
+    const [base, quote] = String(pair).toUpperCase().split('/');
+    if (!base || !quote) return null;
+    const per = c => c === 'USD' ? 1 : Number(rates[c]);
+    const b = per(base), q = per(quote);
+    if (!Number.isFinite(b) || b <= 0 || !Number.isFinite(q) || q <= 0) return null;
+    return q / b;
+}
+
+function pairRate(pair) {
+    const key = String(pair).toUpperCase();
+    const quote = typeof FOREX_QUOTES === 'object' && FOREX_QUOTES ? FOREX_QUOTES[key] : null;
+    const live = Number(quote && quote.price);
+    if (Number.isFinite(live) && live > 0) return live;
+    return pairRateFrom(FOREX_RATES, pair);
+}
+
+function tpSl(a, e) {
+    const hasAnyPrice = Boolean(LIVE_PRICE) || Object.keys(FOREX_RATES).length > 0 || Object.keys(CRYPTO_RATES).length > 0 || Object.keys(INDEX_RATES).length > 0;
+    if (!hasAnyPrice) return '';
+
+    const impact = +e.Importance || 1;
+    const phase = newsPhase(e);
+    const assets = eventAssets(e);
+    const focus = focusPair(e);
+    const now = Date.now();
+    const focusData = focus.kind !== 'none' ? signalCardData(e, focus.pair, focus.kind, now) : null;
+
+    // Event low-impact hanya dapat level kalau arahnya sudah dikonfirmasi harga.
+    if (impact < 2 && !(focusData && focusData.dir)) return '';
+
+    const actionOf = d => d === 'long' ? 'BUY' : d === 'short' ? 'SELL' : 'WAIT';
+    const f = n => Number(n).toFixed(2);
+    const validUntil = fmtDate(new Date(e.Date)) + ' pukul ' + fmtTime(new Date(e.Date));
+    const postValidUntil = fmtDate(postNewsExpiry(e)) + ' ' + fmtTime(postNewsExpiry(e));
+    const basisText = basis => ({
+        reaction: 'reaksi harga 1 menit',
+        momentum: 'momentum pra-rilis',
+        actual: 'Actual vs Forecast',
+        forecast: 'Forecast vs Previous',
+        settling: 'menunggu konfirmasi',
+        'no-actual': 'Actual tidak tersedia'
+    }[basis] || 'konfirmasi harga');
+    const noteOf = (d, extra = '') => {
+        const bits = [d && d.note ? d.note : '', extra];
+        if (d && d.levels && d.levels.entrySource === 'broker' && d.levels.brokerAgeMin != null) bits.push(`quote broker ${d.levels.brokerAgeMin} mnt lalu`);
+        if (d && d.levels && d.levels.entrySource === 'estimated') bits.push('entry = harga live ± estimasi spread (jalankan MT5 bridge untuk bid/ask persis)');
+        if (d && d.locked && d.lockedAt) bits.push(`entry terkunci ${fmtTime(new Date(d.lockedAt))}`);
+        if (d && d.stopped) bits.push('🛑 SL tersentuh');
+        if (d && d.tpReached) bits.push('🎯 TP tercapai');
+        if (d && d.tp1Reached) bits.push('✅ TP1 tercapai');
+        if (d && d.conflict) bits.push('arah berbalik — batalkan order lama');
+        if (d && d.missed) bits.push('entry terlewat — tunggu pullback');
+        return bits.filter(Boolean).join(' • ');
+    };
+
+    if (phase === 'post' && now > postNewsExpiry(e).getTime()) {
+        return `<div class="tpsl" style="display:flex; flex-direction:column; gap:10px;">
+            <div class="expired-badge">⌛ Sinyal pasca-news kedaluwarsa (lebih dari 6 jam). Tunggu katalis berikutnya.</div>
+            <div class="validity">📡 Harga saat ini: ${LIVE_PRICE ? f(LIVE_PRICE) : '—'}</div>
+        </div>`;
+    }
+    if (phase === 'live') {
+        return `<div class="tpsl" style="display:flex; flex-direction:column; gap:10px;">
+            <div class="expired-badge">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit. Entry di spike pertama adalah penyebab utama SL kena.</div>
+            <div class="validity">📡 Harga saat ini: ${LIVE_PRICE ? f(LIVE_PRICE) : '—'}</div>
+        </div>`;
+    }
+
+    let html = `<div class="tpsl" style="display:flex; flex-direction:column; gap:10px;">`;
+
+    if (phase === 'post') {
+        html += focusData && focusData.dir
+            ? `<div class="postnews-badge">✅ POST-NEWS ${actionOf(focusData.dir)} • arah dari ${basisText(focusData.basis)} • valid s/d ${postValidUntil}</div>`
+            : `<div class="postnews-badge">⏳ POST-NEWS — arah belum terkonfirmasi. Level breakout OCO ditampilkan sampai reaksi harga jelas.</div>`;
+    } else if (focusData && focusData.dir) {
+        html += `<div class="validity">⚠️ Entry pasar riil ${actionOf(focusData.dir)} — valid hingga ${validUntil}</div>`;
+    }
+
+    // ---- GOLD -------------------------------------------------------------
+    if (assets.gold) {
+        const d = signalCardData(e, 'XAU/USD', 'gold', now);
+        if (d.dir && d.levels) {
+            const move = d.movePct == null ? '' : ` • reaksi ${d.movePct >= 0 ? '+' : ''}${Number(d.movePct).toFixed(2)}%`;
+            const tp1Text = d.levels.tp1 ? `<span><b>TP1</b> ${f(d.levels.tp1)}</span>` : '';
+            const pbText = d.levels.pullback ? `<span><b>Retest</b> ${f(d.levels.pullback)}</span>` : '';
+            html += `<div style="display:flex; gap:14px; flex-wrap:wrap; background:rgba(43,157,181,.10); border:1px dashed rgba(114,212,228,.35); border-radius:14px; padding:12px 14px;">`;
+            html += `<span style="color:#72d4e4; font-weight:bold; width:100%;">XAU/USD (Gold) — ${actionOf(d.dir)}${move}</span>`;
+            html += `<span><b>Entry</b> ${f(d.levels.entry)}</span><span><b>SL</b> ${f(d.levels.sl)}</span>${tp1Text}<span><b>TP</b> ${f(d.levels.tp)}</span>${pbText}<span><b>R:R</b> 1:${d.levels.rr || 2}.0</span>`;
+            html += `<span style="width:100%;color:var(--muted);font-size:11px;">${esc(noteOf(d, phase === 'post' ? `valid s/d ${postValidUntil}` : ''))}</span>`;
+            html += `</div>`;
+        } else if (phase === 'pre') {
+            const info = atrInfo('XAU/USD', LIVE_PRICE);
+            // Jarak straddle minimal menampung ATR 1 menit terbaru (1.5x), sisanya pola tetap.
+            const buffer = Math.max(LIVE_PRICE * (0.0015 * (1 + 0.25 * Math.max(0, impact - 2))), info ? info.atr * 1.5 : 0);
+            const ex = execEntries('XAU/USD', LIVE_PRICE);
+            const midBuy = ex ? ex.buy : LIVE_PRICE, midSell = ex ? ex.sell : LIVE_PRICE;
+            const slDist = buffer * 2.0;
+            const tpDist = buffer * 4.0;
+            const buyStop = midBuy + buffer, sellStop = midSell - buffer;
+            const buySL = buyStop - slDist, buyTP = buyStop + tpDist;
+            const sellSL = sellStop + slDist, sellTP = sellStop - tpDist;
+
+            if (impact >= 3) html += `<div class="warning-badge">⚠️ HIGH IMPACT NEWS: Spread akan melebar. Gunakan Pending Order!</div>`;
+            html += `<div class="validity">📡 Harga saat ini: ${f(LIVE_PRICE)} — Siapkan order 5 menit sebelum rilis (${validUntil})</div>`;
+            html += `<div class="exec-box">
+                <h5>STRATEGI STRADDLE (OCO)</h5>
+                <div class="exec-grid">
+                    <div class="exec-card buy">
+                        <b>BUY STOP (LONG)</b>
+                        <div class="val">Entry: ${f(buyStop)}</div>
+                        <div class="val" style="color:var(--red)">SL: ${f(buySL)}</div>
+                        <div class="val" style="color:var(--green)">TP: ${f(buyTP)}</div>
+                    </div>
+                    <div class="exec-card sell">
+                        <b>SELL STOP (SHORT)</b>
+                        <div class="val">Entry: ${f(sellStop)}</div>
+                        <div class="val" style="color:var(--red)">SL: ${f(sellSL)}</div>
+                        <div class="val" style="color:var(--green)">TP: ${f(sellTP)}</div>
+                    </div>
+                </div>
+                <div class="oco-note">*OCO: Jika salah satu order tersentuh, batalkan order lainnya.</div>
+            </div>`;
+        } else {
+            const info = atrInfo('XAU/USD', LIVE_PRICE);
+            const buffer = Math.max(LIVE_PRICE * (0.0025 * (1 + 0.25 * Math.max(0, impact - 2))), info ? info.atr * 2 : 0);
+            const slDist = buffer * 1.5, tpDist = buffer * 3.0;
+            const ex = execEntries('XAU/USD', LIVE_PRICE);
+            const buyEntry = (ex ? ex.buy : LIVE_PRICE) + buffer, sellEntry = (ex ? ex.sell : LIVE_PRICE) - buffer;
+            if (impact >= 3) html += `<div class="warning-badge">⚠️ HIGH IMPACT NEWS: Spread melebar — tunggu candle konfirmasi.</div>`;
+            html += `<div class="exec-box">
+                <h5>POST-NEWS BREAKOUT (OCO)</h5>
+                <div class="exec-grid">
+                    <div class="exec-card buy">
+                        <b>BUY</b>
+                        <div class="val">Entry: ${f(buyEntry)}</div>
+                        <div class="val" style="color:var(--red)">SL: ${f(buyEntry - slDist)}</div>
+                        <div class="val" style="color:var(--green)">TP: ${f(buyEntry + tpDist)}</div>
+                    </div>
+                    <div class="exec-card sell">
+                        <b>SELL</b>
+                        <div class="val">Entry: ${f(sellEntry)}</div>
+                        <div class="val" style="color:var(--red)">SL: ${f(sellEntry + slDist)}</div>
+                        <div class="val" style="color:var(--green)">TP: ${f(sellEntry - tpDist)}</div>
+                    </div>
+                </div>
+                <div class="oco-note">*OCO: Jika salah satu arah tersentuh, batalkan arah lainnya.</div>
+            </div>`;
+        }
+    }
+
+    // ---- FOREX ------------------------------------------------------------
+    if (Object.keys(FOREX_RATES).length > 0) {
+        const fxStatus = focusData && focusData.dir
+            ? `(${actionOf(focusData.dir)} • ${basisText(focusData.basis)})`
+            : phase === 'post' ? '(menunggu konfirmasi harga)' : '(straddle level)';
+        html += `<div class="forex-container"><span style="color:#72d4e4; font-weight:bold; width:100%;">Forex Majors ${fxStatus}</span>`;
+        assets.forex.forEach(pair => {
+            const rate = pairRate(pair);
+            if (!rate) return;
+            const isJpy = rate > 10;
+            const dec = isJpy ? 3 : 5;
+            const d = signalCardData(e, pair, 'forex', now);
+
+            if (d.dir && d.levels) {
+                const lv = d.levels;
+                const ldec = Number.isFinite(Number(lv.dec)) ? Number(lv.dec) : dec;
+                const cls = d.dir;
+                const basisNote = d.basis === 'forecast' ? ' <small style="color:var(--amber);">pre-news market</small>' : '';
+                const extra = phase === 'post' ? `valid s/d ${postValidUntil}` : '';
+                const tp1Val = lv.tp1 ? `<div class="val" style="color:var(--green)">TP1 (1:1): ${Number(lv.tp1).toFixed(ldec)}</div>` : '';
+                const pbVal = lv.pullback ? `<div class="val" style="color:var(--muted); font-size:10px;">Retest: ${Number(lv.pullback).toFixed(ldec)}</div>` : '';
+                html += `<div class="forex-card ${cls}"><div>${pair} <b>${actionOf(d.dir)}</b>${basisNote}</div><div class="val">Entry: ${Number(lv.entry).toFixed(ldec)}</div><div class="val" style="color:var(--red)">SL: ${Number(lv.sl).toFixed(ldec)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: ${Number(lv.tp).toFixed(ldec)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
+                return;
+            }
+
+            const slPipsBase = (isJpy ? 30 : 25) * (1 + 0.35 * Math.max(0, impact - 2));
+            const pip = isJpy ? 0.01 : 0.0001;
+            const ex = execEntries(pair, rate);
+            const info = atrInfo(pair, rate);
+            const atrPips = info ? info.atr / pip : 0;
+            const spreadPips = ex && ex.spread > 0 ? ex.spread / pip : 0;
+            const slPips = Math.max(slPipsBase, atrPips * 1.2 + spreadPips * 1.5);
+            const tpPips = slPips * 2;
+            const slDist = slPips * pip, tpDist = tpPips * pip;
+            const buyEntry = ex ? ex.buy : rate;
+            const sellEntry = ex ? ex.sell : rate;
+            const buySl = buyEntry - slDist, buyTp = buyEntry + tpDist;
+            const sellSl = sellEntry + slDist, sellTp = sellEntry - tpDist;
+            const label = phase === 'pre' ? 'STRADDLE' : 'BREAKOUT';
+
+            html += `<div class="forex-card" style="border-left-color: var(--amber);">
+                <div>${pair} <b style="color:var(--amber)">${label}</b></div>
+                <div class="val" style="color:var(--green); font-size:11px;">BUY: ${buyEntry.toFixed(dec)} → TP ${buyTp.toFixed(dec)}</div>
+                <div class="val" style="color:var(--red); font-size:11px;">SELL: ${sellEntry.toFixed(dec)} → TP ${sellTp.toFixed(dec)}</div>
+                <div class="val" style="color:var(--muted); font-size:9px;">SL: ${buySl.toFixed(dec)} / ${sellSl.toFixed(dec)} • SL/TP ${Math.round(slPips)}/${Math.round(tpPips)} pips</div>
+            </div>`;
+        });
+        html += `</div>`;
+    }
+
+    // ---- CRYPTO -----------------------------------------------------------
+    if (assets.crypto && Object.keys(CRYPTO_RATES).length > 0) {
+        const cryptoStatus = focusData && focusData.dir
+            ? `(${actionOf(focusData.dir)} • ${basisText(focusData.basis)})`
+            : phase === 'post' ? '(menunggu konfirmasi harga)' : '(straddle level)';
+        html += `<div class="forex-container" style="border-top: 1px dashed rgba(255,255,255,.1); margin-top: 10px; padding-top: 10px;"><span style="color:#f7931a; font-weight:bold; width:100%;">Crypto Markets ${cryptoStatus}</span>`;
+        ['BTC/USD', 'ETH/USD'].forEach(pair => {
+            const rate = Number(CRYPTO_RATES[pair]);
+            if (!Number.isFinite(rate) || rate <= 0) return;
+            const fmt = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const isBTC = pair === 'BTC/USD';
+            const bColor = isBTC ? '#f7931a' : '#627eea';
+            const d = signalCardData(e, pair, 'crypto', now);
+
+            if (d.dir && d.levels) {
+                const extra = phase === 'post' ? `valid s/d ${postValidUntil}` : '';
+                const tp1Val = d.levels.tp1 ? `<div class="val" style="color:var(--green)">TP1 (1:1): $${fmt(d.levels.tp1)}</div>` : '';
+                const pbVal = d.levels.pullback ? `<div class="val" style="color:var(--muted); font-size:10px;">Retest: $${fmt(d.levels.pullback)}</div>` : '';
+                html += `<div class="forex-card ${d.dir}" style="border-left-color: ${bColor};"><div>${pair} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: $${fmt(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: $${fmt(d.levels.sl)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: $${fmt(d.levels.tp)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
+                return;
+            }
+
+            const info = atrInfo(pair, rate);
+            const bufferPct = Math.max((isBTC ? 0.3 : 0.5) * (1 + 0.25 * Math.max(0, impact - 2)), info ? info.atrPct * 1.5 : 0);
+            const slPct = bufferPct * 2, tpPct = bufferPct * 4;
+            const ex = execEntries(pair, rate);
+            const buyEntry = (ex ? ex.buy : rate) * (1 + bufferPct / 100);
+            const sellEntry = (ex ? ex.sell : rate) * (1 - bufferPct / 100);
+            const label = phase === 'pre' ? 'STRADDLE' : 'BREAKOUT';
+            html += `<div class="forex-card" style="border-left-color: var(--amber);">
+                <div>${pair} <b style="color:var(--amber)">${label}</b></div>
+                <div class="val" style="color:var(--green); font-size:11px;">BUY: $${fmt(buyEntry)} → TP $${fmt(buyEntry * (1 + tpPct / 100))}</div>
+                <div class="val" style="color:var(--red); font-size:11px;">SELL: $${fmt(sellEntry)} → TP $${fmt(sellEntry * (1 - tpPct / 100))}</div>
+                <div class="val" style="color:var(--muted); font-size:9px;">SL/TP: ${slPct.toFixed(1)}% / ${tpPct.toFixed(1)}%</div>
+            </div>`;
+        });
+        html += `</div>`;
+    }
+
+    // ---- INDICES ----------------------------------------------------------
+    if (assets.indices && Object.keys(INDEX_RATES).length > 0) {
+        const idxStatus = focusData && focusData.dir
+            ? `(${actionOf(focusData.dir)} • ${basisText(focusData.basis)})`
+            : phase === 'post' ? '(menunggu konfirmasi harga)' : '(breakout level)';
+        const fmtIdx = n => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        html += `<div class="forex-container" style="border-top: 1px dashed rgba(255,255,255,.1); margin-top: 10px; padding-top: 10px;"><span style="color:#8bd4ff; font-weight:bold; width:100%;">Indices (Nasdaq 100 &amp; S&amp;P 500) ${idxStatus}</span>`;
+        INDICES.forEach(cfg => {
+            const rate = indexRate(cfg.symbol);
+            if (!rate) return;
+            const d = signalCardData(e, cfg.symbol, 'index', now);
+
+            if (d.dir && d.levels) {
+                const cls = d.dir;
+                const extra = phase === 'post' ? `valid s/d ${postValidUntil}` : '';
+                const tp1Val = d.levels.tp1 ? `<div class="val" style="color:var(--green)">TP1 (1:1): ${fmtIdx(d.levels.tp1)}</div>` : '';
+                const pbVal = d.levels.pullback ? `<div class="val" style="color:var(--muted); font-size:10px;">Retest: ${fmtIdx(d.levels.pullback)}</div>` : '';
+                html += `<div class="forex-card ${cls}" style="border-left-color:${d.dir === 'long' ? 'var(--green)' : 'var(--red)'};"><div>${esc(cfg.symbol)} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: ${fmtIdx(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: ${fmtIdx(d.levels.sl)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: ${fmtIdx(d.levels.tp)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
+                return;
+            }
+
+            const info = atrInfo(cfg.symbol, rate);
+            const buffer = Math.max(cfg.slPct / 2, info ? info.atrPct * 1.5 : 0);
+            const ex = execEntries(cfg.symbol, rate);
+            const buyEntry = (ex ? ex.buy : rate) * (1 + buffer / 100);
+            const sellEntry = (ex ? ex.sell : rate) * (1 - buffer / 100);
+            const label = phase === 'pre' ? 'STRADDLE' : 'BREAKOUT';
+            html += `<div class="forex-card" style="border-left-color: var(--amber);">
+                <div>${esc(cfg.symbol)} <b style="color:var(--amber)">${label}</b></div>
+                <div class="val" style="color:var(--green); font-size:11px;">BUY &gt; ${fmtIdx(buyEntry)}</div>
+                <div class="val" style="color:var(--red); font-size:11px;">SELL &lt; ${fmtIdx(sellEntry)}</div>
+                <div class="val" style="color:var(--muted); font-size:9px;">SL/TP ${cfg.slPct}% / ${cfg.tpPct}%</div>
+            </div>`;
+        });
+        html += `</div>`;
+    }
+
+    html += `</div>`;
+    return html;
+}
+// Ringkasan konfluensi teknikal per pair fokus — dipakai di kartu berita.
+// Hanya dipanggil dari card() (bukan dari fungsi yang diekstrak test).
+function techConfluenceText(kind, pair) {
+    if (kind === 'none' || !pair) return '';
+    const v = technicalView(kind, pair);
+    if (!v) return '';
+    const dirText = v.dir === 'buy' ? 'BUY' : v.dir === 'sell' ? 'SELL' : 'WAIT';
+    const conf = v.dir === 'buy' ? v.buys : v.sells;
+    const align = v.dir === 'buy' ? 'mendukung sinyal beli' : v.dir === 'sell' ? 'mendukung sinyal jual' : 'belum searah (netral)';
+    const topTags = v.tags.slice(0, 2).join('; ');
+    return ` Konfluensi teknikal ${pair}: ${dirText} (${conf} indikator) — ${v.trendText}, ${v.rsiText}, ${align}${topTags ? `, pola: ${topTags}` : ''}.`;
+}
+
+// Hasil FINAL untuk rilis yang sudah lewat (> 3 jam). Sinyal live (reaksi harga 45 mnt,
+// momentum 90 mnt, Actual 3 jam) sudah kedaluwarsa, jadi kartu tidak boleh jatuh ke WAIT
+// tanpa penjelasan. Verdict = arah makro dari paket Actual vs Forecast (retrospektif),
+// BUKAN order: entry/SL/TP rilis lama tidak ditampilkan karena harganya sudah berubah.
+function finalVerdict(e) {
+    const impact = +e.Importance || 1;
+    const focus = focusPair(e);
+    const a = analyze(e);
+    if (focus.kind === 'none') return { dir: null, why: 'Tidak ada aset fokus untuk mata uang event ini.' };
+    if (a.noData || a.basis === 'forecast-pending') return { dir: null, why: a.reason };
+    if (a.dir !== 'long' && a.dir !== 'short') return { dir: null, why: a.reason };
+    if (impact < 2) return { dir: null, why: `Low impact: ${a.reason} Tidak dijadikan sinyal.` };
+    const dir = mapActualBias(focus.kind, focus.pair, a.dir, e);
+    if (!dir) return { dir: null, why: `${a.reason} Tidak ada pemetaan arah untuk ${focus.pair}.` };
+    return { dir, conf: a.score, why: a.reason, focus };
+}
+
+function card(e) {
+    const a = analyze(e);
+    const phase = newsPhase(e);
+    const focus = focusPair(e);
+    const now = Date.now();
+    const focusData = focus.kind !== 'none' ? signalCardData(e, focus.pair, focus.kind, now) : null;
+    let signalDir = focusData && focusData.dir ? focusData.dir : 'wait';
+    let signalLabel = signalDir === 'long' ? 'BUY' : signalDir === 'short' ? 'SELL' : 'WAIT';
+    const basisLabel = basis => ({
+        reaction: 'reaksi harga 1 menit',
+        momentum: 'momentum pra-rilis',
+        actual: 'Actual vs Forecast',
+        forecast: 'Forecast vs Previous',
+        settling: 'menunggu konfirmasi 15 menit',
+        'no-actual': 'Actual tidak tersedia',
+        none: 'menunggu surprise Actual',
+        flat: 'Actual sesuai perkiraan',
+        unmapped: 'belum ada pemetaan',
+        conflict: 'konflik harga vs Actual (fakeout)',
+        'context-block': 'dibatalkan filter sentimen/USD',
+        mixed: 'paket rilis campur',
+        'no-forecast': 'tanpa Forecast'
+    }[basis] || 'menunggu konfirmasi harga');
+    let signalNote = signalDir === 'wait'
+        ? (focusData && focusData.note ? focusData.note : (a.noData ? 'NO ACTUAL DATA — arah belum terkonfirmasi' : 'menunggu konfirmasi harga'))
+        : `${phase === 'post' ? 'POST-NEWS' : 'PRE-NEWS'} • ${basisLabel(focusData.basis)}${focusData.basis === 'actual' && Number.isFinite(a.score) ? ` • ${a.score}% confidence` : ''}`;
+    let meterScore = (focusData && focusData.dir)
+        ? (Number.isFinite(focusData.conf) ? focusData.conf : 50)
+        : (phase === 'pre' ? 50 : null);
+    let reason = signalDir === 'wait'
+        ? `${a.reason || 'Arah belum terkonfirmasi.'}${phase === 'post' ? ' Arah pasca-rilis diambil dari Actual atau reaksi harga; bila belum jelas, level breakout OCO ditampilkan.' : ' Forecast vs Previous flat; strategi pending order Straddle (OCO) siap dipasang sebelum rilis.'}`
+        : phase === 'post'
+            ? `Arah ${signalLabel} untuk ${focus.pair || 'aset terkait'} diambil dari ${basisLabel(focusData.basis)}${focusData.note ? ` (${focusData.note})` : ''}. Entry/SL/TP dikunci saat sinyal pertama terkonfirmasi.`
+            : `Bias pra-rilis ${signalLabel} untuk ${focus.pair || 'aset terkait'} dari ${basisLabel(focusData.basis)}${focusData.note ? ` (${focusData.note})` : ''}. Ini skenario sampai rilis tercetak, bukan kepastian.`;
+    const techNote = techConfluenceText(focus.kind, focus.pair);
+    if (techNote) reason += techNote;
+    // Rilis lama (> 3 jam): tampilkan hasil final, bukan WAIT tanpa kesimpulan.
+    const ageMinFinal = (now - new Date(e.Date).getTime()) / 60000;
+    let finalBadge = '';
+    if (phase === 'post' && Number.isFinite(ageMinFinal) && ageMinFinal > 180) {
+        const fin = (focusData && focusData.dir)
+            ? { dir: focusData.dir, conf: focusData.conf, why: focusData.note || '', locked: true }
+            : finalVerdict(e);
+        signalDir = fin.dir || 'wait';
+        signalLabel = fin.dir === 'long' ? 'BUY' : fin.dir === 'short' ? 'SELL' : 'NO TRADE';
+        signalNote = fin.dir ? `FINAL • ${fin.locked ? 'sinyal terkunci' : 'Actual vs Forecast (retrospektif)'}` : 'FINAL • tidak ada sinyal';
+        meterScore = fin.dir && Number.isFinite(fin.conf) ? fin.conf : null;
+        reason = `HASIL FINAL ${signalLabel}. ${fin.why} Entry/SL/TP tidak ditampilkan untuk rilis lama karena harga sudah berubah.`;
+        finalBadge = ' <span class="impact" style="background:rgba(145,174,184,.18);color:var(--muted)">FINAL</span>';
+    }
+    const color = signalDir === 'long' ? 'var(--green)' : signalDir === 'short' ? 'var(--red)' : 'var(--amber)';
+    return `<article class="event glass">
+        <div class="event-title">
+            <div class="flag">${e.Country==='USD'?'🇺🇸':e.Country==='EUR'?'🇪🇺':e.Country==='GBP'?'🇬🇧':e.Country==='JPY'?'🇯🇵':e.Country==='AUD'?'🇦🇺':e.Country==='NZD'?'🇳🇿':e.Country==='CAD'?'🇨🇦':'🌐'}</div>
+            <div><h4>${esc(e.Event)}</h4><p>${esc(e.Country)} • ${fmtTime(new Date(e.Date))}</p></div>
+        </div>
+        <div class="metric"><span>Previous</span><b>${esc(e.Previous)}</b></div>
+        <div class="metric"><span>Forecast</span><b>${esc(e.Forecast)}</b></div>
+        <div class="metric"><span>Actual</span><b>${esc(e.Actual)}</b></div>
+        <div>
+            <span class="impact">${e.Importance>=3?'HIGH':e.Importance>=2?'MEDIUM':'LOW'}</span>${finalBadge}
+            <div class="signal ${signalDir}"><b>${signalLabel}</b><small>${esc(signalNote)}</small></div>
+        </div>
+        <div class="expand">
+            <div class="reason"><b>shidiqpiy scenario</b><p>${esc(reason)}</p></div>
+            <div class="meter-row"><div class="meter"><i style="--score:${meterScore == null ? 0 : meterScore}%;--meter:${color}"></i></div><span class="score" style="--meter:${color}">${meterScore == null ? '—' : meterScore}</span></div>
+        </div>
+        ${tpSl(a, e)}
+    </article>`;
+}
+
+async function load() {
+    $('#status').textContent = 'Fetching latest calendar...';
+    try {
+        let raw = [];
+        try {
+            const r = await fetch(`data/calendar.json?v=${Date.now()}`, { cache: 'no-store' });
+            if (r.ok) { const j = await r.json(); raw = Array.isArray(j) ? j : j.events || []; }
+        } catch {}
+
+        if (!raw.length) {
+            const urls = ['https://nfs.faireconomy.media/ff_calendar_thisweek.json', 'https://nfs.faireconomy.media/ff_calendar_nextweek.json'];
+            const batches = await Promise.all(urls.map(async u => { const r = await fetch(u, { cache: 'no-store' }); return r.ok ? r.json() : []; }));
+            const rank = { Low: 1, Medium: 2, High: 3 };
+            const keywords = /fed|fomc|interest rate|inflation|cpi|pce|payroll|employment|unemployment|jobless|gdp|pmi|ism|retail sales|consumer confidence|jolts|durable goods|powell|treasury|oil|crude|energy|gas|opec|eia|rig|inventories|distillate|gasoline/i;
+            const allowedCountries = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'NZD', 'CAD'];
+            raw = batches.flat().filter(e => allowedCountries.includes(String(e.country || '').toUpperCase()) && keywords.test(e.title || '')).map(e => ({
+                Date: e.date, Event: e.title, Country: e.country, Importance: rank[e.impact] || 1, Forecast: e.forecast || '', Previous: e.previous || '', Actual: e.actual || ''
+            }));
+        }
+
+        events = raw.map(normalize).filter(e => e.Date && !isNaN(new Date(e.Date))).sort((a, b) => new Date(a.Date) - new Date(b.Date));
+        if (!events.length) throw Error('No events returned');
+
+        $('#status').textContent = `Live - ${new Intl.DateTimeFormat('en-IN', { timeZone: WITA, dateStyle: 'medium', timeStyle: 'short' }).format(new Date())}`;
+        $('#liveText').textContent = 'LIVE CALENDAR';
+    } catch (err) {
+        events = [];
+        $('#status').textContent = 'Live feed unavailable - run GitHub updater';
+        $('#liveText').textContent = 'FEED OFFLINE';
+    }
+    render();
+}
+
+function render() {
+    const now = new Date();
+    if (!['upcoming', 'high', 'history'].includes(filter)) filter = 'all';
+    
+    events.forEach(rememberPreNewsPrice);
+
+    // Berita medium/high impact tetap tampil 6 jam setelah rilis agar sinyal BUY/SELL pasca-news bisa dieksekusi.
+    let list = events.filter(e => {
+        const eventTime = new Date(e.Date).getTime();
+        const keepMs = (e.Importance >= 2 ? 6 : 2) * 60 * 60 * 1000;
+        const isStale = now.getTime() > eventTime + keepMs;
+        const isActualMissing = !String(e.Actual ?? '').trim();
+        
+        if (isStale && isActualMissing) return false;
+
+        return filter === 'all' || (filter === 'upcoming' && new Date(e.Date) >= now) || (filter === 'high' && e.Importance >= 3);
+    });
+    
+    $('#eventCount').textContent = events.length;
+    $('#highCount').textContent = events.filter(e => e.Importance >= 3).length;
+    $('#monthTitle').textContent = new Intl.DateTimeFormat('en-IN', { timeZone: WITA, month: 'long', year: 'numeric' }).format(events[0] ? new Date(events[0].Date) : now) + ' calendar';
+    
+    const groups = list.reduce((o, e) => {
+        const d = fmtDate(new Date(e.Date));
+        (o[d] ??= []).push(e);
+        return o;
+    }, {});
+    
+    $('#calendar').innerHTML = list.length 
+        ? Object.entries(groups).map(([day, es]) => `<div class="day"><div class="datebar"><strong>${day}</strong><span>${es.length} event${es.length > 1 ? 's' : ''}</span></div>${es.map(card).join('')}</div>`).join('')
+        : `<div class="empty glass"><h3>No events to show</h3><p>The live feed has not been generated yet or this filter has no matching releases.</p></div>`;
+        
+    const next = events.find(e => new Date(e.Date) >= now);
+    if (next) {
+        $('#nextName').textContent = next.Event;
+        $('#nextTime').textContent = fmtDate(new Date(next.Date)) + ' • ' + fmtTime(new Date(next.Date));
+    }
+    updateCountdown(next);
+    renderGoldBoard();
+    renderForexBoard();
+    renderCryptoBoard();
+    renderIndicesBoard();
+
+    const totalEl = $('#total-events');
+    const actualEl = $('#events-with-actual');
+    const highEl = $('#high-importance');
+    const lowEl = $('#low-importance');
+    if (totalEl) totalEl.textContent = events.length;
+    if (actualEl) actualEl.textContent = events.filter(e => e.Actual && String(e.Actual).trim() !== '').length;
+    if (highEl) highEl.textContent = events.filter(e => (+e.Importance || 1) >= 3).length;
+    if (lowEl) lowEl.textContent = events.filter(e => (+e.Importance || 1) <= 1).length;
+}
+
+function updateCountdown(next) {
+    clearInterval(timer);
+    if (!next) { $('#countdown').textContent = '--:--:--'; return; }
+    const tick = () => {
+        const ms = new Date(next.Date) - new Date();
+        if (ms <= 0) { $('#countdown').textContent = 'LIVE'; return; }
+        const h = Math.floor(ms / 36e5), m = Math.floor(ms % 36e5 / 6e4), s = Math.floor(ms % 6e4 / 1e3);
+        $('#countdown').textContent = [h, m, s].map(x => String(x).padStart(2, '0')).join(':');
+    };
+    tick(); timer = setInterval(tick, 1000);
+}
+
+document.querySelector('.filters').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-filter]');
+    if (!b || b.dataset.filter === 'history') return;
+    window.__ferihaHistory = false;
+    document.querySelectorAll('[data-filter]').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    filter = b.dataset.filter;
+    render();
+});
+
+$('#refresh').onclick = () => { load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadTradeStats(); renderTradeStats(); loadSentiment(); };
+renderGoldBoard();
+renderCryptoBoard();
+renderForexBoard();
+renderIndicesBoard();
+loadSentiment();
+load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadTradeStats(); renderTradeStats();
+setInterval(() => { loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); }, 60000);
+// Sentimen Fear & Greed jarang berubah; cukup ditarik ulang tiap 10 menit.
+setInterval(loadSentiment, 600000);
+// Harga pair: tarik scanner langsung tiap 20 detik supaya board benar-benar bergerak.
+setInterval(loadForexLive, 20000);
+// Kalender tidak terlalu sering berubah; cek setiap menit agar event Actual/Actual update muncul otomatis.
+setInterval(load, 60000);
+// reaction.json dibangun workflow dari bar 1 menit; cukup dipoles tiap 5 menit.
+setInterval(loadReaction, 300000);
+// Bar 1 menit (ATR) juga produk workflow; refresh bersamaan dengan reaction.
+setInterval(loadMarkets, 300000);
+</script>
+  <script src="scripts/xauusd-price-widget.js?v=202610192017"></script>
+</body>
+</html>

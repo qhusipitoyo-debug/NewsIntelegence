@@ -1,0 +1,76 @@
+name: Weekly repository size compaction
+
+# Minggu 20:00 UTC = Senin 03:00 WITA. Riwayat folder data/ dibuang supaya blob
+# lama (terutama data/markets.json yang ditulis ulang tiap 15 menit) tidak
+# menumpuk selamanya. Commit kode tetap utuh, dan file data versi terkini
+# dikembalikan pada run yang sama.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 20 * * 0"
+
+# Grup concurrency yang sama dengan refresh 15 menit: compaction tidak pernah
+# balapan dengan push data, dan cron berikutnya otomatis mulai dari main hasil
+# compaction.
+concurrency:
+  group: update-calendar
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  compact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install git-filter-repo
+        run: python3 -m pip install --quiet git-filter-repo
+
+      - name: Compact data history and verify the tree is unchanged
+        env:
+          GIT_AUTHOR_NAME: calendar-bot
+          GIT_AUTHOR_EMAIL: actions@users.noreply.github.com
+          GIT_COMMITTER_NAME: calendar-bot
+          GIT_COMMITTER_EMAIL: actions@users.noreply.github.com
+        run: |
+          set -euo pipefail
+          BEFORE_TREE=$(git rev-parse "HEAD^{tree}")
+          BEFORE_BYTES=$(du -sb .git | cut -f1)
+          BEFORE_LOG=$(git rev-list --count HEAD)
+
+          cp -a data /tmp/data-live
+          git filter-repo --invert-paths --path data/ --force
+
+          # Versi terkini data/ harus kembali identik, kalau tidak: jangan push.
+          rm -rf data
+          cp -a /tmp/data-live data
+          git add -A data
+          git commit -q --allow-empty -m "chore: restore live data after weekly history compaction"
+
+          AFTER_TREE=$(git rev-parse "HEAD^{tree}")
+          if [ "$BEFORE_TREE" != "$AFTER_TREE" ]; then
+            echo "::error::Tree setelah compaction tidak sama dengan tree sebelumnya. Push dibatalkan."
+            git diff --stat "$BEFORE_TREE" "$AFTER_TREE" || true
+            exit 1
+          fi
+
+          echo "Riwayat: $BEFORE_LOG commit → $(git rev-list --count HEAD) commit"
+          echo ".git lokal: $BEFORE_BYTES → $(du -sb .git | cut -f1) byte"
+          echo "Tree HEAD identik: $AFTER_TREE"
+
+      - name: Force-push the compacted branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          # filter-repo menghapus remote origin, jadi remote dipasang ulang di sini.
+          git remote add origin "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git -c credential.helper= push --force origin "HEAD:${GITHUB_REF_NAME}"
+          git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"

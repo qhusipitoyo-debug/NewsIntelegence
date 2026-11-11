@@ -1,0 +1,848 @@
+//@version=6
+// ============================================================================
+//  SnR LNY · C1 / C2 / C4 / C5 — MULTI-ASET (Gold · Forex · Crypto · Index)
+//  Port logika EA_SnRLNY v1.21 (MT5) ke TradingView, dengan profil aset otomatis.
+//
+//  PERUBAHAN UTAMA vs versi XAUUSD-only:
+//   1. Satuan harga = syminfo.mintick (dulu 0.01 hardcode → salah untuk forex/BTC/index).
+//   2. Profil aset otomatis (Gold / Forex / Crypto / Index US / Index EU / Lain):
+//      window ET, aturan carry, aturan Jumat, ukuran kontrak.
+//   3. Grid: Gold = pips EA (persis v1.21). Aset lain = ATR D1 × k (dibulatkan ke angka
+//      "bagus" 1-2-3-5-10, hysteresis, hanya berubah saat tidak ada order/posisi).
+//   4. Market-entry threshold = % dari grid (dulu pips tetap).
+//   5. Lot: konversi mata uang kuotasi → USD (USDJPY, EURGBP, index EUR, dst).
+//   6. Fix: tutup Jumat tidak pernah terpicu di H1 (C5) → sekarang menutup di candle yang
+//      melewati jam tutup.
+//   7. Dashboard: baris Profil, Grid (harga, poin, rasio × ATR D1), peringatan lot < min.
+//  Semua jam aturan dalam ET (America/New_York, DST otomatis).
+//  Logika MS Fractal: port dari "Market Structure (Fractal)" LuxAlgo — CC BY-NC-SA 4.0.
+//  Simulasi intrabar: jalur O→L→H→C (candle naik) / O→H→L→C (candle turun).
+// ============================================================================
+indicator("SnR LNY · Multi-Aset (EA v1.21)", shorttitle = "SnR LNY", overlay = true,
+     max_boxes_count = 500, max_lines_count = 500, max_labels_count = 500, max_bars_back = 600)
+
+const string TZ  = "America/New_York"
+const string WIB = "Asia/Jakarta"
+float PT = syminfo.mintick      // satuan harga internal (1 poin = 1 tick)
+
+// ------------------------------------------------------------------ Input
+string gP = "1 · Preset"
+preset   = input.string("C1", "Preset", options = ["C1", "C2", "C4", "C5", "Custom"], group = gP,
+     tooltip = "C1 = EMA50 M30 grid150 SL3 skip Jumat · C2 = MS Fractal M30 grid150 SL3 skip Jumat · C4 = EMA50 M15 grid150 SL2 tutup Jumat · C5 = EMA50 H1 grid250 SL2 tutup Jumat (semua TP 1). Angka 'grid 150/250' = pips XAUUSD; di aset non-gold dipakai sebagai PENGALI RELATIF (150 = 1.0×, 250 = 1.67×) terhadap grid ATR.")
+cTF      = input.int(30, "Custom · timeframe sinyal (menit)", options = [15, 30, 60], group = gP)
+cGrid    = input.int(150, "Custom · grid (pips / pengali relatif)", minval = 10, group = gP)
+cFilter  = input.string("EMA", "Custom · filter arah", options = ["EMA", "MS Fractal"], group = gP)
+cEma     = input.int(50, "Custom · periode EMA", minval = 2, group = gP)
+cSL      = input.int(3, "Custom · SL (level grid)", minval = 1, group = gP)
+cTP      = input.int(1, "Custom · TP (level grid)", minval = 1, group = gP)
+
+string gA = "1b · Profil aset & grid"
+profMode = input.string("Auto", "Profil aset", options = ["Auto", "Gold", "Forex", "Crypto", "Index US", "Index EU", "Lain"], group = gA,
+     tooltip = "Auto = deteksi dari ticker/tipe simbol. Ganti manual bila salah deteksi (mis. broker memberi nama aneh).")
+gridMode = input.string("Auto", "Mode grid", options = ["Auto", "ATR", "Pips"], group = gA,
+     tooltip = "Auto: Gold = pips EA (persis v1.21), aset lain = ATR D1. ATR: paksa grid dari ATR D1. Pips: paksa grid = pips × ukuran pip.")
+gridK    = input.float(0.25, "Grid ATR · k (× ATR D1 untuk preset 150)", minval = 0.02, maxval = 2.0, step = 0.01, group = gA,
+     tooltip = "KALIBRASI: buka chart XAUUSD, lihat baris 'Grid' di dashboard → angka '× ATR D1'. Pakai angka itu sebagai k supaya grid aset lain setara (relatif terhadap volatilitas) dengan setup gold yang sudah teruji.")
+atrLen   = input.int(14, "ATR D1 · periode", minval = 2, group = gA)
+hystPct  = input.float(25.0, "Hysteresis grid (%)", minval = 5, maxval = 100, group = gA,
+     tooltip = "Grid hanya dihitung ulang bila ATR bergeser lebih dari ini dari nilai saat grid terakhir diset, dan hanya saat tidak ada pending/posisi.")
+pipOver  = input.float(0.0, "Override ukuran 1 pip (0 = auto)", minval = 0, group = gA,
+     tooltip = "Dipakai hanya di mode grid Pips. Auto: Gold 0.10 · Forex 0.0001 (JPY 0.01) · lainnya 1.0.")
+
+string gR = "2 · Aturan (sama dengan EA)"
+mktPct   = input.float(2.0, "Market entry bila jarak ke level < (% dari grid)", minval = 0, maxval = 20, group = gR,
+     tooltip = "2% dari grid 150 pips gold = 3 pips (sama dengan EA). Berlaku sama untuk semua aset.")
+fracLen  = input.int(5, "MS Fractal · length", minval = 3, group = gR)
+flipCanc = input.bool(true, "MS Fractal · batalkan pending saat arah berbalik", group = gR)
+winMode  = input.string("Profil aset", "Window", options = ["Profil aset", "Manual"], group = gR,
+     tooltip = "Profil aset: Gold/Forex/Lain 03:00–12:00 ET · Crypto 08:00–16:00 ET · Index US 09:30–15:30 ET · Index EU 03:00–11:00 ET. Manual memakai jam di bawah.")
+wsHi     = input.int(3, "Manual · window mulai · jam ET", minval = 0, maxval = 23, group = gR, inline = "ws")
+wsMi     = input.int(0, "menit", minval = 0, maxval = 59, group = gR, inline = "ws")
+weHi     = input.int(12, "Manual · window selesai (pending batal) · jam ET", minval = 0, maxval = 23, group = gR, inline = "we")
+weMi     = input.int(0, "menit", minval = 0, maxval = 59, group = gR, inline = "we")
+lsHi     = input.int(11, "Manual · candle sinyal close paling lambat · jam ET", minval = 0, maxval = 23, group = gR, inline = "ls")
+lsMi     = input.int(45, "menit", minval = 0, maxval = 59, group = gR, inline = "ls")
+carryOpt = input.string("Ikuti profil", "Aturan carry", options = ["Ikuti profil", "OFF", "BLOCK_ALL", "BLOCK_LOSS"], group = gR,
+     tooltip = "Ikuti profil: Crypto = OFF (pasar 24/7 tanpa pergantian hari server), lainnya BLOCK_ALL. BLOCK_ALL: hari diblok bila trade dari window sebelumnya masih jalan / selesai setelah 17:00 ET.")
+wkOpt    = input.string("Ikuti preset", "Aturan Jumat", options = ["Ikuti preset", "OFF", "SKIP_FRIDAY", "CLOSE_FRIDAY", "SKIP_AND_CLOSE"], group = gR,
+     tooltip = "Ikuti preset: C1/C2 = SKIP_FRIDAY, C4/C5 = CLOSE_FRIDAY (tutup Jumat 16:30 ET), Custom = OFF. Crypto selalu OFF (trading akhir pekan).")
+fcH      = input.int(16, "Tutup posisi Jumat · jam ET", minval = 0, maxval = 23, group = gR, inline = "fc")
+fcM      = input.int(30, "menit", minval = 0, maxval = 59, group = gR, inline = "fc")
+
+string gN = "3 · News (mode YUDHA)"
+newsOn   = input.bool(true, "Aktifkan aturan news CPI / NFP / FOMC", group = gN)
+newsWait = input.int(30, "CPI/NFP · candle sinyal close ≥ jam news + (menit)", group = gN)
+fomcH    = input.int(9, "FOMC · sinyal hanya dari candle yang close sebelum · jam ET", group = gN, inline = "fo")
+fomcM    = input.int(0, "menit", group = gN, inline = "fo")
+extraTxt = input.text_area("", "Tambahan jadwal news (satu per baris: YYYY-MM-DD HH:MM NAMA, jam ET)", group = gN,
+     tooltip = "NAMA apa pun selain FOMC diperlakukan seperti CPI/NFP (tunggu N menit). Contoh: 2026-11-05 07:00 BOE · 2026-12-17 08:15 ECB.")
+
+string gK = "4 · Risk & lot"
+riskUsd  = input.float(180.0, "Risk per trade ($)", minval = 1, group = gK, tooltip = "WMT 246 10K = $180 (1,8%).")
+contractIn = input.float(0.0, "Ukuran kontrak per 1 lot (0 = auto)", minval = 0, group = gK,
+     tooltip = "Auto: Gold 100 oz · Forex 100.000 · Crypto 1 · Index 1 · Lain 100. Sesuaikan dengan spesifikasi broker MT5 kamu (cek 'Contract size').")
+lotStep  = input.float(0.01, "Lot step / lot minimum", minval = 0.0001, group = gK)
+
+string gD = "5 · Tampilan"
+showTr   = input.bool(true, "Gambar trade (entry, SL, TP)", group = gD)
+showGrid = input.bool(true, "Garis grid di sekitar harga", group = gD)
+gridN    = input.int(6, "Jumlah level grid di atas & bawah", minval = 1, maxval = 20, group = gD)
+gridCol  = input.color(color.new(#8a8a8a, 25), "Warna grid", group = gD, inline = "gc")
+gridW    = input.int(1, "Tebal", minval = 1, maxval = 4, group = gD, inline = "gc")
+gridLbl  = input.bool(true, "Label harga level grid", group = gD, inline = "gl")
+gridOff  = input.int(25, "jarak dari candle terakhir (candle)", minval = 0, maxval = 200, group = gD, inline = "gl")
+showSig  = input.bool(true, "Label sinyal & order (limit / market / geser / batal)", group = gD)
+showEma  = input.bool(true, "Tampilkan EMA (preset EMA)", group = gD)
+showMS   = input.bool(true, "Tampilkan struktur CHoCH / BOS (preset MS Fractal)", group = gD)
+msBullC  = input.color(#089981, "Warna struktur bullish", group = gD, inline = "msc")
+msBearC  = input.color(#F23645, "bearish", group = gD, inline = "msc")
+minBox   = input.int(4, "Lebar minimal kotak SL/TP (candle)", minval = 1, maxval = 50, group = gD,
+     tooltip = "Hanya tampilan: kotak trade yang selesai dalam 1–3 candle tetap digambar selebar ini supaya mudah dibaca.")
+showDash = input.bool(true, "Dashboard", group = gD)
+dashPos  = input.string("Kanan atas", "Posisi dashboard", options = ["Kanan atas", "Kanan bawah", "Kiri atas", "Kiri bawah"], group = gD)
+statFrom = input.time(timestamp("01 Jan 2000 00:00 +0000"), "Statistik dihitung mulai", group = gD)
+
+string gE = "6 · Ekspor trade"
+exOn     = input.bool(false, "Tampilkan tabel ekspor trade (dashboard disembunyikan)", group = gE,
+     tooltip = "Untuk menyalin daftar trade. Waktu dalam ET. Exit = jam buka candle tempat exit terjadi. Baris bawah berisi total untuk dicocokkan.")
+exFrom   = input.time(timestamp("01 Jan 2026 00:00 -0500"), "Trade mulai (waktu fill, ET)", group = gE)
+exPage   = input.int(1, "Halaman", minval = 1, group = gE)
+exRows   = input.int(30, "Baris per kolom (2 kolom per halaman)", minval = 10, maxval = 60, group = gE)
+exSize   = input.string("Kecil", "Ukuran teks", options = ["Sangat kecil", "Kecil", "Normal"], group = gE)
+
+// ------------------------------------------------------------------ Profil aset
+string tk = str.upper(syminfo.ticker)
+string c1 = str.length(tk) >= 6 ? str.substring(tk, 0, 3) : "---"
+string c2 = str.length(tk) >= 6 ? str.substring(tk, 3, 6) : "---"
+string CUR = "USD EUR GBP JPY AUD NZD CAD CHF"
+bool kGold  = str.contains(tk, "XAU") or str.contains(tk, "GOLD")
+bool kCry   = syminfo.type == "crypto" or str.contains(tk, "BTC") or str.contains(tk, "ETH") or str.contains(tk, "SOL") or str.contains(tk, "XRP") or str.contains(tk, "BNB") or str.contains(tk, "LTC")
+bool kIdxEU = str.contains(tk, "GER") or str.contains(tk, "DE40") or str.contains(tk, "DE30") or str.contains(tk, "DAX") or str.contains(tk, "UK100") or str.contains(tk, "FTSE") or str.contains(tk, "FRA40") or str.contains(tk, "CAC") or str.contains(tk, "EU50") or str.contains(tk, "STOXX") or str.contains(tk, "ESP35") or str.contains(tk, "IBEX")
+bool kIdxUS = syminfo.type == "index" or str.contains(tk, "US30") or str.contains(tk, "DJI") or str.contains(tk, "DOW") or str.contains(tk, "NAS") or str.contains(tk, "NDX") or str.contains(tk, "USTEC") or str.contains(tk, "SPX") or str.contains(tk, "US500") or str.contains(tk, "SP500") or str.contains(tk, "US100") or str.contains(tk, "RUT")
+bool kFx    = syminfo.type == "forex" or (str.contains(CUR, c1) and str.contains(CUR, c2))
+int  autoCls = kGold ? 1 : kCry ? 3 : kIdxEU ? 5 : kIdxUS ? 4 : kFx ? 2 : 6
+int  cls = profMode == "Gold" ? 1 : profMode == "Forex" ? 2 : profMode == "Crypto" ? 3 : profMode == "Index US" ? 4 : profMode == "Index EU" ? 5 : profMode == "Lain" ? 6 : autoCls
+string clsName = cls == 1 ? "Gold" : cls == 2 ? "Forex" : cls == 3 ? "Crypto" : cls == 4 ? "Index US" : cls == 5 ? "Index EU" : "Lain"
+
+// window per profil (jam ET)
+int pWsH = cls == 3 ? 8 : cls == 4 ? 9 : 3
+int pWsM = cls == 4 ? 30 : 0
+int pWeH = cls == 3 ? 16 : cls == 4 ? 15 : cls == 5 ? 11 : 12
+int pWeM = cls == 4 ? 30 : 0
+int pLsH = cls == 3 ? 15 : cls == 4 ? 15 : cls == 5 ? 10 : 11
+int pLsM = cls == 3 ? 30 : cls == 4 ? 0 : cls == 5 ? 30 : 45
+bool winAuto = winMode == "Profil aset"
+int wsH = winAuto ? pWsH : wsHi
+int wsM = winAuto ? pWsM : wsMi
+int weH = winAuto ? pWeH : weHi
+int weM = winAuto ? pWeM : weMi
+int lsH = winAuto ? pLsH : lsHi
+int lsM = winAuto ? pLsM : lsMi
+
+string carryEff = carryOpt != "Ikuti profil" ? carryOpt : (cls == 3 ? "OFF" : "BLOCK_ALL")
+string wkEff    = cls == 3 ? "OFF" : wkOpt != "Ikuti preset" ? wkOpt : (preset == "C1" or preset == "C2") ? "SKIP_FRIDAY" : (preset == "C4" or preset == "C5") ? "CLOSE_FRIDAY" : "OFF"
+bool wkSkip  = wkEff == "SKIP_FRIDAY" or wkEff == "SKIP_AND_CLOSE"
+bool wkClose = wkEff == "CLOSE_FRIDAY" or wkEff == "SKIP_AND_CLOSE"
+
+float contractDef = cls == 1 ? 100.0 : cls == 2 ? 100000.0 : cls == 6 ? 100.0 : 1.0
+float contract    = contractIn > 0 ? contractIn : contractDef
+float pipAuto     = cls == 1 ? 0.10 : cls == 2 ? (str.contains(tk, "JPY") ? 0.01 : 0.0001) : 1.0
+float pipSize     = pipOver > 0 ? pipOver : pipAuto
+string gMode      = gridMode == "Auto" ? (cls == 1 ? "Pips" : "ATR") : gridMode
+
+// ------------------------------------------------------------------ Parameter preset
+int  tfReq  = preset == "C4" ? 15 : preset == "C5" ? 60 : preset == "Custom" ? cTF : 30
+int  gridP  = preset == "C5" ? 250 : preset == "Custom" ? cGrid : 150
+bool useMSF = preset == "C2" or (preset == "Custom" and cFilter == "MS Fractal")
+int  emaLen = preset == "Custom" ? cEma : 50
+int  slLv   = preset == "C4" or preset == "C5" ? 2 : preset == "Custom" ? cSL : 3
+int  tpLv   = preset == "Custom" ? cTP : 1
+
+int   barMin  = int(timeframe.in_seconds() / 60)
+bool  tfOK    = timeframe.isminutes and barMin == tfReq
+int   wStart  = wsH * 60 + wsM
+int   wLen    = ((weH * 60 + weM - wStart) % 1440 + 1440) % 1440
+int   sigOff  = ((lsH * 60 + lsM - wStart) % 1440 + 1440) % 1440
+
+// ------------------------------------------------------------------ Fungsi waktu (ET)
+f_mod(int t) => hour(t, TZ) * 60 + minute(t, TZ)
+f_off(int t) => ((f_mod(t) - wStart) % 1440 + 1440) % 1440
+f_inWin(int t) => f_off(t) < wLen
+f_qual(int barOpen) =>
+    int o = f_off(barOpen)
+    o < wLen and o + barMin <= sigOff
+f_winId(int t) =>
+    int w0 = timestamp(TZ, year(t, TZ), month(t, TZ), dayofmonth(t, TZ), wsH, wsM)
+    t < w0 ? w0 - 86400000 : w0
+// hari dagang server (NY close): mulai 17:00 ET
+f_dayStart(int t) =>
+    int d0 = timestamp(TZ, year(t, TZ), month(t, TZ), dayofmonth(t, TZ), 17, 0)
+    t < d0 ? d0 - 86400000 : d0
+f_atET(int t, int h, int m) => timestamp(TZ, year(t, TZ), month(t, TZ), dayofmonth(t, TZ), h, m)
+f_hm(int t, string tz) => str.format("{0,number,00}:{1,number,00}", hour(t, tz), minute(t, tz))
+f_dt(int t) => str.format("{0,number,0000}-{1,number,00}-{2,number,00} {3}", year(t, TZ), month(t, TZ), dayofmonth(t, TZ), f_hm(t, TZ))
+f_px(float v) => na(v) ? "n/a" : str.tostring(v, format.mintick)
+
+// bulatkan ke angka "bagus" 1-2-3-5-10 × 10^n
+f_nice(float x) =>
+    float e = math.pow(10, math.floor(math.log10(x)))
+    float m = x / e
+    float n = m < 1.5 ? 1.0 : m < 2.5 ? 2.0 : m < 4.0 ? 3.0 : m < 7.5 ? 5.0 : 10.0
+    n * e
+
+// ------------------------------------------------------------------ Kalender news
+// CPI/NFP 08:30 ET dan FOMC (statement 14:00 ET). Okt 2025 – Okt 2026 = isi file news EA;
+// Jan–Sep 2025 dan Okt–Des 2026 dari jadwal resmi BLS / The Fed. Tambah sendiri lewat input.
+string BUILTIN = "2025-01-10 08:30 NFP\n2025-01-15 08:30 CPI\n2025-01-29 14:00 FOMC\n2025-02-07 08:30 NFP\n2025-02-12 08:30 CPI\n2025-03-07 08:30 NFP\n2025-03-12 08:30 CPI\n2025-03-19 14:00 FOMC\n2025-04-04 08:30 NFP\n2025-04-10 08:30 CPI\n2025-05-02 08:30 NFP\n2025-05-07 14:00 FOMC\n2025-05-13 08:30 CPI\n2025-06-06 08:30 NFP\n2025-06-11 08:30 CPI\n2025-06-18 14:00 FOMC\n2025-07-03 08:30 NFP\n2025-07-15 08:30 CPI\n2025-07-30 14:00 FOMC\n2025-08-01 08:30 NFP\n2025-08-12 08:30 CPI\n2025-09-05 08:30 NFP\n2025-09-11 08:30 CPI\n2025-09-17 14:00 FOMC\n" +
+     "2025-10-24 08:30 CPI\n2025-10-29 14:00 FOMC\n2025-11-20 08:30 NFP\n2025-12-10 14:00 FOMC\n2025-12-16 08:30 NFP\n2025-12-18 08:30 CPI\n2026-01-09 08:30 NFP\n2026-01-13 08:30 CPI\n2026-01-28 14:00 FOMC\n2026-02-11 08:30 NFP\n2026-02-13 08:30 CPI\n2026-03-06 08:30 NFP\n2026-03-11 08:30 CPI\n2026-03-18 14:00 FOMC\n2026-04-03 08:30 NFP\n2026-04-10 08:30 CPI\n2026-04-29 14:00 FOMC\n2026-05-08 08:30 NFP\n2026-05-12 08:30 CPI\n2026-06-05 08:30 NFP\n2026-06-10 08:30 CPI\n2026-06-17 14:00 FOMC\n2026-07-02 08:30 NFP\n2026-07-14 08:30 CPI\n2026-07-29 14:00 FOMC\n2026-08-07 08:30 NFP\n2026-08-12 08:30 CPI\n2026-09-04 08:30 NFP\n2026-09-11 08:30 CPI\n2026-09-16 14:00 FOMC\n2026-10-02 08:30 NFP\n" +
+     "2026-10-14 08:30 CPI\n2026-10-28 14:00 FOMC\n2026-11-06 08:30 NFP\n2026-11-10 08:30 CPI\n2026-12-04 08:30 NFP\n2026-12-09 14:00 FOMC\n2026-12-10 08:30 CPI"
+
+var array<int>    evT = array.new<int>()
+var array<int>    evK = array.new<int>()     // 1 = CPI/NFP (tunggu N menit), 2 = FOMC
+var array<string> evN = array.new<string>()
+
+f_addEvents(string src) =>
+    int added = 0
+    for ln in str.split(src, "\n")
+        string s = str.trim(ln)
+        array<string> parts = str.split(s, " ")
+        if parts.size() >= 3
+            array<string> d  = str.split(parts.get(0), "-")
+            array<string> hm = str.split(parts.get(1), ":")
+            if d.size() == 3 and hm.size() == 2
+                int ts = timestamp(TZ, int(str.tonumber(d.get(0))), int(str.tonumber(d.get(1))), int(str.tonumber(d.get(2))),
+                     int(str.tonumber(hm.get(0))), int(str.tonumber(hm.get(1))))
+                string k = str.upper(parts.get(2))
+                evT.push(ts)
+                evK.push(str.contains(k, "FOMC") ? 2 : 1)
+                evN.push(k)
+                added += 1
+    added
+
+var int evLast = 0
+if barstate.isfirst
+    f_addEvents(BUILTIN)
+    f_addEvents(extraTxt)
+    for t in evT
+        evLast := math.max(evLast, t)
+
+// event CPI/NFP terakhir dan status FOMC di hari dagang server yang memuat t
+f_yudha(int t) =>
+    int ds = f_dayStart(t)
+    int de = ds + 86400000
+    int lastCN = 0
+    bool fomc = false
+    string names = ""
+    for i = 0 to evT.size() - 1
+        int et = evT.get(i)
+        if et >= ds and et < de
+            if evK.get(i) == 1
+                lastCN := math.max(lastCN, et)
+            else
+                fomc := true
+            names += (names == "" ? "" : ", ") + evN.get(i) + " " + f_hm(et, TZ)
+    [lastCN, fomc, names]
+
+// ------------------------------------------------------------------ Indikator arah
+float ema = ta.ema(close, emaLen)
+
+// Market Structure (Fractal) — LuxAlgo
+int   p     = int(math.floor(fracLen / 2.0))
+float dh    = math.sum(math.sign(high - high[1]), p)
+float dl    = math.sum(math.sign(low - low[1]), p)
+// ta.highest/ta.lowest di luar ekspresi 'and' (Pine v6 mengevaluasi 'and' secara lazy)
+float hiN   = ta.highest(high, fracLen)
+float loN   = ta.lowest(low, fracLen)
+bool  bullf = dh == -p and dh[p] == p and high[p] == hiN
+bool  bearf = dl == p and dl[p] == -p and low[p] == loN
+var float upV = na
+var int   upL = 0
+var bool  upX = false
+var float loV = na
+var int   loL = 0
+var bool  loX = false
+var int   os  = 0
+bool drawMS = showMS and useMSF
+if bullf
+    upV := high[p]
+    upL := bar_index - p
+    upX := false
+bool crossUp = ta.crossover(close, upV)
+if crossUp and not upX
+    if drawMS
+        line.new(upL, upV, bar_index, upV, color = msBullC, width = 1)
+        label.new(int(math.avg(bar_index, upL)), upV, os == -1 ? "CHoCH" : "BOS", style = label.style_label_down,
+             color = color.new(color.white, 100), textcolor = msBullC, size = size.tiny)
+    upX := true
+    os  := 1
+if bearf
+    loV := low[p]
+    loL := bar_index - p
+    loX := false
+bool crossDn = ta.crossunder(close, loV)
+if crossDn and not loX
+    if drawMS
+        line.new(loL, loV, bar_index, loV, color = msBearC, width = 1)
+        label.new(int(math.avg(bar_index, loL)), loV, os == 1 ? "CHoCH" : "BOS", style = label.style_label_up,
+             color = color.new(color.white, 100), textcolor = msBearC, size = size.tiny)
+    loX := true
+    os  := -1
+
+// ------------------------------------------------------------------ State machine (variabel)
+// st: 0 IDLE · 1 PENDING · 2 POSISI · 3 SELESAI (window ini)
+var int   st      = 0
+var int   dir     = 0
+var int   entPts  = 0
+var float ent     = na
+var float sl      = na
+var float tp      = na
+var float fillPx  = na
+var int   fillT   = 0
+var int   fillBar = 0
+var int   qWid    = 0
+var int   qCnt    = 0
+var int   doneWid = 0
+var int   lastEnd = 0
+var int   lastExT = 0
+var int   lastExF = 0
+var float lastExR = 0.0
+var int   defKind = 0      // 1 order baru · 2 geser (reanchor)
+var int   defDir  = 0
+var int   defLvl  = 0
+var line  pLine   = na
+var line  eLine   = na
+var box   bTP     = na
+var box   bSL     = na
+var string lastMsg = "—"
+var string lastTrade = "—"
+
+// ------------------------------------------------------------------ Grid (pips untuk Gold, ATR D1 untuk aset lain)
+float atrD   = request.security(syminfo.tickerid, "D", ta.atr(atrLen)[1], lookahead = barmerge.lookahead_on)
+float kEff   = gridK * gridP / 150.0
+float rawPx  = na(atrD) ? na : atrD * kEff
+int   pipsPts = int(math.max(1, math.round(gridP * pipSize / PT)))
+var int   gridPts = 0
+var float gridRaw = na
+bool canMove = (st == 0 or st == 3) and defKind == 0
+if gMode == "Pips"
+    if canMove or gridPts == 0
+        gridPts := pipsPts
+else if not na(rawPx) and rawPx > 0
+    if gridPts == 0 or (canMove and (na(gridRaw) or math.abs(rawPx / gridRaw - 1) > hystPct / 100.0))
+        gridPts := int(math.max(1, math.round(f_nice(rawPx) / PT)))
+        gridRaw := rawPx
+
+bool  gridOK  = gridPts > 0
+float gridPx  = gridPts * PT
+float slDist  = slLv * gridPx
+float rTP     = float(tpLv) / slLv
+int   mktPts  = int(math.max(0, math.round(gridPts * mktPct / 100.0)))
+float qRate   = nz(request.currency_rate(syminfo.currency, "USD", ignore_invalid_currency = true), 1.0)
+float lotRaw  = slDist > 0 ? riskUsd / (slDist * contract * qRate) : 0.0
+float lotCalc = math.floor(lotRaw / lotStep + 1e-9) * lotStep
+
+// ------------------------------------------------------------------ Grid break
+f_break(int pp, int cc) =>
+    int brk = 0
+    int lvl = 0
+    if cc > pp
+        int t = gridPts * math.floor(float(cc - 1) / gridPts)
+        if t >= pp
+            brk := 1
+            lvl := t
+    else if cc < pp
+        int t = gridPts * math.ceil(float(cc + 1) / gridPts)
+        if t <= pp
+            brk := -1
+            lvl := t
+    [brk, lvl]
+
+// statistik
+var int   nTr = 0
+var int   nW  = 0
+var int   nL  = 0
+var float sumR = 0.0
+var float peakR = 0.0
+var float maxDD = 0.0
+var int   cw = 0
+var int   cl = 0
+var int   maxCW = 0
+var int   maxCL = 0
+var int   firstT = 0
+var int   nNews = 0
+var int   nCarry = 0
+var int   nFlip = 0
+var int   newsWid = 0
+var int   carryWid = 0
+
+// [EKSPOR] daftar trade
+var array<int>    xF = array.new<int>()     // waktu fill
+var array<int>    xX = array.new<int>()     // jam buka candle exit
+var array<int>    xD = array.new<int>()     // arah
+var array<string> xC = array.new<string>()  // TP / SL / JUMAT
+var array<float>  xR = array.new<float>()   // R
+
+bool sigBuy = false
+bool sigSell = false
+
+// [EXPORT CHART DATA] seri yang terisi hanya di candle tempat trade selesai
+float xpR     = na   // hasil trade dalam R
+float xpCode  = na   // 1 = TP · 2 = SL · 3 = JUMAT
+float xpDir   = na   // 1 = BUY · -1 = SELL
+float xpFill  = na   // waktu fill ET format YYYYMMDDHHMM
+float xpEntry = na   // harga fill
+float xpExit  = na   // harga exit
+float xpLot   = na   // lot sesuai risk
+
+f_carryBlocked(int now) =>
+    bool b = false
+    if carryEff != "OFF" and lastExT > 0
+        int ds = f_dayStart(now)
+        int ws = f_winId(now)
+        if lastExT >= ds and lastExF < ws
+            b := not (carryEff == "BLOCK_LOSS" and lastExR >= 0)
+    b
+
+f_tag(int x, float y, string txt, color c, bool up) =>
+    label.new(x, y, txt, style = up ? label.style_label_up : label.style_label_down, color = c, textcolor = color.white, size = size.tiny)
+
+color cBuy  = color.new(#1baf7a, 0)
+color cSell = color.new(#d95926, 0)
+
+if barstate.isconfirmed and tfOK and gridOK
+    // ---------- 1. awal candle: eksekusi keputusan dari candle sebelumnya (harga = open)
+    if defKind != 0
+        int oPts = int(math.round(open / PT))
+        int dist = defDir > 0 ? oPts - defLvl : defLvl - oPts
+        bool doMkt = false
+        if defKind == 1
+            if dist <= -mktPts
+                lastMsg := "Sinyal dilewati: harga sudah melewati level " + f_px(defLvl * PT)
+            else if dist < mktPts
+                doMkt := true
+            else
+                st     := 1
+                dir    := defDir
+                entPts := defLvl
+                ent    := defLvl * PT
+                sl     := ent - dir * slDist
+                tp     := ent + dir * tpLv * gridPx
+                lastMsg := (dir > 0 ? "BUY" : "SELL") + " LIMIT " + f_px(ent) + " · SL " + f_px(sl) + " · TP " + f_px(tp)
+                if showTr
+                    pLine := line.new(bar_index, ent, bar_index, ent, color = dir > 0 ? cBuy : cSell, style = line.style_dashed, width = 2)
+                if showSig
+                    label.new(bar_index, ent, (dir > 0 ? "BUY" : "SELL") + " LIMIT " + f_px(ent), style = label.style_label_right,
+                         color = color.new(dir > 0 ? cBuy : cSell, 35), textcolor = color.white, size = size.tiny)
+                alert("SnR LNY " + preset + " " + syminfo.ticker + ": pasang " + lastMsg + " · lot " + str.tostring(lotCalc, "0.00"), alert.freq_once_per_bar_close)
+        else if st == 1
+            if dist <= -mktPts
+                lastMsg := "Geser order dilewati: harga sudah melewati level baru"
+            else if dist < mktPts
+                doMkt := true
+            else
+                entPts := defLvl
+                ent    := defLvl * PT
+                sl     := ent - dir * slDist
+                tp     := ent + dir * tpLv * gridPx
+                lastMsg := "GESER limit ke " + f_px(ent) + " · SL " + f_px(sl) + " · TP " + f_px(tp)
+                if showTr and not na(pLine)
+                    line.set_x2(pLine, bar_index - 1)
+                    pLine := line.new(bar_index, ent, bar_index, ent, color = dir > 0 ? cBuy : cSell, style = line.style_dashed, width = 2)
+                if showSig
+                    label.new(bar_index, ent, "GESER → " + f_px(ent), style = label.style_label_right,
+                         color = color.new(dir > 0 ? cBuy : cSell, 35), textcolor = color.white, size = size.tiny)
+                alert("SnR LNY " + preset + " " + syminfo.ticker + ": " + lastMsg, alert.freq_once_per_bar_close)
+        if doMkt
+            // market: entry = harga open, SL/TP dihitung dari harga entry
+            st     := 1
+            dir    := defDir
+            ent    := open
+            entPts := int(math.round(open / PT))
+            sl     := ent - dir * slDist
+            tp     := ent + dir * tpLv * gridPx
+            if showSig
+                label.new(bar_index, ent, (dir > 0 ? "BUY" : "SELL") + " MARKET " + f_px(ent), style = label.style_label_right,
+                     color = color.new(dir > 0 ? cBuy : cSell, 35), textcolor = color.white, size = size.tiny)
+            if showTr and not na(pLine)
+                line.set_color(pLine, color.gray)
+            pLine := na
+            lastMsg := (dir > 0 ? "BUY" : "SELL") + " MARKET ±" + f_px(ent) + " · SL " + f_px(sl) + " · TP " + f_px(tp)
+            alert("SnR LNY " + preset + " " + syminfo.ticker + ": " + lastMsg + " (jarak ke level < " + str.tostring(mktPct, "0.0") + "% grid) · lot " + str.tostring(lotCalc, "0.00"), alert.freq_once_per_bar_close)
+        defKind := 0
+
+    // ---------- 2. jalur harga di dalam candle
+    float exitPx = na
+    string exitCode = ""
+    int fcT = f_atET(time, fcH, fcM)
+    bool isFri = dayofweek(time, TZ) == dayofweek.friday
+    // tutup Jumat (a): candle dibuka pada/setelah jam tutup → keluar di open
+    if st == 2 and wkClose and isFri and time >= fcT
+        exitPx := open
+        exitCode := "JUMAT"
+    if (st == 1 or st == 2) and na(exitPx)
+        array<float> path = close >= open ? array.from(open, low, high, close) : array.from(open, high, low, close)
+        for i = 0 to 2
+            float a = path.get(i)
+            float b = path.get(i + 1)
+            if st == 1
+                bool hit = dir > 0 ? math.min(a, b) <= ent : math.max(a, b) >= ent
+                if hit
+                    float fp = dir > 0 ? (a <= ent ? a : ent) : (a >= ent ? a : ent)
+                    st := 2
+                    fillPx := fp
+                    fillT := time
+                    fillBar := bar_index
+                    int wid = f_winId(time)
+                    if wid != qWid
+                        qWid := wid
+                        qCnt := 0
+                    qCnt += 1
+                    a := fp
+                    if showTr
+                        if not na(pLine)
+                            line.set_x2(pLine, bar_index)
+                        float rT = dir * (tp - fp) / slDist
+                        float rS = dir * (sl - fp) / slDist
+                        bTP := box.new(bar_index, math.max(tp, fp), bar_index, math.min(tp, fp), border_color = color.new(cBuy, 40), bgcolor = color.new(cBuy, 80),
+                             text = "TP " + f_px(tp) + "  " + str.tostring(rT, "+0.00;-0.00") + "R", text_size = size.small, text_color = color.new(cBuy, 0),
+                             text_halign = text.align_left, text_valign = dir > 0 ? text.align_top : text.align_bottom)
+                        bSL := box.new(bar_index, math.max(sl, fp), bar_index, math.min(sl, fp), border_color = color.new(cSell, 40), bgcolor = color.new(cSell, 80),
+                             text = "SL " + f_px(sl) + "  " + str.tostring(rS, "+0.00;-0.00") + "R", text_size = size.small, text_color = color.new(cSell, 0),
+                             text_halign = text.align_left, text_valign = dir > 0 ? text.align_bottom : text.align_top)
+                        eLine := line.new(bar_index, fp, bar_index, fp, color = dir > 0 ? cBuy : cSell, width = 2)
+                    lastMsg := "TERISI " + (dir > 0 ? "BUY " : "SELL ") + f_px(fp) + " · SL " + f_px(sl) + " · TP " + f_px(tp)
+                    alert("SnR LNY " + preset + " " + syminfo.ticker + ": " + lastMsg, alert.freq_once_per_bar_close)
+            if st == 2
+                if dir > 0
+                    if a <= sl
+                        exitPx := a
+                        exitCode := "SL"
+                    else if a >= tp
+                        exitPx := a
+                        exitCode := "TP"
+                    else if b < a and b <= sl
+                        exitPx := sl
+                        exitCode := "SL"
+                    else if b > a and b >= tp
+                        exitPx := tp
+                        exitCode := "TP"
+                else
+                    if a >= sl
+                        exitPx := a
+                        exitCode := "SL"
+                    else if a <= tp
+                        exitPx := a
+                        exitCode := "TP"
+                    else if b > a and b >= sl
+                        exitPx := sl
+                        exitCode := "SL"
+                    else if b < a and b <= tp
+                        exitPx := tp
+                        exitCode := "TP"
+            if not na(exitPx)
+                break
+    // tutup Jumat (b): candle melewati jam tutup (mis. H1 16:00–17:00 untuk C5) dan SL/TP belum kena → keluar di close
+    if st == 2 and na(exitPx) and wkClose and isFri and time < fcT and time_close > fcT
+        exitPx := close
+        exitCode := "JUMAT"
+
+    if st == 2 and not na(exitPx)
+        float r = dir * (exitPx - fillPx) / slDist
+        if fillT >= statFrom
+            nTr += 1
+            sumR += r
+            if firstT == 0
+                firstT := fillT
+            if r > 0
+                nW += 1
+                cw += 1
+                cl := 0
+            else
+                nL += 1
+                cl += 1
+                cw := 0
+            maxCW := math.max(maxCW, cw)
+            maxCL := math.max(maxCL, cl)
+            peakR := math.max(peakR, sumR)
+            maxDD := math.max(maxDD, peakR - sumR)
+        if fillT >= exFrom
+            xF.push(fillT)
+            xX.push(time)
+            xD.push(dir)
+            xC.push(exitCode)
+            xR.push(r)
+        xpR     := r
+        xpCode  := exitCode == "TP" ? 1 : exitCode == "SL" ? 2 : 3
+        xpDir   := dir
+        xpFill  := year(fillT, TZ) * 100000000.0 + month(fillT, TZ) * 1000000.0 + dayofmonth(fillT, TZ) * 10000.0 + hour(fillT, TZ) * 100.0 + minute(fillT, TZ)
+        xpEntry := fillPx
+        xpExit  := exitPx
+        xpLot   := lotCalc
+        string no = fillT >= statFrom ? "#" + str.tostring(nTr) + " · " : ""
+        lastTrade := f_dt(fillT) + " ET · " + (dir > 0 ? "BUY" : "SELL") + " · " + exitCode + " · " + str.tostring(r, "+0.00;-0.00") + "R"
+        lastMsg := "SELESAI " + exitCode + " " + str.tostring(r, "+0.00;-0.00") + "R"
+        if showTr
+            int xr = math.max(bar_index, fillBar + minBox)
+            if not na(bTP)
+                box.set_right(bTP, xr)
+                box.set_right(bSL, xr)
+            if not na(eLine)
+                line.set_x2(eLine, xr)
+            label.new(bar_index, exitPx, no + str.format("{0,number,00}/{1,number,00} ", dayofmonth(fillT, TZ), month(fillT, TZ)) + f_hm(fillT, TZ) + " ET · " +
+                 (dir > 0 ? "BUY " : "SELL ") + exitCode + " " + str.tostring(r, "+0.00;-0.00") + "R",
+                 style = dir > 0 ? (r > 0 ? label.style_label_down : label.style_label_up) : (r > 0 ? label.style_label_up : label.style_label_down),
+                 color = r > 0 ? color.new(cBuy, 20) : color.new(cSell, 20), textcolor = color.white, size = size.tiny)
+        alert("SnR LNY " + preset + " " + syminfo.ticker + ": " + lastMsg, alert.freq_once_per_bar_close)
+        lastExT := time
+        lastExF := fillT
+        lastExR := r
+        lastEnd := time
+        int widNow = f_winId(time)
+        if f_inWin(time) and widNow == qWid and qCnt >= 1
+            st := 3
+            doneWid := widNow
+        else
+            st := 0
+        bTP := na
+        bSL := na
+        pLine := na
+        eLine := na
+    else if st == 2 and showTr and not na(bTP)
+        int xr2 = math.max(bar_index, fillBar + minBox)
+        box.set_right(bTP, xr2)
+        box.set_right(bSL, xr2)
+        if not na(eLine)
+            line.set_x2(eLine, xr2)
+    else if st == 1 and showTr and not na(pLine)
+        line.set_x2(pLine, bar_index)
+
+    int now = time_close
+    // ---------- 3. tick pertama setelah close (urutan EA: TickChecks dulu, lalu OnNewBar)
+    if st == 3 and f_winId(now) != doneWid
+        st := 0
+    // batal pending: window selesai / FOMC
+    if st == 1
+        string why = ""
+        if not f_inWin(now)
+            why := "window selesai"
+        else if newsOn
+            [lc0, fomc0, nm0] = f_yudha(now)
+            if fomc0 and now >= f_atET(now, fomcH, fomcM)
+                why := "hari FOMC (jam " + str.format("{0,number,00}:{1,number,00}", fomcH, fomcM) + " ET)"
+        if why != ""
+            st := 0
+            lastEnd := now
+            lastMsg := "Pending dibatalkan: " + why
+            if showTr and not na(pLine)
+                line.set_x2(pLine, bar_index)
+                line.set_color(pLine, color.gray)
+            if showSig
+                label.new(bar_index, ent, "× batal: " + why, style = label.style_label_left, color = color.new(color.gray, 30), textcolor = color.white, size = size.tiny)
+            pLine := na
+            alert("SnR LNY " + preset + " " + syminfo.ticker + ": " + lastMsg, alert.freq_once_per_bar_close)
+
+    // ---------- 4. OnNewBar: struktur, break, sinyal
+    if useMSF and flipCanc and st == 1 and os != 0 and os != dir
+        st := 0
+        lastEnd := time
+        nFlip += 1
+        lastMsg := "Pending dibatalkan: arah struktur berbalik"
+        if showTr and not na(pLine)
+            line.set_color(pLine, color.gray)
+        if showSig
+            label.new(bar_index, ent, "× batal: struktur berbalik", style = label.style_label_left, color = color.new(color.gray, 30), textcolor = color.white, size = size.tiny)
+        pLine := na
+        alert("SnR LNY " + preset + " " + syminfo.ticker + ": " + lastMsg, alert.freq_once_per_bar_close)
+
+    [brk, lvl] = f_break(int(math.round(close[1] / PT)), int(math.round(close / PT)))
+    if brk != 0
+        if st == 1
+            if brk == dir and f_qual(time) and f_inWin(now)
+                bool further = dir < 0 ? lvl < entPts : lvl > entPts
+                if further
+                    defKind := 2
+                    defDir  := dir
+                    defLvl  := lvl
+        else if st == 0
+            if now > lastEnd and f_qual(time) and f_inWin(now)
+                bool ok = true
+                if f_carryBlocked(now)
+                    ok := false
+                    if f_winId(now) != carryWid
+                        carryWid := f_winId(now)
+                        nCarry += 1
+                if ok and wkSkip and dayofweek(f_winId(now), TZ) == dayofweek.friday
+                    ok := false
+                if ok and newsOn
+                    [lc1, fomc1, nm1] = f_yudha(now)
+                    if (lc1 > 0 and now < lc1 + newsWait * 60000) or (fomc1 and now >= f_atET(now, fomcH, fomcM))
+                        ok := false
+                        if f_winId(now) != newsWid
+                            newsWid := f_winId(now)
+                            nNews += 1
+                if ok
+                    int allowed = useMSF ? os : (close > ema ? 1 : close < ema ? -1 : 0)
+                    ok := allowed == brk
+                if ok and f_winId(now) == qWid and qCnt >= 1
+                    ok := false
+                if ok and lotCalc < lotStep
+                    ok := false
+                    lastMsg := "Sinyal ditolak: risk $" + str.tostring(riskUsd, "#") + " terlalu kecil untuk lot minimum (SL " + f_px(slDist) + ")"
+                if ok
+                    defKind := 1
+                    defDir  := brk
+                    defLvl  := lvl
+                    sigBuy  := brk > 0
+                    sigSell := brk < 0
+                    float L  = lvl * PT
+                    float S  = L - brk * slDist
+                    float T2 = L + brk * tpLv * gridPx
+                    lastMsg := "SINYAL " + (brk > 0 ? "BUY" : "SELL") + " di level " + f_px(L)
+                    if showSig
+                        f_tag(bar_index, brk > 0 ? low : high, "SINYAL " + (brk > 0 ? "BUY" : "SELL") + "\n" + f_px(L), brk > 0 ? cBuy : cSell, brk > 0)
+                    alert("SnR LNY " + preset + " " + syminfo.ticker + ": SINYAL " + (brk > 0 ? "BUY" : "SELL") + " · limit " + f_px(L) +
+                         " · SL " + f_px(S) + " · TP " + f_px(T2) + " · lot " + str.tostring(lotCalc, "0.00") +
+                         " (market bila jarak ke level < " + str.tostring(mktPct, "0.0") + "% grid)", alert.freq_once_per_bar_close)
+
+    // ---------- 5. pengingat news saat window dibuka
+    if newsOn and f_off(now) == 0
+        [lc2, fomc2, nm2] = f_yudha(now)
+        if nm2 != ""
+            string tip = lc2 > 0 ? "sinyal baru hanya dari candle yang close ≥ " + f_hm(lc2 + newsWait * 60000, TZ) + " ET (" + f_hm(lc2 + newsWait * 60000, WIB) + " WIB)" : ""
+            string fip = fomc2 ? "hari FOMC: sinyal hanya dari candle yang close sebelum " + str.format("{0,number,00}:{1,number,00}", fomcH, fomcM) + " ET, pending dibatalkan jam itu" : ""
+            alert("SnR LNY " + syminfo.ticker + ": HARI NEWS — " + nm2 + " ET. " + tip + (tip != "" and fip != "" ? " · " : "") + fip, alert.freq_once_per_bar_close)
+
+// ------------------------------------------------------------------ Plot
+plot(showEma and not useMSF ? ema : na, "EMA", color = color.new(#2a78d6, 0), linewidth = 2)
+plotshape(sigBuy, "Sinyal buy", shape.triangleup, location.belowbar, cBuy, size = size.small)
+plotshape(sigSell, "Sinyal sell", shape.triangledown, location.abovebar, cSell, size = size.small)
+
+// [EXPORT CHART DATA] hanya tampil di Data Window / ikut ter-ekspor, tidak menggambar apa pun di chart
+plot(xpR,     "X_R",           display = display.data_window)
+plot(xpCode,  "X_Hasil 1TP 2SL 3JUMAT", display = display.data_window)
+plot(xpDir,   "X_Arah 1BUY -1SELL",     display = display.data_window)
+plot(xpFill,  "X_Fill ET YYYYMMDDHHMM", display = display.data_window)
+plot(xpEntry, "X_Entry",       display = display.data_window)
+plot(xpExit,  "X_Exit",        display = display.data_window)
+plot(xpLot,   "X_Lot",         display = display.data_window)
+
+// grid di sekitar harga terakhir
+var array<line>  gl  = array.new<line>()
+var array<label> glb = array.new<label>()
+if barstate.islast and showGrid and gridOK
+    for l in gl
+        line.delete(l)
+    for lb in glb
+        label.delete(lb)
+    gl.clear()
+    glb.clear()
+    int base = gridPts * math.floor(float(math.round(close / PT)) / gridPts)
+    for k = -gridN + 1 to gridN
+        float y = (base + k * gridPts) * PT
+        gl.push(line.new(bar_index - 1, y, bar_index, y, extend = extend.both, color = gridCol, width = gridW, style = line.style_solid))
+        if gridLbl
+            glb.push(label.new(bar_index + gridOff, y, f_px(y), style = label.style_label_left, color = color.new(color.white, 100), textcolor = gridCol, size = size.small))
+
+// ------------------------------------------------------------------ Dashboard
+f_pos(string s) =>
+    s == "Kanan bawah" ? position.bottom_right : s == "Kiri atas" ? position.top_left : s == "Kiri bawah" ? position.bottom_left : position.top_right
+
+var table dash = table.new(f_pos(dashPos), 2, 18, bgcolor = color.new(color.black, 15), border_color = color.new(color.gray, 70), border_width = 1, frame_color = color.new(color.gray, 50), frame_width = 1)
+f_row(int r, string k, string v, color vc) =>
+    table.cell(dash, 0, r, k, text_color = color.new(color.white, 25), text_size = size.small, text_halign = text.align_left)
+    table.cell(dash, 1, r, v, text_color = vc, text_size = size.small, text_halign = text.align_left)
+
+if barstate.islast and showDash and not exOn
+    color W = color.white
+    string fname = useMSF ? "MS Fractal " + str.tostring(fracLen) : "EMA " + str.tostring(emaLen)
+    f_row(0, "Preset", preset + " · " + str.tostring(tfReq) + "m · " + fname + " · SL " + str.tostring(slLv) + " / TP " + str.tostring(tpLv) + " · Jumat " + wkEff, W)
+    f_row(1, "Profil", clsName + " · grid " + gMode + " · window " + str.format("{0,number,00}:{1,number,00}", wsH, wsM) + "–" + str.format("{0,number,00}:{1,number,00}", weH, weM) + " ET · carry " + carryEff, W)
+    string gTxt = gridOK ? f_px(gridPx) + " (" + str.tostring(gridPts) + " tick) · " + (na(atrD) ? "ATR D1 n/a" : str.tostring(gridPx / atrD, "0.000") + " × ATR D1 (" + f_px(atrD) + ")") : "MENUNGGU ATR D1 — belum ada sinyal"
+    f_row(2, "Grid", gTxt, gridOK ? W : color.red)
+    f_row(3, "Timeframe", tfOK ? "OK" : "SALAH — pakai chart " + str.tostring(tfReq) + " menit", tfOK ? cBuy : color.red)
+    int dirNow = useMSF ? os : (close > ema ? 1 : close < ema ? -1 : 0)
+    f_row(4, "Arah diizinkan", dirNow > 0 ? "BUY saja" : dirNow < 0 ? "SELL saja" : "belum ada", dirNow > 0 ? cBuy : dirNow < 0 ? cSell : W)
+    int nowT = time_close
+    string winTxt = f_inWin(nowT) ? "BUKA · sisa " + str.tostring(wLen - f_off(nowT)) + " mnt" : "TUTUP · buka " + str.format("{0,number,00}:{1,number,00}", wsH, wsM) + " ET (" + f_hm(f_winId(nowT) + 86400000, WIB) + " WIB)"
+    f_row(5, "Window", winTxt, f_inWin(nowT) ? cBuy : W)
+    [lc3, fomc3, nm3] = f_yudha(nowT)
+    string newsTxt = not newsOn ? "aturan news OFF" : nm3 == "" ? "tidak ada news terjadwal" : nm3 + " ET"
+    f_row(6, "News hari ini", newsTxt, nm3 != "" and newsOn ? color.orange : W)
+    if newsOn and nm3 != ""
+        string rule = lc3 > 0 ? "sinyal dari close ≥ " + f_hm(lc3 + newsWait * 60000, TZ) + " ET / " + f_hm(lc3 + newsWait * 60000, WIB) + " WIB" : ""
+        rule += fomc3 ? (rule != "" ? " · " : "") + "FOMC: stop " + str.format("{0,number,00}:{1,number,00}", fomcH, fomcM) + " ET" : ""
+        f_row(7, "Aturan news", rule, color.orange)
+    else
+        f_row(7, "Aturan news", "normal", W)
+    bool cb = f_carryBlocked(nowT)
+    f_row(8, "Carry", cb ? "DIBLOK hari ini (trade sebelumnya)" : "OK", cb ? color.red : W)
+    string stTxt = st == 0 ? "menunggu sinyal" : st == 1 ? (dir > 0 ? "PENDING BUY " : "PENDING SELL ") + f_px(ent) : st == 2 ? (dir > 0 ? "POSISI BUY " : "POSISI SELL ") + f_px(fillPx) : "selesai untuk window ini"
+    if defKind == 1
+        stTxt := "SINYAL " + (defDir > 0 ? "BUY" : "SELL") + " → pasang di " + f_px(defLvl * PT)
+    f_row(9, "Status", stTxt, st == 2 ? (dir > 0 ? cBuy : cSell) : defKind == 1 ? color.yellow : W)
+    string sltp = st >= 1 and st <= 2 ? "SL " + f_px(sl) + " / TP " + f_px(tp) : (gridOK ? "SL " + f_px(slDist) + " jarak / TP " + f_px(tpLv * gridPx) + " jarak" : "—")
+    if st == 2
+        sltp += " · floating " + str.tostring(dir * (close - fillPx) / slDist, "+0.00;-0.00") + "R"
+    f_row(10, "SL / TP", sltp, W)
+    bool lotLow = lotCalc < lotStep
+    f_row(11, "Lot (risk $" + str.tostring(riskUsd, "#") + ")", str.tostring(lotCalc, "0.00") + " lot · SL " + f_px(slDist) + " · TP " + str.tostring(rTP, "0.00") + "R · kontrak " + str.tostring(contract, "#.##") + (lotLow ? " · RISK TERLALU KECIL" : ""), lotLow ? color.red : W)
+    f_row(12, "Pesan terakhir", lastMsg, W)
+    float wr = nTr > 0 ? 100.0 * nW / nTr : 0.0
+    f_row(13, "Statistik", str.tostring(nTr) + " trade · " + str.tostring(nW) + "W / " + str.tostring(nL) + "L · WR " + str.tostring(wr, "0.0") + "%", W)
+    f_row(14, "Total R · max DD", str.tostring(sumR, "+0.00;-0.00") + "R · DD " + str.tostring(maxDD, "0.00") + "R", sumR >= 0 ? cBuy : cSell)
+    f_row(15, "Beruntun maks", "win " + str.tostring(maxCW) + " · loss " + str.tostring(maxCL), W)
+    f_row(16, "Trade terakhir", lastTrade, W)
+    f_row(17, "Data", (firstT > 0 ? "sejak " + f_dt(firstT) : "belum ada trade") + " · diblok news " + str.tostring(nNews) + " · carry " + str.tostring(nCarry) + (time > evLast ? " · KALENDER NEWS HABIS" : ""), time > evLast ? color.red : color.new(color.white, 40))
+
+
+// ------------------------------------------------------------------ [EKSPOR] Tabel daftar trade
+f_ymd(int t) => str.format("{0,number,00}-{1,number,00}-{2,number,00} {3}", year(t, TZ) % 100, month(t, TZ), dayofmonth(t, TZ), f_hm(t, TZ))
+string exTS = exSize == "Sangat kecil" ? size.tiny : exSize == "Normal" ? size.normal : size.small
+var table ex = table.new(position.middle_center, 12, exRows + 3, bgcolor = color.new(#0b0b0b, 0), border_color = color.new(color.gray, 60), border_width = 1)
+f_xc(int c, int r, string t, color tc) =>
+    table.cell(ex, c, r, t, text_color = tc, text_size = exTS, text_halign = text.align_left, text_font_family = font.family_monospace)
+if barstate.isfirst and exOn
+    table.merge_cells(ex, 0, 0, 11, 0)
+    table.merge_cells(ex, 0, exRows + 2, 11, exRows + 2)
+if barstate.islast and exOn
+    int n     = xF.size()
+    int per   = exRows * 2
+    int pages = math.max(1, int(math.ceil(n / float(per))))
+    int pg    = math.min(exPage, pages)
+    int i0    = (pg - 1) * per
+    color W2  = color.white
+    f_xc(0, 0, "SnR LNY ekspor · " + preset + " · " + syminfo.tickerid + " · " + clsName + " · grid " + f_px(gridPx) + " · " + timeframe.period + "m · halaman " + str.tostring(pg) + "/" + str.tostring(pages) + " · waktu ET", color.yellow)
+    for g = 0 to 1
+        int c0 = g * 6
+        f_xc(c0 + 0, 1, "#", color.gray)
+        f_xc(c0 + 1, 1, "fill ET", color.gray)
+        f_xc(c0 + 2, 1, "arah", color.gray)
+        f_xc(c0 + 3, 1, "exit ET", color.gray)
+        f_xc(c0 + 4, 1, "hasil", color.gray)
+        f_xc(c0 + 5, 1, "R", color.gray)
+    float pgR = 0.0
+    for k = 0 to per - 1
+        int i  = i0 + k
+        int g  = int(math.floor(k / float(exRows)))
+        int c0 = g * 6
+        int rr = 2 + k % exRows
+        if i < n
+            float rv = xR.get(i)
+            pgR += rv
+            color rc = rv > 0 ? cBuy : cSell
+            f_xc(c0 + 0, rr, str.tostring(i + 1), W2)
+            f_xc(c0 + 1, rr, f_ymd(xF.get(i)), W2)
+            f_xc(c0 + 2, rr, xD.get(i) > 0 ? "BUY" : "SELL", W2)
+            f_xc(c0 + 3, rr, f_ymd(xX.get(i)), W2)
+            f_xc(c0 + 4, rr, xC.get(i), rc)
+            f_xc(c0 + 5, rr, str.tostring(rv, "+0.000;-0.000"), rc)
+        else
+            for j = 0 to 5
+                f_xc(c0 + j, rr, "", W2)
+    int   wAll = 0
+    float rAll = 0.0
+    for v in xR
+        rAll += v
+        if v > 0
+            wAll += 1
+    f_xc(0, exRows + 2, "Total " + str.tostring(n) + " trade · " + str.tostring(wAll) + "W / " + str.tostring(n - wAll) + "L · total " + str.tostring(rAll, "+0.000;-0.000") + "R · halaman ini " + str.tostring(pgR, "+0.000;-0.000") + "R", color.yellow)

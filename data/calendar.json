@@ -1,0 +1,335 @@
+[
+  {
+    "Date": "2026-11-09T08:40:00-05:00",
+    "Event": "FOMC Member Bowman Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-09T10:00:00-05:00",
+    "Event": "Final Wholesale Inventories m/m",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "0.6%",
+    "Previous": "0.6%",
+    "Actual": "0.7%"
+  },
+  {
+    "Date": "2026-11-09T10:00:00-05:00",
+    "Event": "FOMC Member Goolsbee Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-09T12:15:00-05:00",
+    "Event": "FOMC Member Barkin Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-09T19:01:00-05:00",
+    "Event": "BRC Retail Sales Monitor y/y",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "1.2%",
+    "Previous": "1.0%",
+    "Actual": "1.1%"
+  },
+  {
+    "Date": "2026-11-10T04:00:00-05:00",
+    "Event": "FOMC Member Waller Speaks",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-10T08:14:00-05:00",
+    "Event": "ADP Weekly Employment Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "16.8K",
+    "Actual": "19.75K"
+  },
+  {
+    "Date": "2026-11-10T08:15:00-05:00",
+    "Event": "ADP Weekly Employment Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "19.5K",
+    "Actual": "19.75K"
+  },
+  {
+    "Date": "2026-11-10T08:30:00-05:00",
+    "Event": "Core CPI m/m",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "0.2%",
+    "Previous": "0.3%",
+    "Actual": "0.3%"
+  },
+  {
+    "Date": "2026-11-10T08:30:00-05:00",
+    "Event": "CPI m/m",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "0.3%",
+    "Previous": "0.6%",
+    "Actual": "0.4%"
+  },
+  {
+    "Date": "2026-11-10T10:50:00-05:00",
+    "Event": "FOMC Member Logan Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-10T13:30:00-05:00",
+    "Event": "FOMC Member Schmid Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-10T15:30:00-05:00",
+    "Event": "FOMC Member Bowman Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-10T18:30:00-05:00",
+    "Event": "FOMC Member Bowman Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-10T18:30:00-05:00",
+    "Event": "FOMC Member Paulson Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-11T02:00:00-05:00",
+    "Event": "German Final CPI m/m",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "-0.2%",
+    "Previous": "-0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-11T19:00:00-05:00",
+    "Event": "MI Inflation Expectations",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "5.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-12T02:00:00-05:00",
+    "Event": "GDP m/m",
+    "Country": "GBP",
+    "Importance": 3,
+    "Forecast": "0.0%",
+    "Previous": "0.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-12T02:00:00-05:00",
+    "Event": "Prelim GDP q/q",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "0.7%",
+    "Previous": "0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-12T08:30:00-05:00",
+    "Event": "Unemployment Claims",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "194K",
+    "Previous": "189K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-12T08:30:00-05:00",
+    "Event": "FOMC Member Hammack Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-12T10:00:00-05:00",
+    "Event": "FOMC Member Barr Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-12T11:15:00-05:00",
+    "Event": "FOMC Member Goolsbee Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-12T12:00:00-05:00",
+    "Event": "Crude Oil Inventories",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "-0.6M",
+    "Previous": "-0.9M",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-12T13:10:00-05:00",
+    "Event": "FOMC Member Daly Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-12T13:30:00-05:00",
+    "Event": "FOMC Member Schmid Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-12T14:00:00-05:00",
+    "Event": "Federal Budget Balance",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "-298.6B",
+    "Previous": "-26.9B",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-12T18:30:00-05:00",
+    "Event": "FOMC Member Williams Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-13T02:45:00-05:00",
+    "Event": "French Final CPI m/m",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "0.4%",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-13T05:00:00-05:00",
+    "Event": "Flash Employment Change q/q",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "0.2%",
+    "Previous": "0.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-13T05:00:00-05:00",
+    "Event": "Flash GDP q/q",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "0.4%",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-13T09:10:00-05:00",
+    "Event": "FOMC Member Collins Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-13T09:40:00-05:00",
+    "Event": "FOMC Member Logan Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-13T10:30:00-05:00",
+    "Event": "Natural Gas Storage",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "65B",
+    "Previous": "77B",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-13T10:50:00-05:00",
+    "Event": "FOMC Member Bowman Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-13T12:00:00-05:00",
+    "Event": "FOMC Member Daly Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-13T19:00:00-05:00",
+    "Event": "FOMC Member Jefferson Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  }
+]
