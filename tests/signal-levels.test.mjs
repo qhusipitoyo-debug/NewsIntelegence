@@ -26,8 +26,10 @@ function extractFunction(name) {
 
 const clampNumFn = extractFunction('clampNum');
 const marketsFreshFn = extractFunction('marketsFresh');
+const barsOfFn = extractFunction('barsOf');
 const assetBarsFn = extractFunction('assetBars');
 const atrInfoFn = extractFunction('atrInfo');
+const structureStopDistanceFn = extractFunction('structureStopDistance');
 const halfSpreadEstimateFn = extractFunction('halfSpreadEstimate');
 const execEntriesFn = extractFunction('execEntries');
 const computeSignalLevelsFn = extractFunction('computeSignalLevels');
@@ -37,11 +39,14 @@ assert.ok(spreadConst, 'DEFAULT_SPREAD_PCT must stay on a single line for this t
 function buildEngine(brokerPayload, markets) {
   const body = `
     const MARKETS = ${JSON.stringify(markets)};
+    const LIVE_BARS = {};
     ${spreadConst}
     ${clampNumFn}
     ${marketsFreshFn}
+    ${barsOfFn}
     ${assetBarsFn}
     ${atrInfoFn}
+    ${structureStopDistanceFn}
     ${halfSpreadEstimateFn}
     ${execEntriesFn}
     function brokerQuoteFor() { return ${JSON.stringify(brokerPayload)}; }

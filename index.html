@@ -137,6 +137,34 @@
     .macro-bar { height: 10px; background: rgba(117,164,177,.16); border-radius: 99px; overflow: hidden; margin: 8px 0 4px; position: relative; }
     .macro-bar i { position: absolute; top: 0; bottom: 0; background: var(--amber); border-radius: inherit; }
     .macro-card .meta { color: var(--muted); font-size: 10.5px; line-height: 1.5; }
+    .spike-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 999px; font: 800 9.5px "DM Sans",sans-serif; letter-spacing: .3px; margin: 4px 0; }
+    .spike-badge.up { background: rgba(24,209,154,.16); color: var(--green); border: 1px solid rgba(24,209,154,.35); }
+    .spike-badge.down { background: rgba(255,100,125,.16); color: var(--red); border: 1px solid rgba(255,100,125,.35); }
+    .spike-badge.fade { background: rgba(242,184,75,.18); color: var(--amber); border: 1px solid rgba(242,184,75,.4); }
+    .spike-badge.elevated { background: rgba(93,183,232,.15); color: var(--blue); border: 1px solid rgba(93,183,232,.3); }
+    .watch-factors { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; font-size: 9.5px; color: #cfe9ef; }
+    .watch-factors span { background: rgba(4,14,21,.48); border: 1px solid rgba(92,190,214,.14); padding: 2px 6px; border-radius: 6px; }
+    .conf-pill { display: inline-block; padding: 2px 6px; border-radius: 999px; background: rgba(39,213,224,.14); color: var(--aqua); font: 700 9.5px "DM Sans",sans-serif; margin-left: 5px; }
+    .hist-verdict { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: rgba(4,15,23,.55); margin-bottom: 12px; }
+    .hist-verdict.profit { border-color: rgba(24,209,154,.45); background: rgba(24,209,154,.08); }
+    .hist-verdict.loss { border-color: rgba(255,100,125,.45); background: rgba(255,100,125,.08); }
+    .hist-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font: 800 11px "DM Sans",sans-serif; letter-spacing: .3px; }
+    .hist-pill.profit { background: rgba(24,209,154,.2); color: var(--green); }
+    .hist-pill.loss { background: rgba(255,100,125,.2); color: var(--red); }
+    .hist-pill.neutral { background: rgba(242,184,75,.18); color: var(--amber); }
+    .hist-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .hist-kpi { background: rgba(4,15,23,.45); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+    .hist-kpi small { display: block; color: var(--muted); font-size: 10.5px; margin-bottom: 4px; }
+    .hist-kpi b { font: 800 17px Manrope; color: var(--text); }
+    .hist-classes { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 10px; margin-bottom: 12px; }
+    .hist-class-card { background: rgba(4,15,23,.42); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; font-size: 11.5px; }
+    .hist-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+    .hist-table th { text-align: left; color: var(--muted); font-weight: 700; padding: 6px 8px; border-bottom: 1px solid var(--line); font-size: 10.5px; }
+    .hist-table td { padding: 7px 8px; border-bottom: 1px solid rgba(92,190,214,.08); }
+    .hist-badge { display: inline-block; padding: 2px 7px; border-radius: 999px; font: 800 10px "DM Sans",sans-serif; }
+    .hist-badge.win { background: rgba(24,209,154,.18); color: var(--green); }
+    .hist-badge.loss { background: rgba(255,100,125,.18); color: var(--red); }
+    .hist-badge.open { background: rgba(93,183,232,.16); color: var(--blue); }
     @media(max-width:760px){ .tech-board { grid-template-columns: 1fr; } .tech-grid,.macro-body { grid-template-columns: 1fr; } }
 </style>
 </head>
@@ -189,6 +217,22 @@
     </div>
     <div class="idx-grid" id="idxGrid"></div>
   </section>
+  <section class="tech-board glass" id="macroBoard">
+    <div>
+      <div class="eyebrow">Macro, Micro &amp; Sentiment</div>
+      <h3>Sentimen Pasar, Makro/Mikro, Fear &amp; Greed &amp; Spike</h3>
+      <p>Kalibrasi multi-faktor real-time: rezim kalender makro 48 jam (CPI/NFP/Rate Z-score), DXY sintetis (EUR 57.6%, JPY 13.6%, GBP 11.9%, CAD 9.1%, CHF 7.8%), CNN &amp; Crypto Fear &amp; Greed, Risk-On/Off lintas aset, serta detektor lonjakan harga (spike vs fakeout).</p>
+    </div>
+    <div class="macro-body" id="macroBody"></div>
+  </section>
+  <section class="tech-board glass" id="techBoard">
+    <div>
+      <div class="eyebrow">AI Technical &amp; Spike Suite</div>
+      <h3>Faktor Mikro, Struktur ICT &amp; Spike Monitor</h3>
+      <p>Analisis mikro dari bar 1 menit live (Binance klines / Yahoo / markets.json): EMA 20/50, RSI 14, ATR 1m, pola candle, struktur ICT (FVG, Liquidity Sweep, BOS, zona OTE 0.618–0.79), dan deteksi spike berbasis deviasi ATR.</p>
+    </div>
+    <div class="tech-grid" id="techGrid"></div>
+  </section>
   
   
   <nav class="toolbar glass"><div class="filters"><button class="chip active" data-filter="all">Full month</button><button class="chip" data-filter="upcoming">Upcoming</button><button class="chip" data-filter="high">High impact</button></div><span class="status" id="status">Loading calendar…</span><button class="refresh" id="refresh">↻ Refresh</button></nav>
@@ -222,6 +266,7 @@
         <div>• <b>Filter Spread &amp; Spike:</b> Delay konfirmasi 15 menit pasca-rilis mencegah terjebak di spike pertama.</div>
         <div>• <b>Prioritas Arah:</b> Reaksi Harga 1M &gt; Momentum Terkalibrasi &gt; Actual Fundamental vs Forecast.</div>
       </div>
+      <div id="signalHistoryStats" style="margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px;"></div>
       <div id="tradeStats" style="margin-top: 16px; border-top: 1px solid var(--line); padding-top: 14px;"></div>
     </div>
   </section>
@@ -278,15 +323,31 @@ let REACTION = null;
 // Histori bar 1 menit per aset dari workflow (data/markets.json) — dipakai
 // untuk mengukur ATR/volatilitas riil saat menghitung lebar SL/TP.
 let MARKETS = null;
+let HISTORY_BARS = { generatedAt: null, intervalMin: 5, pairs: {} };
+let LIVE_BARS = {};
+let LIVE_TICKS = {};
 let TRADE_STATS = { generatedAt: null, source: '', totals: { total: 0, wins: 0, losses: 0, win_rate: 0, profit_factor: null, gross_win: 0, gross_loss: 0, net_pnl: 0, avg_win: 0, avg_loss: 0, expectancy: 0 }, byPair: [] };
-const REACTION_MAX_AGE_MS = 45 * 60 * 1000;
+const SIGNAL_HISTORY_KEY = 'feriha:sighist:v1';
+const REACTION_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 // Entry/SL/TP yang sudah dikonfirmasi disimpan per event+aset supaya tidak berubah
 // setiap tick. Level yang bergerak-gerak membuat order tidak pernah cocok dengan
 // harga yang dilihat saat entry.
 const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
+function recordLiveTick(asset, price, now = Date.now()) {
+    const p = Number(price);
+    if (!asset || !Number.isFinite(p) || p <= 0) return;
+    const key = String(asset).toUpperCase();
+    const list = LIVE_TICKS[key] || (LIVE_TICKS[key] = []);
+    const last = list[list.length - 1];
+    if (!last || last.p !== p || now - last.t >= 15000) {
+        list.push({ t: now, p });
+        if (list.length > 180) list.shift();
+    }
+}
 window.applyLiveXauPrice = function (price) {
     const p = Number(price);
     if (!Number.isFinite(p) || p <= 0) return;
+    recordLiveTick('XAU/USD', p);
     if (LIVE_PRICE === p) return;
     LIVE_PRICE = p;
     if (events.length) render();
@@ -377,10 +438,9 @@ function preNewsPrice(e) {
     return Number.isFinite(v) && v > 0 ? v : null;
 }
 
-function newsPhase(e) {
+function newsPhase(e, now = Date.now()) {
     const t = new Date(e.Date).getTime();
     if (!Number.isFinite(t)) return 'pre';
-    const now = Date.now();
     if (now < t) return 'pre';
     if (now < t + NEWS_SETTLE_MS) return 'live';
     return 'post';
@@ -399,8 +459,18 @@ function momentumFloor(kind, pair) {
 // Snapshot pra-news dari workflow diambil sampai 2 jam sebelum rilis (data nyata:
 // 82–88 mnt sebelum rilis), jadi hanya dipakai bila segar (<= 15 mnt). Kalau tidak,
 // "momentum" mencampur drift pra-rilis dengan reaksi berita.
+function liveBarsFresh(asset, now = Date.now()) {
+    const key = String(asset || '').toUpperCase();
+    const entry = typeof LIVE_BARS !== 'undefined' && LIVE_BARS ? LIVE_BARS[key] : null;
+    if (!entry || !Array.isArray(entry.bars) || entry.bars.length < 15) return false;
+    const at = Date.parse(entry.generatedAt || '');
+    return Number.isFinite(at) && now - at < 2 * 60 * 60 * 1000;
+}
+
 function barsOf(asset) {
-    const cfg = MARKETS && MARKETS.pairs && MARKETS.pairs[String(asset).toUpperCase()];
+    const key = String(asset || '').toUpperCase();
+    if (typeof liveBarsFresh === 'function' && liveBarsFresh(key)) return LIVE_BARS[key].bars;
+    const cfg = MARKETS && MARKETS.pairs && MARKETS.pairs[key];
     return cfg && Array.isArray(cfg.bars) ? cfg.bars : [];
 }
 
@@ -474,12 +544,53 @@ function reactionFloor(pair) {
     return /JPY$/.test(key) ? 0.08 : 0.06;
 }
 
+function reactionFromBarsClient(bars, releaseMs, settleMin = 15, horizonMin = 45, spikeMin = 5) {
+    const release = Number(releaseMs);
+    if (!Number.isFinite(release)) return null;
+    const rows = (bars || [])
+        .map(b => ({ t: Number(b && b.k) * 60000, c: Number(b && b.c) }))
+        .filter(r => Number.isFinite(r.t) && Number.isFinite(r.c) && r.c > 0)
+        .sort((a, b) => a.t - b.t);
+    if (!rows.length) return null;
+    let base = null;
+    for (const r of rows) {
+        if (r.t + 60000 <= release) base = r;
+        else break;
+    }
+    if (!base || release - (base.t + 60000) > 30 * 60000) return null;
+    let last = null;
+    for (const r of rows) {
+        if (r.t >= release + settleMin * 60000 && r.t <= release + horizonMin * 60000) last = r;
+    }
+    if (!last || last.t <= base.t) return null;
+    const movePct = Number(((last.c - base.c) / base.c * 100).toFixed(3));
+    let spike = null;
+    for (const r of rows) {
+        if (r.t >= release && r.t <= release + spikeMin * 60000) spike = r;
+    }
+    const spikePct = spike ? Number(((spike.c - base.c) / base.c * 100).toFixed(3)) : null;
+    const faded = Boolean(spikePct !== null && Math.abs(spikePct) >= 0.06 && Math.sign(spikePct) !== Math.sign(movePct));
+    return {
+        movePct,
+        minutes: Math.round((last.t - release) / 60000),
+        via: 'live-1m',
+        faded
+    };
+}
+
 function reactionFor(e, pair) {
     const entry = REACTION && REACTION.events ? REACTION.events[dateEventKey(e)] : null;
-    const hit = entry && entry.pairs ? entry.pairs[pair] : null;
-    if (!hit) return null;
+    let hit = entry && entry.pairs ? entry.pairs[pair] : null;
     const generatedAt = Date.parse(REACTION && REACTION.generatedAt);
-    if (!Number.isFinite(generatedAt) || Date.now() - generatedAt > REACTION_MAX_AGE_MS) return null;
+    const releaseMs = Date.parse(e.Date);
+    const repoValid = hit && Number.isFinite(generatedAt)
+        && (Date.now() - generatedAt <= REACTION_MAX_AGE_MS || (Number.isFinite(releaseMs) && Date.now() - releaseMs <= POST_NEWS_HOLD_MS && generatedAt >= releaseMs + 10 * 60000));
+    if (!repoValid) {
+        hit = (typeof barsOf === 'function' && Number.isFinite(releaseMs))
+            ? reactionFromBarsClient(barsOf(pair), releaseMs)
+            : null;
+    }
+    if (!hit) return null;
     const movePct = Number(hit.movePct);
     if (!Number.isFinite(movePct)) return null;
     const minutes = Number(hit.minutes);
@@ -487,7 +598,7 @@ function reactionFor(e, pair) {
     let dir = hit.dir === 'long' || hit.dir === 'short' ? hit.dir : (movePct > 0 ? 'long' : 'short');
     // Ambang = max(floor tetap, ~1.5 sigma gerak acak T menit dari ATR 1-menit PRA-rilis).
     // Floor tetap saja meloloskan noise saat pasar liar dan menolak gerak nyata saat tenang.
-    const atrPct = preReleaseAtrPct(pair, Date.parse(e.Date));
+    const atrPct = preReleaseAtrPct(pair, releaseMs);
     const T = Math.max(1, measuredMinutes || 15);
     const floor = Math.min(reactionFloor(pair) * 3, Math.max(reactionFloor(pair), atrPct ? atrPct * Math.sqrt(T) : 0));
     if (Math.abs(movePct) < floor) dir = null;
@@ -549,15 +660,45 @@ async function loadReaction() {
     } catch (e) { console.log('Reaction data unavailable', e); }
 }
 
-// Bar 1 menit per aset untuk kalibrasi ATR. File ~700KB dan berubah tiap run
-// workflow; cukup ditarik sekali di awal lalu dipoles setiap 5 menit.
+// Bar 1 menit per aset untuk kalibrasi ATR & Spike. File ~700KB dan berubah tiap run
+// workflow; jika stale (>2 jam), tarik bar 1 menit live via Yahoo/CORS sebagai fallback.
+let LAST_LIVE_BARS_FETCH = 0;
+async function loadLiveBarsFallback(force = false) {
+    if (typeof marketsFresh === 'function' && marketsFresh()) return;
+    if (!force && Date.now() - LAST_LIVE_BARS_FETCH < 5 * 60 * 1000) return;
+    LAST_LIVE_BARS_FETCH = Date.now();
+    const map = [
+        ['XAU/USD', 'GC=F'],
+        ['EUR/USD', 'EURUSD=X'],
+        ['GBP/USD', 'GBPUSD=X'],
+        ['USD/JPY', 'USDJPY=X']
+    ];
+    let updated = 0;
+    await Promise.allSettled(map.map(async ([asset, yahoo]) => {
+        try {
+            const target = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahoo)}?interval=1m&range=1d`;
+            const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`, { cache: 'no-store' });
+            if (!r.ok) return;
+            const j = await r.json();
+            const bars = typeof parseYahooBarsPayload === 'function' ? parseYahooBarsPayload(j, 150) : [];
+            if (bars.length >= 15 && typeof LIVE_BARS === 'object' && LIVE_BARS) {
+                LIVE_BARS[asset] = { generatedAt: new Date().toISOString(), bars };
+                updated++;
+            }
+        } catch (e) {}
+    }));
+    if (updated) render();
+}
+
 async function loadMarkets() {
     try {
         const r = await fetch(`data/markets.json?v=${Date.now()}`, { cache: 'no-store' });
-        if (!r.ok) return;
-        const j = await r.json();
-        if (j && j.pairs) { MARKETS = j; render(); }
+        if (r.ok) {
+            const j = await r.json();
+            if (j && j.pairs) { MARKETS = j; render(); }
+        }
     } catch (e) { console.log('Markets history unavailable', e); }
+    loadLiveBarsFallback();
 }
 
 async function loadTradeStats() {
@@ -600,6 +741,434 @@ function renderTradeStats() {
     el.innerHTML = html;
 }
 
+async function loadHistoryBars() {
+    try {
+        const r = await fetch(`data/history-bars.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (!r.ok) return;
+        const j = await r.json();
+        if (j && j.pairs) { HISTORY_BARS = j; renderSignalHistory(); }
+    } catch (e) { console.log('History bars unavailable', e); }
+}
+
+function readLiveSignalHistory() {
+    try {
+        const raw = localStorage.getItem(SIGNAL_HISTORY_KEY);
+        const arr = raw ? JSON.parse(raw) : [];
+        return Array.isArray(arr) ? arr : [];
+    } catch { return []; }
+}
+
+function writeLiveSignalHistory(list) {
+    try { localStorage.setItem(SIGNAL_HISTORY_KEY, JSON.stringify(list.slice(-120))); } catch {}
+}
+
+function simulateTradeOnBars(dir, entry, sl, tp1, tp2, forwardBars) {
+    const isBuy = dir === 'long';
+    const risk = Math.abs(entry - sl);
+    if (!(risk > 0) || !Array.isArray(forwardBars) || !forwardBars.length) {
+        return { outcome: 'OPEN', closed: false, r: 0, tp1Hit: false, exitBarIdx: -1, exitPrice: entry };
+    }
+    const tp1Val = Number.isFinite(Number(tp1)) && Number(tp1) > 0 ? Number(tp1) : (isBuy ? entry + risk : entry - risk);
+    let tp1Hit = false;
+    for (let j = 0; j < forwardBars.length; j++) {
+        const b = forwardBars[j];
+        const h = Number(b && b.h), l = Number(b && b.l);
+        if (!(h > 0 && l > 0)) continue;
+        if (!tp1Hit) {
+            if (isBuy ? l <= sl : h >= sl) {
+                return { outcome: 'LOSS', closed: true, r: -1, tp1Hit: false, exitBarIdx: j, exitPrice: sl };
+            }
+            if (isBuy ? h >= tp1Val : l <= tp1Val) {
+                tp1Hit = true;
+                if (isBuy ? h >= tp2 : l <= tp2) {
+                    return { outcome: 'WIN_TP2', closed: true, r: 1.5, tp1Hit: true, exitBarIdx: j, exitPrice: tp2 };
+                }
+            }
+        } else {
+            if (isBuy ? l <= entry : h >= entry) {
+                return { outcome: 'WIN_TP1', closed: true, r: 0.5, tp1Hit: true, exitBarIdx: j, exitPrice: entry };
+            }
+            if (isBuy ? h >= tp2 : l <= tp2) {
+                return { outcome: 'WIN_TP2', closed: true, r: 1.5, tp1Hit: true, exitBarIdx: j, exitPrice: tp2 };
+            }
+        }
+    }
+    const lastClose = Number(forwardBars[forwardBars.length - 1].c) || entry;
+    const rawR = isBuy ? (lastClose - entry) / risk : (entry - lastClose) / risk;
+    if (tp1Hit) {
+        return { outcome: 'WIN_TP1', closed: true, r: Number((0.5 + 0.5 * Math.max(0, rawR)).toFixed(2)), tp1Hit: true, exitBarIdx: forwardBars.length - 1, exitPrice: lastClose };
+    }
+    return { outcome: 'OPEN', closed: false, r: Number(clampNum(rawR, -1, 1.5).toFixed(2)), tp1Hit: false, exitBarIdx: forwardBars.length - 1, exitPrice: lastClose };
+}
+
+function summarizeTradeSet(trades) {
+    const list = Array.isArray(trades) ? trades : [];
+    const closed = list.filter(t => t.closed);
+    const open = list.filter(t => !t.closed);
+    const wins = closed.filter(t => t.outcome === 'WIN_TP2' || t.outcome === 'WIN_TP1');
+    const tp2Count = closed.filter(t => t.outcome === 'WIN_TP2').length;
+    const tp1Count = closed.filter(t => t.outcome === 'WIN_TP1').length;
+    const losses = closed.filter(t => t.outcome === 'LOSS');
+    const grossWinR = Number(wins.reduce((s, t) => s + Math.max(0, Number(t.r) || 0), 0).toFixed(2));
+    const grossLossR = Number(losses.reduce((s, t) => s + Math.abs(Math.min(0, Number(t.r) || 0)), 0).toFixed(2));
+    const netR = Number((grossWinR - grossLossR).toFixed(2));
+    const unrealizedR = Number(open.reduce((s, t) => s + (Number(t.r) || 0), 0).toFixed(2));
+    const closedCount = closed.length;
+    const winRatePct = closedCount > 0 ? Number(((wins.length / closedCount) * 100).toFixed(1)) : null;
+    const profitFactor = closedCount > 0
+        ? (grossLossR > 0 ? Number((grossWinR / grossLossR).toFixed(2)) : (grossWinR > 0 ? Infinity : null))
+        : null;
+    const expectancyR = closedCount > 0 ? Number((netR / closedCount).toFixed(2)) : null;
+    let verdict = 'NO_CLOSED';
+    if (closedCount > 0) {
+        verdict = netR > 0.05 ? 'PROFIT' : (netR < -0.05 ? 'LOSS' : 'BREAKEVEN');
+    }
+    return {
+        total: list.length,
+        closedCount,
+        winsCount: wins.length,
+        tp2Count,
+        tp1Count,
+        lossesCount: losses.length,
+        openCount: open.length,
+        winRatePct,
+        grossWinR,
+        grossLossR,
+        netR,
+        unrealizedR,
+        profitFactor,
+        expectancyR,
+        verdict
+    };
+}
+
+function syncLiveSignalHistory(now = Date.now()) {
+    const list = readLiveSignalHistory();
+    const byId = new Map(list.map(x => [x.id, x]));
+    const trackSetup = (id, kind, asset, mode, dir, levels, atMs) => {
+        if (!id || !levels || !(levels.entry > 0) || !(levels.sl > 0) || !(levels.tp > 0)) return;
+        if (!byId.has(id)) {
+            byId.set(id, {
+                id,
+                kind,
+                asset,
+                mode: mode || 'WATCH',
+                dir,
+                entry: Number(levels.entry),
+                sl: Number(levels.sl),
+                tp1: Number(levels.tp1 || 0) || null,
+                tp: Number(levels.tp),
+                at: Number(atMs) || now,
+                outcome: 'OPEN',
+                closed: false,
+                tp1Hit: false,
+                r: 0
+            });
+        }
+    };
+
+    try {
+        for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (!k || !k.startsWith(SIGNAL_LOCK_PREFIX)) continue;
+            const lock = JSON.parse(localStorage.getItem(k) || 'null');
+            if (!lock || !lock.dir || !lock.entry || !lock.sl || !lock.tp) continue;
+            const asset = k.split('|').pop();
+            const kind = asset === 'XAU/USD' ? 'gold' : FOREX_PAIRS.includes(asset) ? 'forex' : CRYPTO_PAIRS.some(c => c.pair === asset) ? 'crypto' : 'index';
+            trackSetup(`lock:${k}`, kind, asset, (lock.phase || 'post').toUpperCase(), lock.dir, lock, lock.at || now);
+        }
+    } catch {}
+
+    const boards = [
+        () => {
+            if (typeof goldBoardState !== 'function') return [];
+            const g = goldBoardState(now);
+            return g && g.dir && g.levels ? [{ kind: 'gold', asset: 'XAU/USD', mode: g.modeLabel || g.status.toUpperCase(), dir: g.dir, levels: g.levels }] : [];
+        },
+        () => (typeof cryptoBoardState === 'function' ? cryptoBoardState(now).items.filter(x => x.dir && x.levels).map(x => ({ kind: 'crypto', asset: x.pair, mode: x.modeLabel || 'WATCH', dir: x.dir, levels: x.levels })) : []),
+        () => (typeof forexBoardState === 'function' ? forexBoardState(now).items.filter(x => x.dir && x.levels).map(x => ({ kind: 'forex', asset: x.pair, mode: x.modeLabel || 'WATCH', dir: x.dir, levels: x.levels })) : []),
+        () => (typeof indicesBoardState === 'function' ? indicesBoardState(now).items.filter(x => x.dir && x.levels).map(x => ({ kind: 'index', asset: x.symbol, mode: x.modeLabel || 'WATCH', dir: x.dir, levels: x.levels })) : [])
+    ];
+    const hourBucket = Math.floor(now / (4 * 60 * 60 * 1000));
+    boards.forEach(fn => {
+        try {
+            fn().forEach(s => trackSetup(`live:${s.asset}:${s.dir}:${hourBucket}`, s.kind, s.asset, s.mode, s.dir, s.levels, now));
+        } catch {}
+    });
+
+    const updated = [...byId.values()].map(item => {
+        if (item.closed) return item;
+        const px = typeof assetPrice === 'function' ? assetPrice(item.kind, item.asset) : null;
+        const bars = (typeof barsOf === 'function' ? barsOf(item.asset) : []).filter(b => Number(b.k) * 60000 >= item.at - 60000);
+        const probeBars = px > 0 ? bars.concat([{ k: Math.floor(now / 60000), o: px, h: px, l: px, c: px }]) : bars;
+        if (!probeBars.length) return item;
+        const sim = simulateTradeOnBars(item.dir, item.entry, item.sl, item.tp1, item.tp, probeBars);
+        return { ...item, outcome: sim.outcome, closed: sim.closed, tp1Hit: sim.tp1Hit || item.tp1Hit, r: sim.r };
+    });
+
+    writeLiveSignalHistory(updated);
+    return updated;
+}
+
+let SIGNAL_HISTORY_CACHE = { key: '', data: null };
+function evaluateSignalHistory({
+    markets = MARKETS,
+    historyBars = HISTORY_BARS,
+    liveBars = LIVE_BARS,
+    liveHistory = null,
+    eventList = events,
+    now = Date.now()
+} = {}) {
+    const assetDefs = [
+        ['gold', 'XAU/USD'],
+        ...FOREX_PAIRS.map(p => ['forex', p]),
+        ...CRYPTO_PAIRS.map(c => ['crypto', c.pair]),
+        ...INDICES.map(i => ['index', i.symbol])
+    ];
+    const trades = [];
+    let sourceLabel = 'Belum ada bar OHLC historis';
+    let minBarMs = Infinity, maxBarMs = 0, usedHistory5d = false, usedMarkets1m = false;
+    const macroCache = new Map();
+    const getMacro = (currencies, tMs) => {
+        const key = `${currencies.join(',')}|${Math.floor(tMs / 3600000)}`;
+        if (!macroCache.has(key)) {
+            macroCache.set(key, typeof recentMacroRegime === 'function' ? recentMacroRegime(currencies, tMs) : null);
+        }
+        return macroCache.get(key);
+    };
+
+    for (const [kind, asset] of assetDefs) {
+        const hBars = historyBars && historyBars.pairs && Array.isArray(historyBars.pairs[asset]) ? historyBars.pairs[asset] : null;
+        const mBars = markets && markets.pairs && markets.pairs[asset] && Array.isArray(markets.pairs[asset].bars) ? markets.pairs[asset].bars : null;
+        const lBars = liveBars && liveBars[asset] && Array.isArray(liveBars[asset].bars) ? liveBars[asset].bars : null;
+        const bars = (hBars && hBars.length >= 45) ? (usedHistory5d = true, hBars)
+            : (mBars && mBars.length >= 45) ? (usedMarkets1m = true, mBars)
+            : (lBars && lBars.length >= 45) ? lBars : [];
+        if (bars.length < 45) continue;
+
+        const firstMs = Number(bars[0].k) * 60000;
+        const lastMs = Number(bars[bars.length - 1].k) * 60000;
+        if (firstMs < minBarMs) minBarMs = firstMs;
+        if (lastMs > maxBarMs) maxBarMs = lastMs;
+
+        // 1. Evaluasi sinyal rilis event historis (Actual vs Forecast/Previous + reaksi) dalam rentang bar
+        if (Array.isArray(eventList)) {
+            for (const ev of eventList) {
+                if ((+ev.Importance || 1) < 2) continue;
+                const relMs = Date.parse(ev.Date);
+                if (!Number.isFinite(relMs) || relMs + 15 * 60000 < firstMs || relMs + 20 * 60000 >= lastMs) continue;
+                const entryIdx = bars.findIndex(b => Number(b.k) * 60000 >= relMs + 15 * 60000);
+                if (entryIdx < 1 || entryIdx >= bars.length - 1) continue;
+                const bias = typeof preNewsBias === 'function' ? preNewsBias(ev) : null;
+                const sig = typeof signalDirectionCore === 'function' ? signalDirectionCore(ev, asset, kind, relMs + 16 * 60000) : null;
+                const rawDir = (sig && sig.dir) || (bias && typeof mapAssetBias === 'function' ? mapAssetBias(kind, asset, bias.dir, ev) : null);
+                if (!rawDir) continue;
+                const px = Number(bars[entryIdx].c);
+                const lvl = typeof computeSignalLevels === 'function'
+                    ? computeSignalLevels(kind, asset, rawDir, px, ev, { movePct: sig ? sig.movePct : null })
+                    : null;
+                if (!lvl || !lvl.sl || !lvl.tp) continue;
+                const sim = simulateTradeOnBars(rawDir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(entryIdx + 1));
+                trades.push({
+                    origin: 'calendar',
+                    kind,
+                    asset,
+                    mode: `POST · ${ev.Event}`,
+                    dir: rawDir,
+                    at: Number(bars[entryIdx].k) * 60000,
+                    entry: lvl.entry,
+                    sl: lvl.sl,
+                    tp1: lvl.tp1,
+                    tp: lvl.tp,
+                    outcome: sim.outcome,
+                    closed: sim.closed,
+                    r: sim.r
+                });
+            }
+        }
+
+        // 2. Walk-forward replay sinyal Watch / Kalibrasi tanpa lookahead
+        const warmup = Math.min(60, Math.floor(bars.length / 3));
+        const horizonBars = usedHistory5d ? 96 : bars.length; // ~8 jam di bar 5m atau sisa sesi di bar 1m
+        let i = warmup;
+        while (i < bars.length - 3) {
+            const slice = bars.slice(Math.max(0, i - 120), i + 1);
+            const px = Number(bars[i].c);
+            const tMs = Number(bars[i].k) * 60000;
+            const prevDayBar = bars[Math.max(0, i - (bars.length > 350 ? 288 : 60))];
+            const rollChg = prevDayBar && prevDayBar.c > 0 ? ((px - prevDayBar.c) / prevDayBar.c) * 100 : null;
+            const recentWindow = (now - tMs) <= 6 * 3600000;
+            const sig = typeof calibratedWatchSignal === 'function' ? calibratedWatchSignal({
+                kind,
+                asset,
+                event: null,
+                now: tMs,
+                price: px,
+                changePct: rollChg,
+                bars: slice,
+                fg: recentWindow && typeof SENTIMENT !== 'undefined' && SENTIMENT ? SENTIMENT.score : null,
+                cryptoFg: recentWindow && typeof SENTIMENT_CRYPTO !== 'undefined' && SENTIMENT_CRYPTO ? SENTIMENT_CRYPTO.score : null,
+                usdChgPct: null,
+                riskRegime: { regime: 'MIXED', score: 0 },
+                macroRegime: getMacro(kind === 'forex' ? pairCurrencies(asset) : ['USD'], tMs)
+            }) : null;
+            if (!sig || !sig.dir) { i += 3; continue; }
+            const lvl = typeof computeSignalLevels === 'function'
+                ? computeSignalLevels(kind, asset, sig.dir, px, { Date: new Date(tMs).toISOString(), Importance: 2 }, sig)
+                : null;
+            if (!lvl || !lvl.sl || !lvl.tp) { i += 3; continue; }
+            const fwdEnd = Math.min(bars.length, i + 1 + horizonBars);
+            const sim = simulateTradeOnBars(sig.dir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(i + 1, fwdEnd));
+            trades.push({
+                origin: 'replay',
+                kind,
+                asset,
+                mode: sig.modeLabel || 'WATCH',
+                dir: sig.dir,
+                conf: sig.conf,
+                at: tMs,
+                entry: lvl.entry,
+                sl: lvl.sl,
+                tp1: lvl.tp1,
+                tp: lvl.tp,
+                outcome: sim.outcome,
+                closed: sim.closed,
+                r: sim.r
+            });
+            i = sim.closed && sim.exitBarIdx >= 0 ? (i + 1 + sim.exitBarIdx + 3) : (i + Math.max(12, Math.floor(horizonBars / 2)));
+        }
+    }
+
+    if (usedHistory5d) sourceLabel = 'Backtest 5 Hari (5m OHLC + Kalender Rilis)';
+    else if (usedMarkets1m) sourceLabel = 'Replay Sesi Terakhir (1m OHLC markets.json)';
+    else if (minBarMs < Infinity) sourceLabel = 'Replay Live Bars Browser';
+
+    const byKind = {};
+    for (const k of ['gold', 'forex', 'crypto', 'index']) {
+        byKind[k] = summarizeTradeSet(trades.filter(t => t.kind === k));
+    }
+    const byAsset = {};
+    for (const [, asset] of assetDefs) {
+        const sub = trades.filter(t => t.asset === asset);
+        if (sub.length) byAsset[asset] = summarizeTradeSet(sub);
+    }
+
+    const tracked = Array.isArray(liveHistory) ? liveHistory : readLiveSignalHistory();
+    const sortedTrades = trades.slice().sort((a, b) => (b.closed - a.closed) || (b.at - a.at));
+
+    return {
+        sourceLabel,
+        usedHistory5d,
+        rangeStart: minBarMs < Infinity ? minBarMs : null,
+        rangeEnd: maxBarMs > 0 ? maxBarMs : null,
+        overall: summarizeTradeSet(trades),
+        byKind,
+        byAsset,
+        liveSummary: summarizeTradeSet(tracked),
+        recentTrades: sortedTrades.slice(0, 14),
+        recentLive: tracked.slice().sort((a, b) => b.at - a.at).slice(0, 8)
+    };
+}
+
+function signalHistoryHtml(res) {
+    if (!res) return '';
+    const ov = res.overall;
+    const verdictCls = ov.verdict === 'PROFIT' ? 'profit' : ov.verdict === 'LOSS' ? 'loss' : '';
+    const pillCls = ov.verdict === 'PROFIT' ? 'profit' : ov.verdict === 'LOSS' ? 'loss' : 'neutral';
+    const verdictLabel = ov.verdict === 'PROFIT'
+        ? `✅ PROFIT (${ov.netR >= 0 ? '+' : ''}${ov.netR.toFixed(2)} R)`
+        : ov.verdict === 'LOSS'
+            ? `⚠️ LOSS (${ov.netR.toFixed(2)} R)`
+            : ov.verdict === 'BREAKEVEN'
+                ? `⚖️ BREAKEVEN (${ov.netR.toFixed(2)} R)`
+                : `⏳ BELUM ADA SINYAL CLOSED (${ov.openCount} Open)`;
+    const pfStr = ov.profitFactor == null ? '—' : (ov.profitFactor === Infinity ? '∞' : ov.profitFactor.toFixed(2));
+    const wrStr = ov.winRatePct == null ? '—' : `${ov.winRatePct.toFixed(1)}%`;
+    const expStr = ov.expectancyR == null ? '—' : `${ov.expectancyR >= 0 ? '+' : ''}${ov.expectancyR.toFixed(2)} R`;
+    const fmtPx = (asset, v) => {
+        const n = Number(v);
+        if (!Number.isFinite(n)) return '—';
+        if (asset.includes('/') && !asset.includes('XAU') && !asset.includes('BTC') && !asset.includes('ETH')) return n > 10 ? n.toFixed(3) : n.toFixed(5);
+        return n.toFixed(2);
+    };
+    const kindNames = { gold: 'Gold (XAU/USD)', forex: 'Forex Majors', crypto: 'Crypto', index: 'Index (US500/NAS100)' };
+    const classCards = ['gold', 'forex', 'crypto', 'index'].map(k => {
+        const s = res.byKind[k];
+        const tagCls = s.verdict === 'PROFIT' ? 'win' : s.verdict === 'LOSS' ? 'loss' : 'open';
+        const tagTxt = s.closedCount ? `${s.verdict} (${s.netR >= 0 ? '+' : ''}${s.netR.toFixed(2)}R)` : `${s.openCount} OPEN`;
+        return `<div class="hist-class-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;"><b>${kindNames[k]}</b><span class="hist-badge ${tagCls}">${tagTxt}</span></div>
+            <div style="color:var(--muted);font-size:10.5px;">Winrate: <b>${s.winRatePct == null ? '—' : s.winRatePct.toFixed(1) + '%'}</b> • ${s.winsCount}W / ${s.lossesCount}L • PF ${s.profitFactor == null ? '—' : (s.profitFactor === Infinity ? '∞' : s.profitFactor.toFixed(2))}</div>
+        </div>`;
+    }).join('');
+
+    const rows = (res.recentTrades || []).map(t => {
+        const bCls = (t.outcome === 'WIN_TP2' || t.outcome === 'WIN_TP1') ? 'win' : t.outcome === 'LOSS' ? 'loss' : 'open';
+        const bTxt = t.outcome === 'WIN_TP2' ? 'WIN TP2' : t.outcome === 'WIN_TP1' ? 'WIN TP1' : t.outcome === 'LOSS' ? 'LOSS SL' : 'OPEN';
+        const dirTxt = t.dir === 'long' ? 'BUY' : 'SELL';
+        return `<tr>
+            <td><b>${esc(t.asset)}</b></td>
+            <td>${dirTxt} <span style="color:var(--muted);">· ${esc(t.mode)}</span></td>
+            <td>${fmtPx(t.asset, t.entry)}</td>
+            <td>${fmtPx(t.asset, t.sl)} / ${fmtPx(t.asset, t.tp)}</td>
+            <td><span class="hist-badge ${bCls}">${bTxt}</span></td>
+            <td style="font-weight:700;color:${t.r > 0 ? 'var(--green)' : t.r < 0 ? 'var(--red)' : 'var(--muted)'};">${t.r >= 0 ? '+' : ''}${Number(t.r).toFixed(2)}R</td>
+        </tr>`;
+    }).join('');
+
+    const live = res.liveSummary;
+    const liveNote = live && live.total > 0
+        ? `Live Browser Tracker: <b>${live.total}</b> sinyal tercatat (<b>${live.winsCount}W / ${live.lossesCount}L / ${live.openCount} Open</b>${live.closedCount ? ` • Net <b>${live.netR >= 0 ? '+' : ''}${live.netR.toFixed(2)}R</b>` : ''}).`
+        : 'Live Browser Tracker akan otomatis merekam hasil TP/SL sinyal yang aktif selama sesi berjalan.';
+    const rangeTxt = res.rangeStart && res.rangeEnd
+        ? `${fmtDate(new Date(res.rangeStart))} ${fmtTime(new Date(res.rangeStart))} – ${fmtDate(new Date(res.rangeEnd))} ${fmtTime(new Date(res.rangeEnd))}`
+        : 'Menunggu data bar…';
+    const shortTip = !res.usedHistory5d
+        ? `<div style="font-size:11px;color:var(--amber);margin-bottom:10px;">⚠️ Saat ini hanya memakai bar 1 menit ~4.5 jam terakhir (${esc(rangeTxt)}), sehingga banyak sinyal belum sempat menyentuh SL/TP2. Jalankan <code>node scripts/fetch-calendar.mjs</code> untuk mengisi <b>data/history-bars.json</b> (backtest penuh 5 hari lintas sesi London/NY & rilis berita).</div>`
+        : '';
+
+    return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;color:var(--aqua);">📈 Evaluasi Winrate &amp; Profit/Loss History Sinyal (Model TP1 1:1 BE-Lock + TP2 1:2)</div>
+        <div class="hist-verdict ${verdictCls}">
+            <div>
+                <span class="hist-pill ${pillCls}">${verdictLabel}</span>
+                <div style="font-size:11px;color:var(--muted);margin-top:4px;">Sumber: <b>${esc(res.sourceLabel)}</b> • Rentang: ${esc(rangeTxt)}</div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);text-align:right;">Closed: <b>${ov.closedCount}</b> (TP2: <b>${ov.tp2Count}</b>, TP1: <b>${ov.tp1Count}</b>, SL: <b>${ov.lossesCount}</b>) • Open: <b>${ov.openCount}</b> (Unrealized ${ov.unrealizedR >= 0 ? '+' : ''}${ov.unrealizedR.toFixed(2)}R)</div>
+        </div>
+        ${shortTip}
+        <div class="hist-grid">
+            <div class="hist-kpi"><small>Winrate (Closed)</small><b style="color:${ov.winRatePct >= 50 ? 'var(--green)' : ov.winRatePct != null ? 'var(--red)' : 'var(--muted)'};">${wrStr}</b></div>
+            <div class="hist-kpi"><small>Profit Factor</small><b>${pfStr}</b></div>
+            <div class="hist-kpi"><small>Net Return (Closed)</small><b style="color:${ov.netR > 0 ? 'var(--green)' : ov.netR < 0 ? 'var(--red)' : 'var(--text)'};">${ov.netR >= 0 ? '+' : ''}${ov.netR.toFixed(2)} R</b></div>
+            <div class="hist-kpi"><small>Expectancy / Sinyal</small><b>${expStr}</b></div>
+            <div class="hist-kpi"><small>Gross Win / Loss</small><b>+${ov.grossWinR.toFixed(1)}R / -${ov.grossLossR.toFixed(1)}R</b></div>
+        </div>
+        <div class="hist-classes">${classCards}</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">${liveNote}</div>
+        ${rows ? `<div style="overflow-x:auto;"><table class="hist-table"><thead><tr><th>Aset</th><th>Arah &amp; Basis</th><th>Entry</th><th>SL / TP2</th><th>Hasil</th><th>Return</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}`;
+}
+
+function renderSignalHistory(now = Date.now()) {
+    const el = document.querySelector('#signalHistoryStats');
+    if (!el) return;
+    const live = syncLiveSignalHistory(now);
+    const cacheKey = [
+        HISTORY_BARS && HISTORY_BARS.generatedAt,
+        MARKETS && MARKETS.generatedAt,
+        events.length,
+        Object.keys(LIVE_BARS).length
+    ].join('|');
+    if (!SIGNAL_HISTORY_CACHE.data || SIGNAL_HISTORY_CACHE.key !== cacheKey) {
+        SIGNAL_HISTORY_CACHE = {
+            key: cacheKey,
+            data: evaluateSignalHistory({ liveHistory: live, now })
+        };
+    } else {
+        SIGNAL_HISTORY_CACHE.data.liveSummary = summarizeTradeSet(live);
+    }
+    el.innerHTML = signalHistoryHtml(SIGNAL_HISTORY_CACHE.data);
+}
+
 function applyForexPayload(j, fallbackSource, live) {
     if (!j || typeof j !== 'object') return false;
     const quotes = j.quotes && typeof j.quotes === 'object' ? j.quotes : {};
@@ -609,6 +1178,9 @@ function applyForexPayload(j, fallbackSource, live) {
     FOREX_QUOTES = quotes;
     FOREX_RATES = rates;
     FOREX_LIVE = Boolean(live);
+    for (const [pair, q] of Object.entries(quotes)) {
+        if (q && Number(q.price) > 0) recordLiveTick(pair, q.price);
+    }
     FOREX_META = {
         source: j.source || fallbackSource || 'unknown',
         generatedAt: j.generatedAt || null,
@@ -846,17 +1418,54 @@ function brokerSourceText(now = Date.now()) {
     return `Quote broker ${meta.name || meta.id}${server} (${meta.accountType || 'account'}) ${state}`;
 }
 
+function watchFactorsHtml(factors) {
+    if (!Array.isArray(factors) || !factors.length) return '';
+    return `<div class="watch-factors">${factors.slice(0, 6).map(x => `<span>${esc(x)}</span>`).join('')}</div>`;
+}
+
 function goldBoardState(now = Date.now()) {
     const { pick, upcoming, label } = nextUsdCatalyst(now);
     const idle = { status: 'idle', next: upcoming ? label : '' };
 
     const price = Number(LIVE_PRICE);
     if (!Number.isFinite(price) || price <= 0) return { status: 'loading' };
-    if (!pick) return idle;
+
+    const spike = typeof detectPriceSpike === 'function' && typeof assetBars === 'function'
+        ? detectPriceSpike(assetBars('XAU/USD'), price)
+        : null;
+
+    if (!pick) {
+        if (typeof calibratedWatchSignal === 'function' && typeof resolveSignalLevels === 'function') {
+            const watch = calibratedWatchSignal({ kind: 'gold', asset: 'XAU/USD', event: null, now, price });
+            if (watch.dir) {
+                const refEvent = { Date: new Date(now).toISOString(), Event: 'Gold Market Watch', Importance: 2 };
+                const lvl = resolveSignalLevels(refEvent, 'XAU/USD', 'gold', { ...watch, phase: 'watch' }, now);
+                if (lvl && lvl.levels) {
+                    return {
+                        status: 'watch',
+                        next: upcoming ? label : '',
+                        dir: lvl.dir || watch.dir,
+                        levels: lvl.levels,
+                        changePct: watch.movePct,
+                        conf: watch.conf,
+                        factors: watch.factors || [],
+                        spike: watch.spike || spike,
+                        modeLabel: watch.modeLabel || 'WATCH',
+                        note: watch.note,
+                        stopped: lvl.stopped,
+                        tpReached: lvl.tpReached,
+                        missed: lvl.missed
+                    };
+                }
+            }
+            return { ...idle, spike: watch.spike || spike, factors: watch.factors || [], note: watch.note || '', modeLabel: watch.modeLabel || '' };
+        }
+        return idle;
+    }
 
     const impact = +pick.e.Importance || 1;
-    const phase = newsPhase(pick.e);
-    if (phase === 'live') return { status: 'live', event: label };
+    const phase = newsPhase(pick.e, now);
+    if (phase === 'live') return { status: 'live', event: label, spike };
 
     if (phase === 'pre') {
         // Straddle tetap level pending (memang harus bergerak mengikuti harga),
@@ -868,11 +1477,32 @@ function goldBoardState(now = Date.now()) {
         const buy = { entry: midBuy + buffer, sl: midBuy + buffer - buffer * 2, tp: midBuy + buffer + buffer * 4 };
         const sell = { entry: midSell - buffer, sl: midSell - buffer + buffer * 2, tp: midSell - buffer - buffer * 4 };
         const data = signalCardData(pick.e, 'XAU/USD', 'gold', now);
-        if (!data.dir || !data.levels) return { status: 'pre', event: label, buy, sell, note: data.note };
-        return {
-            status: 'pre', event: label, dir: data.dir, levels: data.levels,
-            note: data.note, buy, sell, locked: data.locked, lockedAt: data.lockedAt, missed: data.missed
-        };
+        if (data.dir && data.levels) {
+            return {
+                status: 'pre', event: label, dir: data.dir, levels: data.levels,
+                note: data.note, buy, sell, locked: data.locked, lockedAt: data.lockedAt, missed: data.missed,
+                stopped: data.stopped, tpReached: data.tpReached, spike,
+                modeLabel: data.basis === 'forecast' || data.basis === 'momentum' ? 'PRE-NEWS' : 'WATCH'
+            };
+        }
+        if (typeof calibratedWatchSignal === 'function' && typeof resolveSignalLevels === 'function') {
+            const watch = calibratedWatchSignal({ kind: 'gold', asset: 'XAU/USD', event: pick.e, now, price });
+            if (watch.dir) {
+                const wPhase = watch.basis === 'pre-calibrated' ? 'pre' : 'watch';
+                const lvl = resolveSignalLevels(pick.e, 'XAU/USD', 'gold', { ...watch, phase: wPhase }, now);
+                if (lvl && lvl.levels) {
+                    return {
+                        status: 'pre', event: label, dir: lvl.dir || watch.dir, levels: lvl.levels,
+                        note: watch.note || data.note, buy, sell, locked: false, missed: lvl.missed,
+                        stopped: lvl.stopped, tpReached: lvl.tpReached,
+                        conf: watch.conf, factors: watch.factors || [], spike: watch.spike || spike,
+                        modeLabel: watch.modeLabel || 'PRE-NEWS'
+                    };
+                }
+            }
+            return { status: 'pre', event: label, buy, sell, note: watch.note || data.note, spike: watch.spike || spike, factors: watch.factors || [], modeLabel: watch.modeLabel || '' };
+        }
+        return { status: 'pre', event: label, buy, sell, note: data.note, spike };
     }
 
     const validUntil = fmtDate(postNewsExpiry(pick.e)) + ' ' + fmtTime(postNewsExpiry(pick.e));
@@ -881,8 +1511,25 @@ function goldBoardState(now = Date.now()) {
         return {
             status: 'post', event: label, dir: data.dir, changePct: data.movePct, validUntil,
             note: data.note, levels: data.levels, locked: data.locked, lockedAt: data.lockedAt,
-            conflict: data.conflict, missed: data.missed
+            conflict: data.conflict, missed: data.missed, stopped: data.stopped, tpReached: data.tpReached,
+            spike
         };
+    }
+
+    if (typeof calibratedWatchSignal === 'function' && typeof resolveSignalLevels === 'function') {
+        const watch = calibratedWatchSignal({ kind: 'gold', asset: 'XAU/USD', event: pick.e, now, price });
+        if (watch.dir) {
+            const lvl = resolveSignalLevels(pick.e, 'XAU/USD', 'gold', { ...watch, phase: 'watch' }, now);
+            if (lvl && lvl.levels) {
+                return {
+                    status: 'post', event: label, dir: lvl.dir || watch.dir, changePct: watch.movePct ?? data.movePct, validUntil,
+                    note: watch.note || data.note, levels: lvl.levels, locked: false,
+                    conflict: false, missed: lvl.missed, stopped: lvl.stopped, tpReached: lvl.tpReached,
+                    conf: watch.conf, factors: watch.factors || [], spike: watch.spike || spike,
+                    modeLabel: watch.modeLabel || 'WATCH'
+                };
+            }
+        }
     }
 
     const info = atrInfo('XAU/USD', price);
@@ -892,6 +1539,7 @@ function goldBoardState(now = Date.now()) {
     return {
         status: 'post', event: label, dir: null, changePct: data.movePct, validUntil,
         note: data.note || 'Arah belum terkonfirmasi — tunggu reaksi harga.',
+        spike,
         buy: { entry: midBuy + buffer, sl: midBuy + buffer - buffer * 1.5, tp: midBuy + buffer + buffer * 3 },
         sell: { entry: midSell - buffer, sl: midSell - buffer + buffer * 1.5, tp: midSell - buffer - buffer * 3 }
     };
@@ -902,7 +1550,10 @@ function goldBoardHtml(price, state) {
     const p = Number(price);
     const money = n => '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     const st = state || { status: 'idle' };
-    let html = `<div class="mb-price">${Number.isFinite(p) && p > 0 ? money(p) : '—'}</div>`;
+    const spikeHtml = typeof spikeBadgeHtml === 'function' ? spikeBadgeHtml(st.spike) : '';
+    const confHtml = st.conf ? `<span class="conf-pill">${st.conf}% conf</span>` : '';
+    const factorsHtml = watchFactorsHtml(st.factors);
+    let html = `<div class="mb-price">${Number.isFinite(p) && p > 0 ? money(p) : '—'}${confHtml}</div>${spikeHtml}`;
     if (!Number.isFinite(p) || p <= 0) return html + `<div class="mb-meta">Menunggu harga gold live…</div>`;
     if (st.event) html += `<div class="mb-meta">${st.event}</div>`;
     const lv = (cls, title, o) => {
@@ -920,24 +1571,30 @@ function goldBoardHtml(price, state) {
                 : (st.missed ? `<div class="warning-badge">⚠️ Entry sudah terlewat — jangan kejar harga, tunggu pullback ke entry.</div>` : '')));
 
     if (st.status === 'live') return html + `<div class="mb-meta">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit sebelum entry.</div>`;
+    if (st.status === 'watch' && st.dir && st.levels) {
+        const long = st.dir === 'long';
+        const mom = st.changePct == null ? '' : ` • Δ ${st.changePct >= 0 ? '+' : ''}${Number(st.changePct).toFixed(2)}%`;
+        return html + warn + `<div class="mb-levels">${lv(long ? 'buy' : 'sell', (long ? 'BUY' : 'SELL') + ` · ${st.modeLabel || 'WATCH'}` + mom, st.levels)}</div>${factorsHtml}<div class="mb-meta">${esc(st.note || 'Kalibrasi Makro, F&G & Mikro')}${st.next ? ' • Next: ' + esc(st.next) : ''}</div>`;
+    }
     if (st.status === 'pre' && st.buy && st.sell) {
         const armed = st.dir && st.levels
-            ? lv(st.dir === 'long' ? 'buy' : 'sell', (st.dir === 'long' ? 'BUY' : 'SELL') + ' · MARKET', st.levels)
+            ? lv(st.dir === 'long' ? 'buy' : 'sell', (st.dir === 'long' ? 'BUY' : 'SELL') + ` · ${st.modeLabel || 'MARKET'}`, st.levels)
             : '';
         const meta = st.dir
             ? `${st.note || 'Bias pra-rilis Forecast vs Previous'} • Straddle OCO tetap tersedia bila arah tidak diambil.`
-            : 'Straddle OCO — jika satu arah tersentuh, batalkan arah lainnya.';
-        return html + warn + `<div class="mb-levels">${armed}${lv('buy', 'BUY STOP', st.buy)}${lv('sell', 'SELL STOP', st.sell)}</div><div class="mb-meta">${meta}</div>`;
+            : (st.note || 'Straddle OCO — jika satu arah tersentuh, batalkan arah lainnya.');
+        return html + warn + `<div class="mb-levels">${armed}${lv('buy', 'BUY STOP', st.buy)}${lv('sell', 'SELL STOP', st.sell)}</div>${factorsHtml}<div class="mb-meta">${meta}</div>`;
     }
     if (st.status === 'post' && st.dir && st.levels) {
         const long = st.dir === 'long';
         const mom = st.changePct == null ? '' : ` • reaksi ${st.changePct >= 0 ? '+' : ''}${Number(st.changePct).toFixed(2)}%`;
-        return html + warn + `<div class="mb-levels">${lv(long ? 'buy' : 'sell', (long ? 'BUY' : 'SELL') + mom, st.levels)}</div><div class="mb-meta">${st.note || 'Post-news terkonfirmasi'}${lockNote} • R:R 1:${st.levels.rr || 2} • valid s/d ${st.validUntil || '6 jam setelah rilis'}</div>`;
+        const tag = st.modeLabel ? ` · ${st.modeLabel}` : '';
+        return html + warn + `<div class="mb-levels">${lv(long ? 'buy' : 'sell', (long ? 'BUY' : 'SELL') + tag + mom, st.levels)}</div>${factorsHtml}<div class="mb-meta">${st.note || 'Post-news terkonfirmasi'}${lockNote} • R:R 1:${st.levels.rr || 2} • valid s/d ${st.validUntil || '6 jam setelah rilis'}</div>`;
     }
     if (st.status === 'post' && st.buy && st.sell) {
-        return html + `<div class="mb-levels">${lv('buy', 'BUY BREAKOUT', st.buy)}${lv('sell', 'SELL BREAKOUT', st.sell)}</div><div class="mb-meta">${st.note || 'Arah belum terkonfirmasi'} • breakout OCO valid s/d ${st.validUntil || '6 jam setelah rilis'}</div>`;
+        return html + `<div class="mb-levels">${lv('buy', 'BUY BREAKOUT', st.buy)}${lv('sell', 'SELL BREAKOUT', st.sell)}</div>${factorsHtml}<div class="mb-meta">${st.note || 'Arah belum terkonfirmasi'} • breakout OCO valid s/d ${st.validUntil || '6 jam setelah rilis'}</div>`;
     }
-    return html + `<div class="mb-meta">Tidak ada katalis USD aktif. ${st.next ? 'Berikutnya: ' + st.next : 'Tunggu kalender berikutnya.'}</div>`;
+    return html + factorsHtml + `<div class="mb-meta">${st.note ? esc(st.note) + ' • ' : 'Tidak ada katalis USD aktif. '}${st.next ? 'Berikutnya: ' + esc(st.next) : 'Tunggu kalender berikutnya.'}</div>`;
 }
 
 function renderGoldBoard() {
@@ -961,35 +1618,78 @@ function cryptoBoardState(now = Date.now()) {
         note: '',
         locked: false,
         conflict: false,
-        missed: false
+        missed: false,
+        stopped: false,
+        tpReached: false,
+        conf: null,
+        factors: [],
+        spike: null,
+        modeLabel: ''
     }));
     const { pick, upcoming, label } = nextUsdCatalyst(now);
-    if (!pick) return { status: 'idle', items, event: '', next: upcoming ? label : '', note: '' };
-
-    const phase = newsPhase(pick.e);
-    if (phase === 'live') return { status: 'live', items, event: label, next: '', note: '' };
+    const phase = pick ? newsPhase(pick.e, now) : 'watch';
+    if (pick && phase === 'live') return { status: 'live', items, event: label, next: '', note: '' };
 
     items.forEach(it => {
-        const data = signalCardData(pick.e, it.pair, 'crypto', now);
-        it.dir = data.dir;
-        it.levels = data.levels;
-        it.momPct = data.movePct;
-        it.note = data.note || '';
-        it.locked = data.locked;
-        it.lockedAt = data.lockedAt;
-        it.conflict = data.conflict;
-        it.missed = data.missed;
-        it.basis = data.basis;
+        if (pick) {
+            const data = signalCardData(pick.e, it.pair, 'crypto', now);
+            it.dir = data.dir;
+            it.levels = data.levels;
+            it.momPct = data.movePct;
+            it.note = data.note || '';
+            it.locked = data.locked;
+            it.lockedAt = data.lockedAt;
+            it.conflict = data.conflict;
+            it.missed = data.missed;
+            it.stopped = data.stopped;
+            it.tpReached = data.tpReached;
+            it.basis = data.basis;
+        }
+        const spike = typeof detectPriceSpike === 'function' && typeof assetBars === 'function'
+            ? detectPriceSpike(assetBars(it.pair), it.price)
+            : null;
+        it.spike = spike;
+        if (!it.dir && typeof calibratedWatchSignal === 'function') {
+            const watch = calibratedWatchSignal({
+                kind: 'crypto', asset: it.pair, event: pick ? pick.e : null,
+                now, price: it.price, changePct: it.changePct
+            });
+            it.factors = watch.factors || [];
+            it.spike = watch.spike || spike;
+            it.modeLabel = watch.modeLabel || '';
+            if (watch.dir && typeof resolveSignalLevels === 'function') {
+                const refEvent = pick ? pick.e : { Date: new Date(now).toISOString(), Event: 'Crypto Market Watch', Importance: 2 };
+                const wPhase = watch.basis === 'pre-calibrated' ? 'pre' : 'watch';
+                const lvl = resolveSignalLevels(refEvent, it.pair, 'crypto', { ...watch, phase: wPhase }, now);
+                it.dir = (lvl && lvl.dir) || watch.dir;
+                it.levels = lvl ? lvl.levels : null;
+                it.momPct = it.momPct ?? watch.movePct;
+                it.conf = watch.conf || null;
+                it.note = watch.note || it.note;
+                it.basis = watch.basis;
+                it.missed = Boolean(lvl && lvl.missed);
+                it.stopped = Boolean(lvl && lvl.stopped);
+                it.tpReached = Boolean(lvl && lvl.tpReached);
+                it.modeLabel = watch.modeLabel || (wPhase === 'pre' ? 'PRE-NEWS' : 'WATCH');
+            } else if (watch.note && !it.note) {
+                it.note = watch.note;
+            }
+        }
     });
 
+    const anySignal = items.some(it => Boolean(it.dir));
+    if (!pick && !anySignal && typeof calibratedWatchSignal !== 'function') {
+        return { status: 'idle', items, event: '', next: upcoming ? label : '', note: '' };
+    }
+
     return {
-        status: 'active',
+        status: pick ? 'active' : 'watch',
         phase,
         items,
-        event: label,
+        event: pick ? label : (upcoming ? `Kalibrasi Pasar · Next: ${upcoming.e.Event}` : 'Kalibrasi Makro, Crypto F&G & Spike'),
         note: '',
         next: upcoming ? label : '',
-        validUntil: phase === 'post' ? fmtDate(postNewsExpiry(pick.e)) + ' ' + fmtTime(postNewsExpiry(pick.e)) : label
+        validUntil: pick && phase === 'post' ? fmtDate(postNewsExpiry(pick.e)) + ' ' + fmtTime(postNewsExpiry(pick.e)) : label
     };
 }
 
@@ -1013,7 +1713,13 @@ function cryptoBoardHtml(rates, change, state) {
         }
         const dir = it.dir === 'long' ? 'buy' : it.dir === 'short' ? 'sell' : 'wait';
         const label = dir === 'buy' ? 'BUY' : dir === 'sell' ? 'SELL' : 'WAIT';
-        const badge = `<span class="fx-badge ${dir}">${label}${dir === 'wait' ? '' : (st.phase === 'post' ? ' · POST-NEWS' : ' · MARKET')}</span>`;
+        const suffix = dir === 'wait'
+            ? (it.modeLabel === 'FAKEOUT' ? ' · FAKEOUT' : '')
+            : (st.phase === 'post' && it.basis !== 'watch-calibrated' ? ' · POST-NEWS' : ` · ${it.modeLabel || 'MARKET'}`);
+        const badge = `<span class="fx-badge ${dir}">${label}${suffix}</span>`;
+        const confHtml = it.conf ? `<span class="conf-pill">${it.conf}%</span>` : '';
+        const spikeHtml = typeof spikeBadgeHtml === 'function' ? spikeBadgeHtml(it.spike) : '';
+        const factorsHtml = typeof watchFactorsHtml === 'function' ? watchFactorsHtml(it.factors) : '';
         const lockNote = it.locked && it.lockedAt ? ` • entry terkunci ${fmtTime(new Date(it.lockedAt))}` : '';
         const warn = it && it.stopped
             ? `<div class="warning-badge" style="background:rgba(255,100,125,0.25);border-color:var(--red);color:var(--red);">🛑 SL tersentuh — batalkan order.</div>`
@@ -1036,12 +1742,14 @@ function cryptoBoardHtml(rates, change, state) {
         }
         const itemNote = it.note || st.note;
         return `<div class="crypto-card ${dir}">
-            <div class="pair"><span>${esc(pair)}</span><small>${esc(name)}</small>${badge}</div>
+            <div class="pair"><span>${esc(pair)}</span><small>${esc(name)}</small>${badge}${confHtml}</div>
             <div class="price">$${fmt(rate)}</div>
             <div class="meta">${chgHtml}<span class="sep">•</span>SL/TP ${slPct}% / ${tpPct}%</div>
+            ${spikeHtml}
             ${warn}
             ${levels}
-            <div class="idx-event">${esc(st.event || 'Tidak ada katalis USD aktif')}</div>
+            <div class="idx-event">${esc(st.event || 'Kalibrasi Makro, F&G & Spike')}</div>
+            ${factorsHtml}
             ${itemNote ? `<div class="idx-note">${esc(itemNote)}${lockNote}</div>` : ''}
             ${st.status === 'live' ? '<div class="idx-note">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit.</div>' : ''}
             ${st.phase === 'post' && st.validUntil ? `<div class="idx-note">Post-news • valid s/d ${esc(st.validUntil)}</div>` : ''}
@@ -1104,9 +1812,11 @@ function forexSourceText(meta) {
 function forexBoardState(now = Date.now()) {
     const items = FOREX_PAIRS.map(pair => {
         const rate = pairRate(pair);
+        const quote = FOREX_QUOTES[pair] || null;
         const next = nextPairCatalyst(pair, now);
         let dir = null, note = '', eventLabel = '', phase = '', validUntil = '', noData = false;
         let levels = null, locked = false, lockedAt = null, missed = false, conflict = false, basis = '';
+        let stopped = false, tpReached = false, conf = null, factors = [], modeLabel = '';
         if (next) {
             eventLabel = `${next.e.Event} · ${fmtDate(new Date(next.e.Date))} ${fmtTime(new Date(next.e.Date))}`;
             phase = next.phase;
@@ -1118,15 +1828,47 @@ function forexBoardState(now = Date.now()) {
             lockedAt = data.lockedAt;
             missed = data.missed;
             conflict = data.conflict;
+            stopped = Boolean(data.stopped);
+            tpReached = Boolean(data.tpReached);
             basis = data.basis;
             phase = data.phase || next.phase;
             noData = !dir && (basis === 'no-actual' || basis === 'settling');
             if (phase === 'post') validUntil = `${fmtDate(postNewsExpiry(next.e))} ${fmtTime(postNewsExpiry(next.e))}`;
         }
-        const quote = FOREX_QUOTES[pair] || null;
+        let spike = typeof detectPriceSpike === 'function' && typeof assetBars === 'function'
+            ? detectPriceSpike(assetBars(pair), rate)
+            : null;
+        if (phase !== 'live' && !dir && typeof calibratedWatchSignal === 'function') {
+            const watch = calibratedWatchSignal({
+                kind: 'forex', asset: pair, event: next ? next.e : null,
+                now, price: rate, changePct: quote && quote.changePct
+            });
+            factors = watch.factors || [];
+            spike = watch.spike || spike;
+            modeLabel = watch.modeLabel || '';
+            if (watch.dir && typeof resolveSignalLevels === 'function') {
+                const refEvent = next ? next.e : { Date: new Date(now).toISOString(), Event: 'Forex Market Watch', Importance: 2 };
+                const wPhase = watch.basis === 'pre-calibrated' ? 'pre' : 'watch';
+                const lvl = resolveSignalLevels(refEvent, pair, 'forex', { ...watch, phase: wPhase }, now);
+                dir = (lvl && lvl.dir) || watch.dir;
+                levels = lvl ? lvl.levels : null;
+                conf = watch.conf || null;
+                note = watch.note || note;
+                basis = watch.basis;
+                noData = false;
+                missed = Boolean(lvl && lvl.missed);
+                stopped = Boolean(lvl && lvl.stopped);
+                tpReached = Boolean(lvl && lvl.tpReached);
+                modeLabel = watch.modeLabel || (wPhase === 'pre' ? 'PRE-NEWS' : 'WATCH');
+            } else if (watch.note && !note) {
+                note = watch.note;
+            }
+            if (!eventLabel) eventLabel = 'Kalibrasi Makro, DXY, Mikro & Spike';
+        }
         return {
             pair, rate, dir, note, eventLabel, phase, validUntil, noData,
-            levels, locked, lockedAt, missed, conflict, basis,
+            levels, locked, lockedAt, missed, conflict, stopped, tpReached, basis,
+            conf, factors, spike, modeLabel,
             source: quote && quote.source,
             tick: FOREX_TICK[pair] || null,
             crossCheckPct: quote && quote.crossCheckPct,
@@ -1175,7 +1917,12 @@ function forexBoardHtml(state) {
         const dec = isJpyStyle ? 3 : 5;
         const dir = it.dir === 'long' ? 'buy' : it.dir === 'short' ? 'sell' : 'wait';
         const label = dir === 'buy' ? 'BUY' : dir === 'sell' ? 'SELL' : 'WAIT';
-        const suffix = dir === 'wait' ? '' : (it.phase === 'post' ? ' · POST-NEWS' : ' · MARKET');
+        const suffix = dir === 'wait'
+            ? (it.modeLabel === 'FAKEOUT' ? ' · FAKEOUT' : '')
+            : (it.phase === 'post' && it.basis !== 'watch-calibrated' ? ' · POST-NEWS' : ` · ${it.modeLabel || 'MARKET'}`);
+        const confHtml = it.conf ? `<span class="conf-pill">${it.conf}%</span>` : '';
+        const spikeHtml = typeof spikeBadgeHtml === 'function' ? spikeBadgeHtml(it.spike) : '';
+        const factorsHtml = typeof watchFactorsHtml === 'function' ? watchFactorsHtml(it.factors) : '';
         const broker = it.broker && !it.broker.stale ? it.broker : null;
         const lockNote = it.locked && it.lockedAt ? ` • entry terkunci ${fmtTime(new Date(it.lockedAt))}` : '';
         let levels;
@@ -1199,12 +1946,14 @@ function forexBoardHtml(state) {
                     ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>`
                     : (it.missed ? `<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>` : '')));
         return `<div class="fx-card ${dir}">
-            <div class="pair"><span>${esc(it.pair)}</span><span class="fx-badge ${dir}">${label}${suffix}</span></div>
+            <div class="pair"><span>${esc(it.pair)}</span><span><span class="fx-badge ${dir}">${label}${suffix}</span>${confHtml}</span></div>
             <div class="fx-price">${fmt(rate, dec)}${fxTickHtml(it.tick)}</div>
             ${brokerLineHtml(it.broker)}
+            ${spikeHtml}
             ${warn}
             ${levels}
             <div class="fx-event">${it.eventLabel ? esc(it.eventLabel) : 'Tidak ada katalis aktif'}</div>
+            ${factorsHtml}
             ${it.note ? `<div class="fx-note">${esc(it.note)}${lockNote}${it.phase === 'post' && it.validUntil ? ` • valid s/d ${esc(it.validUntil)}` : ''}</div>` : ''}
         </div>`;
     }).join('');
@@ -1257,36 +2006,79 @@ function indicesBoardState(now = Date.now()) {
             note: '',
             locked: false,
             conflict: false,
-            missed: false
+            missed: false,
+            stopped: false,
+            tpReached: false,
+            conf: null,
+            factors: [],
+            spike: null,
+            modeLabel: ''
         };
     });
     const { pick, upcoming, label } = nextUsdCatalyst(now);
-    if (!pick) return { status: 'idle', items, event: '', next: upcoming ? label : '', note: '' };
-
-    const phase = newsPhase(pick.e);
-    if (phase === 'live') return { status: 'live', items, event: label, next: '', note: '' };
+    const phase = pick ? newsPhase(pick.e, now) : 'watch';
+    if (pick && phase === 'live') return { status: 'live', items, event: label, next: '', note: '' };
 
     items.forEach(it => {
-        const data = signalCardData(pick.e, it.symbol, 'index', now);
-        it.dir = data.dir;
-        it.levels = data.levels;
-        it.momPct = data.movePct;
-        it.note = data.note || '';
-        it.locked = data.locked;
-        it.lockedAt = data.lockedAt;
-        it.conflict = data.conflict;
-        it.missed = data.missed;
-        it.basis = data.basis;
+        if (pick) {
+            const data = signalCardData(pick.e, it.symbol, 'index', now);
+            it.dir = data.dir;
+            it.levels = data.levels;
+            it.momPct = data.movePct;
+            it.note = data.note || '';
+            it.locked = data.locked;
+            it.lockedAt = data.lockedAt;
+            it.conflict = data.conflict;
+            it.missed = data.missed;
+            it.stopped = data.stopped;
+            it.tpReached = data.tpReached;
+            it.basis = data.basis;
+        }
+        const spike = typeof detectPriceSpike === 'function' && typeof assetBars === 'function'
+            ? detectPriceSpike(assetBars(it.symbol), it.price)
+            : null;
+        it.spike = spike;
+        if (!it.dir && typeof calibratedWatchSignal === 'function') {
+            const watch = calibratedWatchSignal({
+                kind: 'index', asset: it.symbol, event: pick ? pick.e : null,
+                now, price: it.price, changePct: it.changePct
+            });
+            it.factors = watch.factors || [];
+            it.spike = watch.spike || spike;
+            it.modeLabel = watch.modeLabel || '';
+            if (watch.dir && typeof resolveSignalLevels === 'function') {
+                const refEvent = pick ? pick.e : { Date: new Date(now).toISOString(), Event: 'Index Market Watch', Importance: 2 };
+                const wPhase = watch.basis === 'pre-calibrated' ? 'pre' : 'watch';
+                const lvl = resolveSignalLevels(refEvent, it.symbol, 'index', { ...watch, phase: wPhase }, now);
+                it.dir = (lvl && lvl.dir) || watch.dir;
+                it.levels = lvl ? lvl.levels : null;
+                it.momPct = it.momPct ?? watch.movePct;
+                it.conf = watch.conf || null;
+                it.note = watch.note || it.note;
+                it.basis = watch.basis;
+                it.missed = Boolean(lvl && lvl.missed);
+                it.stopped = Boolean(lvl && lvl.stopped);
+                it.tpReached = Boolean(lvl && lvl.tpReached);
+                it.modeLabel = watch.modeLabel || (wPhase === 'pre' ? 'PRE-NEWS' : 'WATCH');
+            } else if (watch.note && !it.note) {
+                it.note = watch.note;
+            }
+        }
     });
 
+    const anySignal = items.some(it => Boolean(it.dir));
+    if (!pick && !anySignal && typeof calibratedWatchSignal !== 'function') {
+        return { status: 'idle', items, event: '', next: upcoming ? label : '', note: '' };
+    }
+
     return {
-        status: 'active',
+        status: pick ? 'active' : 'watch',
         phase,
         items,
-        event: label,
+        event: pick ? label : (upcoming ? `Kalibrasi Pasar · Next: ${upcoming.e.Event}` : 'Kalibrasi Makro, F&G, Mikro & Spike'),
         note: '',
         next: upcoming ? label : '',
-        validUntil: phase === 'post' ? fmtDate(postNewsExpiry(pick.e)) + ' ' + fmtTime(postNewsExpiry(pick.e)) : label
+        validUntil: pick && phase === 'post' ? fmtDate(postNewsExpiry(pick.e)) + ' ' + fmtTime(postNewsExpiry(pick.e)) : label
     };
 }
 
@@ -1301,6 +2093,12 @@ function indicesBoardHtml(state) {
         }
         const dir = it.dir === 'long' ? 'buy' : it.dir === 'short' ? 'sell' : 'wait';
         const label = dir === 'buy' ? 'BUY' : dir === 'sell' ? 'SELL' : 'WAIT';
+        const suffix = dir === 'wait'
+            ? (it.modeLabel === 'FAKEOUT' ? ' · FAKEOUT' : '')
+            : (st.phase === 'post' && it.basis !== 'watch-calibrated' ? ' · POST-NEWS' : ` · ${it.modeLabel || 'MARKET'}`);
+        const confHtml = it.conf ? `<span class="conf-pill">${it.conf}%</span>` : '';
+        const spikeHtml = typeof spikeBadgeHtml === 'function' ? spikeBadgeHtml(it.spike) : '';
+        const factorsHtml = typeof watchFactorsHtml === 'function' ? watchFactorsHtml(it.factors) : '';
         let levels;
         if (it.phase === 'live' || st.status === 'live') {
             levels = `<div class="idx-note">⏳ Level entry ditahan sampai konfirmasi 15 menit.</div>`;
@@ -1319,7 +2117,7 @@ function indicesBoardHtml(state) {
             ? `<span style="color:${chg >= 0 ? 'var(--green)' : 'var(--red)'}">${chg >= 0 ? '▲ +' : '▼ '}${chg.toFixed(2)}%</span>`
             : '';
         const momHtml = mom !== null && Number.isFinite(mom) ? ` <small style="color:var(--muted);">${mom >= 0 ? '+' : ''}${mom.toFixed(2)}%</small>` : '';
-        const eventLine = st.event ? `<div class="idx-event">${esc(st.event)}</div>` : '<div class="idx-event">Tidak ada katalis USD aktif</div>';
+        const eventLine = st.event ? `<div class="idx-event">${esc(st.event)}</div>` : '<div class="idx-event">Kalibrasi Makro, F&G & Spike</div>';
         const itemNote = it.note || st.note;
         const lockNote = it.locked && it.lockedAt ? ` • entry terkunci ${fmtTime(new Date(it.lockedAt))}` : '';
         const noteLine = itemNote ? `<div class="idx-note">${esc(itemNote)}${lockNote}</div>` : '';
@@ -1333,12 +2131,14 @@ function indicesBoardHtml(state) {
         const liveLine = st.status === 'live' ? '<div class="idx-note">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit.</div>' : '';
         const postLine = st.phase === 'post' && st.validUntil ? `<div class="idx-note">Post-news • valid s/d ${esc(st.validUntil)}</div>` : '';
         return `<div class="idx-card ${dir}">
-            <div class="pair"><span>${esc(it.symbol)}</span><small>${esc(it.name)}</small><span class="fx-badge ${dir}">${label}${dir === 'wait' ? '' : (st.phase === 'post' ? ' · POST-NEWS' : ' · MARKET')}${momHtml}</span></div>
+            <div class="pair"><span>${esc(it.symbol)}</span><small>${esc(it.name)}</small><span class="fx-badge ${dir}">${label}${suffix}${momHtml}</span>${confHtml}</div>
             <div class="idx-price">${fmt(price)}</div>
             <div class="idx-levels">${changeHtml ? `<span>${changeHtml}</span>` : ''}<span>SL/TP ${it.slPct}% / ${it.tpPct}%</span></div>
+            ${spikeHtml}
             ${warn}
             ${levels}
             ${eventLine}
+            ${factorsHtml}
             ${noteLine}
             ${liveLine}
             ${postLine}
@@ -1360,6 +2160,7 @@ function applyIndexItems(items) {
         if (!INDICES.some(cfg => cfg.symbol === symbol)) return;
         const price = Number(it && it.price);
         if (!Number.isFinite(price) || price <= 0) return;
+        recordLiveTick(symbol, price);
         const previousClose = Number(it.previousClose);
         const rawChange = it && it.changePct;
         const changePct = (rawChange === null || rawChange === undefined || String(rawChange).trim() === '') ? NaN : Number(rawChange);
@@ -1377,6 +2178,21 @@ function applyIndexItems(items) {
     return count;
 }
 
+function parseYahooBarsPayload(j, limit = 150) {
+    const chart = j && j.chart && j.chart.result && j.chart.result[0];
+    const ts = Array.isArray(chart && chart.timestamp) ? chart.timestamp : [];
+    const q = chart && chart.indicators && chart.indicators.quote && chart.indicators.quote[0];
+    const bars = [];
+    for (let i = 0; i < ts.length; i++) {
+        const k = Math.floor(Number(ts[i]) / 60);
+        const o = Number(q && q.open && q.open[i]), h = Number(q && q.high && q.high[i]);
+        const l = Number(q && q.low && q.low[i]), c = Number(q && q.close && q.close[i]);
+        if (!(o > 0 && h > 0 && l > 0 && c > 0)) continue;
+        bars.push({ k, o, h, l, c });
+    }
+    return bars.slice(-limit);
+}
+
 async function fetchIndexLive(cfg) {
     const target = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(cfg.yahoo)}?interval=1m&range=1d`;
     const url = `https://api.allorigins.win/raw?url=${encodeURIComponent(target)}`;
@@ -1385,6 +2201,10 @@ async function fetchIndexLive(cfg) {
     const j = await r.json();
     const meta = j && j.chart && j.chart.result && j.chart.result[0] && j.chart.result[0].meta;
     if (!meta) return null;
+    const bars = parseYahooBarsPayload(j);
+    if (bars.length >= 15) {
+        LIVE_BARS[cfg.symbol] = { generatedAt: new Date().toISOString(), bars };
+    }
     const price = Number(meta.regularMarketPrice);
     const previousClose = Number(meta.chartPreviousClose ?? meta.previousClose);
     if (!Number.isFinite(price) || price <= 0) return null;
@@ -1400,14 +2220,17 @@ async function fetchIndexLive(cfg) {
 
 async function loadIndices() {
     let count = 0;
+    let stale = true;
     try {
         const r = await fetch(`data/indices.json?v=${Date.now()}`, { cache: 'no-store' });
         if (r.ok) {
             const j = await r.json();
             count = applyIndexItems(j && j.items);
+            const at = Date.parse((j && j.generatedAt) || '');
+            stale = !Number.isFinite(at) || Date.now() - at > 15 * 60 * 1000;
         }
     } catch (e) { console.log('Index snapshot unavailable', e); }
-    if (count < INDICES.length) {
+    if (count < INDICES.length || stale) {
         try {
             const live = await Promise.all(INDICES.map(cfg => fetchIndexLive(cfg).catch(() => null)));
             applyIndexItems(live.filter(Boolean));
@@ -1417,11 +2240,39 @@ async function loadIndices() {
     render();
 }
 
+async function loadCryptoKlines() {
+    const map = [['BTC/USD', 'BTCUSDT'], ['ETH/USD', 'ETHUSDT']];
+    let updated = false;
+    await Promise.all(map.map(async ([pair, sym]) => {
+        try {
+            const r = await fetch(`https://api.binance.com/api/v3/klines?symbol=${sym}&interval=1m&limit=150`, { cache: 'no-store' });
+            if (!r.ok) return;
+            const rows = await r.json();
+            if (!Array.isArray(rows) || !rows.length) return;
+            const bars = rows.map(row => ({
+                k: Math.floor(Number(row[0]) / 60000),
+                o: Number(row[1]),
+                h: Number(row[2]),
+                l: Number(row[3]),
+                c: Number(row[4])
+            })).filter(b => b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0);
+            if (bars.length >= 15) {
+                LIVE_BARS[pair] = { generatedAt: new Date().toISOString(), bars };
+                updated = true;
+            }
+        } catch (e) { console.log('Binance klines unavailable', sym, e); }
+    }));
+    if (updated) render();
+}
+
 async function loadCrypto() {
+    loadCryptoKlines();
     const apply = (btc, eth, btcChg, ethChg) => {
         const b = Number(btc), e = Number(eth);
         if (!Number.isFinite(b) || !Number.isFinite(e) || b <= 0 || e <= 0) return false;
         CRYPTO_RATES = { 'BTC/USD': b, 'ETH/USD': e };
+        recordLiveTick('BTC/USD', b);
+        recordLiveTick('ETH/USD', e);
         const chg = {};
         const bc = Number(btcChg), ec = Number(ethChg);
         if (Number.isFinite(bc)) chg['BTC/USD'] = bc;
@@ -1452,8 +2303,15 @@ async function loadCrypto() {
     try {
         const r = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true');
         const j = await r.json();
-        apply(j.bitcoin?.usd, j.ethereum?.usd, j.bitcoin?.usd_24h_change, j.ethereum?.usd_24h_change);
+        if (apply(j.bitcoin?.usd, j.ethereum?.usd, j.bitcoin?.usd_24h_change, j.ethereum?.usd_24h_change)) return;
     } catch (e) { console.log('Crypto API failed', e); }
+    try {
+        const r = await fetch(`data/crypto.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (r.ok) {
+            const j = await r.json();
+            apply(j?.pairs?.['BTC/USD'], j?.pairs?.['ETH/USD'], j?.changePct?.['BTC/USD'], j?.changePct?.['ETH/USD']);
+        }
+    } catch (e) { console.log('Crypto snapshot failed', e); }
 }
 
 // BEGIN CALIBRATION CORE
@@ -1461,9 +2319,9 @@ async function loadCrypto() {
 // Angka thr/sigma = titik awal kalibrasi (kira-kira 1 sigma surprise historis per
 // indikator). WAJIB divalidasi dengan backtest riwayat rilis Anda sendiri.
 
-// false = Forecast vs Previous HANYA jadi "lean" informatif, bukan BUY/SELL.
-// Alasan: konsensus sudah priced-in; edge arah ada pada surprise (Actual - Forecast).
-const PRE_NEWS_DIRECTIONAL = false;
+// true = Forecast vs Previous yang melewati batas noise memberi bias pra-rilis terkalibrasi.
+// Forecast flat (sama dengan Previous) tetap tidak menghasilkan sinyal sendirian.
+const PRE_NEWS_DIRECTIONAL = true;
 
 const SOFT_IF_HIGH = /unemployment rate|unemployment|initial claims|continuing claims|jobless|claimant count|job cuts/i;
 const FIRM_IF_HIGH = /\bcpi\b|inflation|\bpce\b|\bppi\b|consumer price|producer price|import price|export price|\bpmi\b|\bism\b|retail sales|consumer confidence|consumer sentiment|michigan|conference board|fed funds|funds rate|interest rate|rate decision|cash rate|bank rate|refinancing rate|jolts|durable goods|non-?farm|\bnfp\b|payroll|\badp\b|employment|hourly earnings|wages|\bgdp\b|trade balance|current account|industrial production|manufacturing production|factory orders|\bifo\b|\bzew\b|sentix|\bkof\b|economic optimism|consumer optimism|building permits|housing starts|existing home sales|new home sales|pending home sales|house price|home price|capacity utilization|leading index/i;
@@ -1725,6 +2583,8 @@ const TECH_ASSETS = [
     { asset: 'BTC/USD', kind: 'crypto', name: 'BTC/USD' },
     { asset: 'ETH/USD', kind: 'crypto', name: 'ETH/USD' },
     { asset: 'EUR/USD', kind: 'forex', name: 'EUR/USD' },
+    { asset: 'USD/JPY', kind: 'forex', name: 'USD/JPY' },
+    { asset: 'GBP/USD', kind: 'forex', name: 'GBP/USD' },
     { asset: 'NAS100', kind: 'index', name: 'NAS100' },
     { asset: 'US500', kind: 'index', name: 'US500' }
 ];
@@ -1826,12 +2686,95 @@ function detectICT(bars) {
     return out.slice(0, 3);
 }
 
+// Deteksi lonjakan harga (spike) berbasis ATR 1 menit: membedakan breakout impulsif vs fakeout/stop-hunt.
+function detectPriceSpike(bars, livePrice = null, { lookback = 60 } = {}) {
+    const rows = (bars || [])
+        .map(b => ({ o: Number(b && b.o), h: Number(b && b.h), l: Number(b && b.l), c: Number(b && b.c) }))
+        .filter(b => b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0);
+    const neutral = { state: 'NONE', dir: null, fadedDir: null, spikeZ: 0, atrPct: null, move1mPct: 0, move5mPct: 0, move15mPct: 0, fadeRatio: 0, label: 'Normal' };
+    if (rows.length < 15) return neutral;
+
+    const baseRows = rows.length >= 25 ? rows.slice(-lookback, -5) : rows.slice(-lookback);
+    let trSum = 0;
+    for (let i = 1; i < baseRows.length; i++) {
+        trSum += Math.max(
+            baseRows[i].h - baseRows[i].l,
+            Math.abs(baseRows[i].h - baseRows[i - 1].c),
+            Math.abs(baseRows[i].l - baseRows[i - 1].c)
+        );
+    }
+    const basePx = baseRows[baseRows.length - 1].c;
+    const atr = baseRows.length > 1 ? trSum / (baseRows.length - 1) : 0;
+    const atrPct = atr > 0 && basePx > 0 ? (atr / basePx) * 100 : null;
+    if (!(atrPct > 0)) return neutral;
+
+    const last = rows[rows.length - 1];
+    const endPx = Number.isFinite(Number(livePrice)) && Number(livePrice) > 0 ? Number(livePrice) : last.c;
+    const base1 = rows[rows.length - 2] || last;
+    const base5 = rows[Math.max(0, rows.length - 6)];
+    const base15 = rows[Math.max(0, rows.length - 16)];
+
+    const move1mPct = ((endPx - base1.c) / base1.c) * 100;
+    const move5mPct = ((endPx - base5.c) / base5.c) * 100;
+    const move15mPct = ((endPx - base15.c) / base15.c) * 100;
+
+    const tail5 = rows.slice(-5);
+    let spikeBar = last;
+    let maxRange = 0;
+    for (const b of tail5) {
+        const rg = b.h - b.l;
+        if (rg >= maxRange) { maxRange = rg; spikeBar = b; }
+    }
+    const maxRangePct = (maxRange / spikeBar.o) * 100;
+    const z1 = maxRangePct / Math.max(atrPct, 0.015);
+    const z5 = Math.abs(move5mPct) / Math.max(atrPct * Math.sqrt(5), 0.03);
+    const spikeZ = Number(Math.max(z1, z5).toFixed(2));
+
+    const barDirUp = (spikeBar.c - spikeBar.o) >= 0;
+    const hi5 = Math.max(...tail5.map(b => b.h));
+    const lo5 = Math.min(...tail5.map(b => b.l));
+    const upExcursion = hi5 - base5.c;
+    const dnExcursion = base5.c - lo5;
+    const dominantUp = upExcursion >= dnExcursion;
+    const wickFade = maxRange > 0
+        ? (dominantUp ? (spikeBar.h - Math.max(spikeBar.o, spikeBar.c)) / maxRange : (Math.min(spikeBar.o, spikeBar.c) - spikeBar.l) / maxRange)
+        : 0;
+    const retraceFade = dominantUp
+        ? (upExcursion > 0 ? Math.max(0, (hi5 - endPx) / upExcursion) : 0)
+        : (dnExcursion > 0 ? Math.max(0, (endPx - lo5) / dnExcursion) : 0);
+    const fadeRatio = Number(Math.max(wickFade, retraceFade).toFixed(2));
+
+    if (spikeZ >= 2.2) {
+        if (fadeRatio >= 0.50 || (dominantUp && move5mPct < 0) || (!dominantUp && move5mPct > 0)) {
+            const fadedDir = dominantUp ? 'long' : 'short';
+            return {
+                state: 'SPIKE_FADED', dir: null, fadedDir, spikeZ, atrPct, move1mPct, move5mPct, move15mPct, fadeRatio,
+                label: `Fakeout Spike ${fadedDir === 'long' ? 'Atas' : 'Bawah'} (${spikeZ.toFixed(1)}× ATR, retrace ${Math.round(fadeRatio * 100)}%)`
+            };
+        }
+        const dir = move5mPct >= 0 || (move5mPct === 0 && barDirUp) ? 'long' : 'short';
+        return {
+            state: dir === 'long' ? 'SPIKE_UP' : 'SPIKE_DOWN',
+            dir, fadedDir: null, spikeZ, atrPct, move1mPct, move5mPct, move15mPct, fadeRatio,
+            label: `Lonjakan ${dir === 'long' ? 'Naik' : 'Turun'} ${move5mPct >= 0 ? '+' : ''}${move5mPct.toFixed(2)}% (${spikeZ.toFixed(1)}× ATR)`
+        };
+    }
+    if (spikeZ >= 1.5) {
+        return {
+            state: 'ELEVATED', dir: null, fadedDir: null, spikeZ, atrPct, move1mPct, move5mPct, move15mPct, fadeRatio,
+            label: `Volatilitas Meningkat (${spikeZ.toFixed(1)}× ATR)`
+        };
+    }
+    return { ...neutral, spikeZ, atrPct, move1mPct, move5mPct, move15mPct, fadeRatio };
+}
+
 // Rangkuman konfluensi per aset: arah teknikal = mayoritas vote (EMA/RSI/pola/
 // ICT) dengan minimal 3 suara searah.
 function technicalView(kind, asset) {
     const price = assetPrice(kind, asset);
     if (!Number.isFinite(price) || price <= 0) return null;
-    const bars = assetBars(asset).slice(-120)
+    const rawBars = assetBars(asset);
+    const bars = rawBars.slice(-120)
         .map(b => ({ o: Number(b && b.o), h: Number(b && b.h), l: Number(b && b.l), c: Number(b && b.c) }))
         .filter(b => b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0);
     if (bars.length < 30) return null;
@@ -1842,11 +2785,14 @@ function technicalView(kind, asset) {
     const info = atrInfo(asset, price);
     const candles = detectCandlePatterns(bars);
     const ict = detectICT(bars);
+    const spike = detectPriceSpike(bars, price);
     const votes = [];
     if (emaFast && emaSlow) votes.push(emaFast > emaSlow ? 'buy' : 'sell');
-    if (rsi !== null) { if (rsi <= 30) votes.push('buy'); else if (rsi >= 70) votes.push('sell'); }
+    if (emaFast && price) votes.push(price > emaFast ? 'buy' : 'sell');
+    if (rsi !== null) { if (rsi <= 35) votes.push('buy'); else if (rsi >= 65) votes.push('sell'); }
     candles.forEach(p => { if (p.dir !== 'wait') votes.push(p.dir); });
     ict.forEach(p => votes.push(p.dir));
+    if (spike.dir) votes.push(spike.dir === 'long' ? 'buy' : 'sell');
     const buys = votes.filter(v => v === 'buy').length;
     const sells = votes.filter(v => v === 'sell').length;
     const dir = buys >= 3 && buys > sells ? 'buy' : sells >= 3 && sells > buys ? 'sell' : 'wait';
@@ -1854,12 +2800,20 @@ function technicalView(kind, asset) {
         ? (emaFast > emaSlow ? 'tren naik (EMA20 > EMA50)' : 'tren turun (EMA20 < EMA50)') : 'tren n/a';
     const rsiText = rsi === null ? 'RSI n/a' : `RSI ${rsi.toFixed(0)}${rsi <= 30 ? ' oversold' : rsi >= 70 ? ' overbought' : ' netral'}`;
     const tags = [...candles.map(p => p.tag), ...ict.map(p => p.tag)];
-    return { price, emaFast, emaSlow, rsi, atrPct: info ? info.atrPct : null, candles, ict, dir, buys, sells, trendText, rsiText, tags, bars: bars.length };
+    return { price, emaFast, emaSlow, rsi, atrPct: info ? info.atrPct : spike.atrPct, candles, ict, spike, dir, buys, sells, trendText, rsiText, tags, bars: bars.length };
+}
+
+function spikeBadgeHtml(spike) {
+    if (!spike || spike.state === 'NONE') return '';
+    const cls = spike.state === 'SPIKE_UP' ? 'up' : spike.state === 'SPIKE_DOWN' ? 'down' : spike.state === 'SPIKE_FADED' ? 'fade' : 'elevated';
+    const icon = spike.state === 'SPIKE_FADED' ? '⚠️' : spike.state === 'ELEVATED' ? '📈' : '⚡';
+    return `<div class="spike-badge ${cls}">${icon} ${esc(spike.label)}</div>`;
 }
 
 function techPanelHtml() {
-    if (!MARKETS || !marketsFresh()) {
-        return '<div class="tech-card wait"><div class="head"><span>Menunggu data bar 1 menit…</span></div><div class="sub">Panel teknikal aktif otomatis setelah data/markets.json dimuat.</div></div>';
+    const anyFresh = marketsFresh() || TECH_ASSETS.some(c => typeof liveBarsFresh === 'function' && liveBarsFresh(c.asset));
+    if (!anyFresh && (!MARKETS || !MARKETS.pairs)) {
+        return '<div class="tech-card wait"><div class="head"><span>Menunggu data bar 1 menit…</span></div><div class="sub">Panel teknikal aktif otomatis setelah bar 1 menit (Binance/Yahoo/markets.json) dimuat.</div></div>';
     }
     return TECH_ASSETS.map(cfg => {
         const v = technicalView(cfg.kind, cfg.asset);
@@ -1867,12 +2821,13 @@ function techPanelHtml() {
             return `<div class="tech-card wait"><div class="head"><span>${esc(cfg.name)}</span><span class="tech-dir">DATA</span></div><div class="sub">Bar 1 menit belum cukup untuk analisis teknikal.</div></div>`;
         }
         const dirText = v.dir === 'buy' ? 'BUY' : v.dir === 'sell' ? 'SELL' : 'WAIT';
-        const conf = `konfluensi ${v.dir === 'buy' ? v.buys : v.sells}/vote`;
+        const conf = `konfluensi ${v.dir === 'buy' ? v.buys : v.sells} vote`;
         let levels = '';
         if (v.dir !== 'wait') {
-            const lv = computeSignalLevels(cfg.kind, cfg.asset, v.dir, v.price, { Importance: 2 }, { movePct: 0 });
+            const lv = computeSignalLevels(cfg.kind, cfg.asset, v.dir === 'buy' ? 'long' : 'short', v.price, { Importance: 2 }, { movePct: 0 });
             if (lv) {
-                const f = n => Number(n).toFixed(lv.dec || 2);
+                const dec = lv.dec || (v.price > 100 ? 2 : v.price > 10 ? 3 : 5);
+                const f = n => Number(n).toFixed(dec);
                 levels = `<div class="tech-levels"><span>Entry ${f(lv.entry)}</span><span>SL ${f(lv.sl)}</span><span>TP ${f(lv.tp)}</span><span>TP1 ${f(lv.tp1)}</span>${lv.pullback ? `<span>Retest ${f(lv.pullback)}</span>` : ''}</div>`;
             }
         }
@@ -1885,6 +2840,7 @@ function techPanelHtml() {
         return `<div class="tech-card ${v.dir}">
             <div class="head"><span>${esc(cfg.name)}</span><span class="tech-dir">${dirText} · ${conf}</span></div>
             <div class="sub">${esc(v.trendText)} • ${esc(v.rsiText)}${v.atrPct ? ` • ATR 1m ${v.atrPct.toFixed(3)}%` : ''} • ${v.bars} bar</div>
+            ${spikeBadgeHtml(v.spike)}
             <div class="tech-tags">${tagHtml}</div>
             ${levels}
             <div class="tech-note">Entry dihitung dari harga live (ask utk BUY / bid utk SELL${lvBrokerNote(cfg.asset)}).</div>
@@ -1907,6 +2863,7 @@ function renderTechBoard() {
 // ═════════════════════════════════════════════════════════════════════════════
 let SENTIMENT = null;
 let SENTIMENT_CRYPTO = null;
+let SENTIMENT_CACHE = null;
 
 // DXY sintetis (tanpa SEK, bobot dinormalisasi): USD naik bila EUR/USD, GBP/USD
 // turun atau USD/JPY, USD/CAD, USD/CHF naik. Sumber: changePct harian scanner.
@@ -1922,6 +2879,95 @@ function usdBias() {
     }
     if (!den) return null;
     return { changePct: num / den };
+}
+
+// Rezim makro 48 jam terakhir dari rilis kalender ekonomi berbobot Impact & age decay.
+function recentMacroRegime(currencies, now = Date.now(), pool = null) {
+    const list = Array.isArray(pool) ? pool : (typeof events !== 'undefined' && Array.isArray(events) ? events : []);
+    if (!list.length) return null;
+    const targets = Array.isArray(currencies) ? currencies.map(countryCode) : [countryCode(currencies || 'USD')];
+    const windowMs = 48 * 60 * 60 * 1000;
+    const seenDates = new Set();
+    let best = null;
+    for (let i = list.length - 1; i >= 0; i--) {
+        const ev = list[i];
+        if (!ev || (+ev.Importance || 1) < 2) continue;
+        const c = countryCode(ev.Country);
+        if (!targets.includes(c)) continue;
+        const t = Date.parse(ev.Date);
+        if (!Number.isFinite(t) || t > now || now - t > windowMs) continue;
+        const stampKey = `${ev.Date}|${c}`;
+        if (seenDates.has(stampKey)) continue;
+        seenDates.add(stampKey);
+        const a = analyze(ev);
+        if (!a || (a.dir !== 'long' && a.dir !== 'short')) continue;
+        const ageHours = (now - t) / 3600000;
+        const decay = ageHours <= 6 ? 1.0 : ageHours <= 24 ? 0.72 : 0.48;
+        const impW = (+ev.Importance || 1) >= 3 ? 1.0 : 0.65;
+        const weight = Number((decay * impW).toFixed(2));
+        if (!best || weight > best.weight) {
+            best = {
+                event: ev,
+                country: c,
+                dir: a.dir,
+                z: Number.isFinite(a.z) ? a.z : 0,
+                score: a.score,
+                ageHours: Number(ageHours.toFixed(1)),
+                decay,
+                weight,
+                label: `${ev.Event} (${c} ${a.z > 0 ? 'Hawkish' : 'Dovish'} ${Math.round(ageHours)}j lalu)`
+            };
+        }
+    }
+    return best;
+}
+
+// Sentimen lintas aset Risk-On vs Risk-Off dari indeks saham, crypto, dan JPY crosses.
+function riskSentimentSnapshot({ indexRates, cryptoChange, forexQuotes } = {}) {
+    const idx = indexRates || (typeof INDEX_RATES !== 'undefined' ? INDEX_RATES : {});
+    const cry = cryptoChange || (typeof CRYPTO_CHANGE !== 'undefined' ? CRYPTO_CHANGE : {});
+    const fx = forexQuotes || (typeof FOREX_QUOTES !== 'undefined' ? FOREX_QUOTES : {});
+    const readings = [];
+    const nas = Number(idx && idx.NAS100 && idx.NAS100.changePct);
+    const sp = Number(idx && idx.US500 && idx.US500.changePct);
+    if (Number.isFinite(nas)) readings.push({ name: 'NAS100', chg: nas, w: 1.2 });
+    if (Number.isFinite(sp)) readings.push({ name: 'US500', chg: sp, w: 1.0 });
+    const btc = Number(cry && cry['BTC/USD']);
+    const eth = Number(cry && cry['ETH/USD']);
+    if (Number.isFinite(btc)) readings.push({ name: 'BTC', chg: btc * 0.35, w: 0.8 });
+    if (Number.isFinite(eth)) readings.push({ name: 'ETH', chg: eth * 0.3, w: 0.6 });
+    const ej = Number(fx && fx['EUR/JPY'] && fx['EUR/JPY'].changePct);
+    const gj = Number(fx && fx['GBP/JPY'] && fx['GBP/JPY'].changePct);
+    if (Number.isFinite(ej)) readings.push({ name: 'EUR/JPY', chg: ej * 1.5, w: 0.7 });
+    if (Number.isFinite(gj)) readings.push({ name: 'GBP/JPY', chg: gj * 1.5, w: 0.7 });
+    if (!readings.length) return { regime: 'MIXED', score: 0, avgPct: 0, label: 'Data lintas aset belum tersedia' };
+    const wSum = readings.reduce((s, r) => s + r.w, 0);
+    const avgPct = readings.reduce((s, r) => s + r.chg * r.w, 0) / wSum;
+    const score = clampNum(avgPct / 0.6, -1, 1);
+    const regime = avgPct >= 0.15 ? 'RISK-ON' : avgPct <= -0.15 ? 'RISK-OFF' : 'MIXED';
+    return { regime, score: Number(score.toFixed(2)), avgPct: Number(avgPct.toFixed(2)), label: `${regime} (${avgPct >= 0 ? '+' : ''}${avgPct.toFixed(2)}%)` };
+}
+
+function effectiveFearGreed() {
+    const cnn = SENTIMENT && Number.isFinite(SENTIMENT.score) ? SENTIMENT : null;
+    const crypto = SENTIMENT_CRYPTO && Number.isFinite(SENTIMENT_CRYPTO.score) ? SENTIMENT_CRYPTO : null;
+    if (cnn) return { cnn, crypto, primaryScore: cnn.score, isProxy: false, label: `${cnn.score}/100 (${cnn.rating || 'CNN'})` };
+    const risk = riskSentimentSnapshot();
+    const usd = usdBias();
+    let proxy = 50;
+    if (crypto) proxy = crypto.score * 0.55 + 50 * 0.45;
+    proxy += risk.score * 16;
+    if (usd && Number.isFinite(usd.changePct)) proxy -= clampNum(usd.changePct * 12, -12, 12);
+    proxy = Math.round(clampNum(proxy, 5, 95));
+    const rating = proxy <= 25 ? 'Extreme Fear' : proxy <= 45 ? 'Fear' : proxy >= 75 ? 'Extreme Greed' : proxy >= 55 ? 'Greed' : 'Neutral';
+    return {
+        cnn: null,
+        crypto,
+        primaryScore: proxy,
+        isProxy: true,
+        proxyRating: rating,
+        label: `${proxy}/100 (${rating} · Proxy Internal)`
+    };
 }
 
 // Kalibrasi: harga pra-rilis tersimpan vs harga live sekarang. Selisih inilah
@@ -1946,12 +2992,28 @@ async function loadCryptoFng() {
         SENTIMENT_CRYPTO = { score: Math.round(sc), rating: d.value_classification || '', at: new Date().toISOString() };
     } catch (err) {
         console.log('Crypto F&G gagal', err.message || err);
-        SENTIMENT_CRYPTO = null;
+        if (SENTIMENT_CACHE && SENTIMENT_CACHE.crypto && Number.isFinite(Number(SENTIMENT_CACHE.crypto.score))) {
+            SENTIMENT_CRYPTO = { ...SENTIMENT_CACHE.crypto, at: SENTIMENT_CACHE.generatedAt || null };
+        }
     }
     renderMacroBoard();
 }
 
 async function loadSentiment() {
+    try {
+        const r = await fetch(`data/sentiment.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (r.ok) {
+            const c = await r.json();
+            SENTIMENT_CACHE = c;
+            if (!SENTIMENT && c && c.cnn && Number.isFinite(Number(c.cnn.score))) {
+                SENTIMENT = { ...c.cnn, at: c.generatedAt || null };
+            }
+            if (!SENTIMENT_CRYPTO && c && c.crypto && Number.isFinite(Number(c.crypto.score))) {
+                SENTIMENT_CRYPTO = { ...c.crypto, at: c.generatedAt || null };
+            }
+            renderMacroBoard();
+        }
+    } catch {}
     loadCryptoFng();
     const target = 'https://production.dataviz.cnn.io/index/fearandgreed/graphdata';
     const grab = async url => {
@@ -1962,12 +3024,22 @@ async function loadSentiment() {
     let j = null;
     try { j = await grab(target); } catch (e) { console.log('CNN F&G direct gagal', e.message || e); }
     if (!j) {
-        try { j = await grab('https://api.allorigins.win/raw?url=' + encodeURIComponent(target)); } catch (e) { console.log('CNN F&G proxy gagal', e.message || e); }
+        try { j = await grab('https://api.allorigins.win/raw?url=' + encodeURIComponent(target)); } catch (e) { console.log('CNN F&G allorigins gagal', e.message || e); }
+    }
+    if (!j) {
+        try { j = await grab('https://corsproxy.io/?' + encodeURIComponent(target)); } catch (e) { console.log('CNN F&G corsproxy gagal', e.message || e); }
     }
     const fg = j && j.fear_and_greed;
     // Number(null) === 0 (finite): tanpa guard ini fg null lolos dan fg.rating melempar TypeError.
     const score = fg ? Number(fg.score) : NaN;
-    if (!Number.isFinite(score)) { SENTIMENT = null; renderMacroBoard(); return; }
+    if (!Number.isFinite(score)) {
+        if (!SENTIMENT && SENTIMENT_CACHE && SENTIMENT_CACHE.cnn && Number.isFinite(Number(SENTIMENT_CACHE.cnn.score))) {
+            SENTIMENT = { ...SENTIMENT_CACHE.cnn, at: SENTIMENT_CACHE.generatedAt || null };
+        }
+        renderMacroBoard();
+        render();
+        return;
+    }
     SENTIMENT = {
         score: Math.round(score),
         rating: fg.rating || '',
@@ -1975,36 +3047,58 @@ async function loadSentiment() {
         at: new Date().toISOString()
     };
     renderMacroBoard();
+    render();
 }
 
 function macroPanelHtml() {
     const bias = usdBias();
     const cal = calibrationInfo();
-    const s = SENTIMENT;
+    const fgEff = effectiveFearGreed();
+    const s = fgEff.cnn;
+    const risk = riskSentimentSnapshot();
+    const macroUsd = recentMacroRegime('USD');
+    const spikes = TECH_ASSETS.map(c => {
+        const p = assetPrice(c.kind, c.asset);
+        const sp = detectPriceSpike(assetBars(c.asset), p);
+        return { name: c.asset, sp };
+    }).filter(x => x.sp.state !== 'NONE');
+
+    const riskCard = `<div class="macro-card"><h5>Sentimen Pasar &amp; Rezim Makro</h5>
+        <div class="big ${risk.regime === 'RISK-ON' ? 'buy' : risk.regime === 'RISK-OFF' ? 'sell' : 'wait'}">${esc(risk.regime)} (${risk.avgPct >= 0 ? '+' : ''}${risk.avgPct.toFixed(2)}%)</div>
+        <div class="meta">${macroUsd ? `Kalender Makro: ${esc(macroUsd.label)}` : 'Belum ada rilis makro Imp ≥ 2 dalam 48 jam terakhir.'}</div></div>`;
+
     const usdCard = bias
         ? `<div class="macro-card"><h5>DXY sintetis (bias makro USD)</h5>
-            <div class="big ${bias.changePct >= 0.1 ? 'sell' : bias.changePct <= -0.1 ? 'buy' : 'wait'}">${bias.changePct >= 0 ? '+' : ''}${bias.changePct.toFixed(2)}% hari ini</div>
-            <div class="meta">${bias.changePct >= 0.1 ? 'USD menguat → tekanan jual emas / risk-off, non-USD melemah.' : bias.changePct <= -0.1 ? 'USD melemah → support emas / risk-on, non-USD menguat.' : 'USD relatif datar — arah ditentukan katalis berikutnya.'}</div></div>`
+            <div class="big ${bias.changePct >= 0.08 ? 'sell' : bias.changePct <= -0.08 ? 'buy' : 'wait'}">${bias.changePct >= 0 ? '+' : ''}${bias.changePct.toFixed(2)}% hari ini</div>
+            <div class="meta">${bias.changePct >= 0.08 ? 'USD menguat → tekanan jual emas / risk-off, non-USD melemah.' : bias.changePct <= -0.08 ? 'USD melemah → support emas / risk-on, non-USD menguat.' : 'USD relatif datar — arah ditentukan katalis & struktur mikro.'}</div></div>`
         : `<div class="macro-card"><h5>DXY sintetis (bias makro USD)</h5><div class="big wait">—</div><div class="meta">Menunggu data kurs harian dari scanner…</div></div>`;
-    const fgCard = s
-        ? `<div class="macro-card"><h5>CNN Fear &amp; Greed — ${esc(s.rating || '')}</h5>
-            <div class="big ${s.score <= 25 ? 'buy' : s.score >= 75 ? 'sell' : 'wait'}">${s.score}/100</div>
-            <div class="macro-bar"><i style="left:0;width:${Math.max(0, Math.min(100, s.score))}%"></i></div>
-            <div class="meta">${s.score <= 25 ? 'Extreme fear → bid safe-haven mendukung emas; indeks/crypto rawan rebound (kontrarian).' : s.score >= 75 ? 'Extreme greed → risk-on/crowded: bid safe-haven emas melemah; indeks/crypto rawan koreksi.' : 'Sentimen netral.'}${s.previousClose != null ? ` • tutup sebelumnya ${s.previousClose}` : ''}</div></div>`
-        : `<div class="macro-card"><h5>CNN Fear &amp; Greed</h5><div class="big wait">—</div><div class="meta">Sentimen belum termuat (akan dicoba ulang tiap 10 menit).</div></div>`;
-    const calCard = cal
-        ? `<div class="macro-card"><h5>Kalibrasi harga pra-rilis vs live</h5>
-            <div class="big ${cal.driftPct == null ? 'wait' : Math.abs(cal.driftPct) < 0.05 ? 'wait' : cal.driftPct > 0 ? 'buy' : 'sell'}">${cal.live ? '$' + Number(cal.live).toFixed(2) : '—'}</div>
-            <div class="meta">${cal.base ? `Base pra-rilis ${esc(cal.event.Event)}: $${Number(cal.base).toFixed(2)}` : 'Snapshot pra-rilis belum tersedia untuk katalis aktif.'}${cal.driftPct != null ? ` → selisih ${cal.driftPct >= 0 ? '+' : ''}${cal.driftPct.toFixed(2)}% (dasar perhitungan momentum pasca-rilis).` : ''}</div></div>`
-        : `<div class="macro-card"><h5>Kalibrasi harga pra-rilis vs live</h5><div class="big wait">—</div><div class="meta">Tidak ada katalis USD aktif.</div></div>`;
+
+    const fgScore = fgEff.primaryScore;
+    const fgTitle = s ? `CNN Fear &amp; Greed — ${esc(s.rating || '')}` : `Sentimen Fear &amp; Greed (Proxy Internal) — ${esc(fgEff.proxyRating || '')}`;
+    const fgCard = `<div class="macro-card"><h5>${fgTitle}</h5>
+        <div class="big ${fgScore <= 25 ? 'buy' : fgScore >= 75 ? 'sell' : 'wait'}">${fgScore}/100</div>
+        <div class="macro-bar"><i style="left:0;width:${Math.max(0, Math.min(100, fgScore))}%"></i></div>
+        <div class="meta">${fgScore <= 25 ? 'Extreme fear → bid safe-haven mendukung emas; indeks/crypto rawan rebound (kontrarian).' : fgScore >= 75 ? 'Extreme greed → risk-on/crowded: bid safe-haven emas melemah; indeks/crypto rawan koreksi.' : fgScore <= 44 ? 'Fear moderat → sentimen defensif/risk-off.' : fgScore >= 56 ? 'Greed moderat → selera risiko positif.' : 'Sentimen netral.'}${s && s.previousClose != null ? ` • tutup sebelumnya ${s.previousClose}` : ''}</div></div>`;
+
     const cf = SENTIMENT_CRYPTO;
     const cfgCard = cf
         ? `<div class="macro-card"><h5>Crypto Fear &amp; Greed — ${esc(cf.rating || '')}</h5>
             <div class="big ${cf.score <= 20 ? 'buy' : cf.score >= 80 ? 'sell' : 'wait'}">${cf.score}/100</div>
             <div class="macro-bar"><i style="left:0;width:${Math.max(0, Math.min(100, cf.score))}%"></i></div>
-            <div class="meta">Dipakai sebagai filter konteks BTC/ETH (kontrarian di ekstrem ≤20 / ≥80), bukan penentu arah.</div></div>`
-        : `<div class="macro-card"><h5>Crypto Fear &amp; Greed</h5><div class="big wait">—</div><div class="meta">Belum termuat.</div></div>`;
-    return usdCard + fgCard + cfgCard + calCard + `<div class="macro-card"><h5>Cara pakai bersama sinyal news</h5><div class="meta">1) Cek arah di kartu event / board pair (reaksi harga 1 menit &gt; momentum &gt; Actual). 2) Cocokkan dengan panel teknikal: searah = konfluensi penuh; berlawanan = kecilkan ukuran posisi atau tunggu retest OTE. 3) F&G dan DXY hanya konteks makro — jangan melawan harga.</div></div>`;
+            <div class="meta">${cf.score <= 20 ? 'Extreme Fear crypto → pantau konfirmasi reversal mikro sebelum BUY.' : cf.score >= 80 ? 'Extreme Greed crypto → rawan koreksi / crowded long.' : 'Filter konteks aktif untuk BTC/ETH.'}</div></div>`
+        : `<div class="macro-card"><h5>Crypto Fear &amp; Greed</h5><div class="big wait">—</div><div class="meta">Menunggu feed Alternative.me…</div></div>`;
+
+    const spikeCard = `<div class="macro-card"><h5>Monitor Lonjakan Harga (Spike ATR)</h5>
+        <div class="big ${spikes.some(x => x.sp.state === 'SPIKE_FADED') ? 'wait' : spikes.some(x => x.sp.dir === 'long') ? 'buy' : spikes.some(x => x.sp.dir === 'short') ? 'sell' : 'wait'}">${spikes.length ? `${spikes.length} Aset Aktif` : 'Pasar Stabil'}</div>
+        <div class="meta">${spikes.length ? spikes.map(x => `${esc(x.name)}: ${esc(x.sp.label)}`).join(' • ') : 'Tidak ada lonjakan ≥ 1.5× ATR 1m pada 8 aset pantauan.'}</div></div>`;
+
+    const calCard = cal
+        ? `<div class="macro-card"><h5>Kalibrasi harga pra-rilis vs live</h5>
+            <div class="big ${cal.driftPct == null ? 'wait' : Math.abs(cal.driftPct) < 0.05 ? 'wait' : cal.driftPct > 0 ? 'buy' : 'sell'}">${cal.live ? '$' + Number(cal.live).toFixed(2) : '—'}</div>
+            <div class="meta">${cal.base ? `Base pra-rilis ${esc(cal.event.Event)}: $${Number(cal.base).toFixed(2)}` : 'Snapshot pra-rilis belum tersedia untuk katalis aktif.'}${cal.driftPct != null ? ` → selisih ${cal.driftPct >= 0 ? '+' : ''}${cal.driftPct.toFixed(2)}% (basis momentum pasca-rilis).` : ''}</div></div>`
+        : `<div class="macro-card"><h5>Kalibrasi harga pra-rilis vs live</h5><div class="big wait">—</div><div class="meta">Tidak ada katalis USD aktif.</div></div>`;
+
+    return riskCard + usdCard + fgCard + cfgCard + spikeCard + calCard;
 }
 
 function renderMacroBoard() {
@@ -2046,17 +3140,23 @@ function mapActualBias(kind, asset, dir, e) {
 }
 
 function signalDirectionCore(e, asset, kind, now = Date.now()) {
-    const phase = newsPhase(e);
+    const phase = newsPhase(e, now);
     if (phase === 'pre') {
         const bias = preNewsBias(e);
         const lean = bias ? mapAssetBias(kind, asset, bias.dir, e) : null;
-        const directional = PRE_NEWS_DIRECTIONAL && lean;
+        const releaseMs = Date.parse(e && e.Date);
+        const imminentHigh = (+(e && e.Importance) || 1) >= 3 && Number.isFinite(releaseMs) && releaseMs - now <= 15 * 60 * 1000;
+        const directional = PRE_NEWS_DIRECTIONAL && lean && !imminentHigh;
         return {
-            phase, dir: directional ? lean : null, lean, basis: directional ? 'forecast' : 'none',
-            movePct: null, minutes: null, conf: directional ? 50 : null,
-            note: bias
-                ? `Lean ringan, BUKAN sinyal (Forecast ${bias.forecast} vs Previous ${bias.previous}${bias.source ? ' • ' + bias.source : ''}): sudah priced-in. Arah baru valid dari surprise Actual + reaksi harga.`
-                : 'Forecast vs Previous flat — tunggu rilis'
+            phase, dir: directional ? lean : null, lean, basis: directional ? 'forecast' : (imminentHigh ? 'imminent-high' : 'none'),
+            movePct: null, minutes: null, conf: directional ? ((+(e && e.Importance) || 1) >= 3 ? 60 : 54) : null,
+            note: imminentHigh
+                ? 'High-impact < 15 menit — tahan entry market, gunakan Straddle OCO.'
+                : (bias
+                    ? (directional
+                        ? `Bias pra-rilis (Forecast ${bias.forecast} vs Previous ${bias.previous}${bias.source ? ' • ' + bias.source : ''})`
+                        : `Lean pra-rilis (Forecast ${bias.forecast} vs Previous ${bias.previous}${bias.source ? ' • ' + bias.source : ''})`)
+                    : 'Forecast vs Previous flat — gunakan kalibrasi Makro/Mikro atau tunggu rilis')
         };
     }
     if (phase === 'live') {
@@ -2128,25 +3228,239 @@ function signalDirectionCore(e, asset, kind, now = Date.now()) {
 // (Actual/momentum) yang MELAWAN konteks dibatalkan; basis reaksi harga (kebenaran
 // pasar) tetap jalan tetapi ukuran posisi dikurangi.
 function applyMarketContext(sig, kind, asset) {
-    if (!sig || (sig.dir !== 'long' && sig.dir !== 'short') || sig.phase !== 'post') return sig;
-    const usd = usdBias();
+    if (!sig || (sig.dir !== 'long' && sig.dir !== 'short') || (sig.phase !== 'post' && sig.phase !== 'pre')) return sig;
+    const usd = typeof usdBias === 'function' ? usdBias() : null;
+    const fgEff = typeof effectiveFearGreed === 'function' ? effectiveFearGreed() : null;
     const ctx = contextAlignment({
         kind, asset, dir: sig.dir,
-        fg: SENTIMENT ? SENTIMENT.score : null,
-        cryptoFg: SENTIMENT_CRYPTO ? SENTIMENT_CRYPTO.score : null,
+        fg: fgEff ? fgEff.primaryScore : (typeof SENTIMENT !== 'undefined' && SENTIMENT ? SENTIMENT.score : null),
+        cryptoFg: typeof SENTIMENT_CRYPTO !== 'undefined' && SENTIMENT_CRYPTO ? SENTIMENT_CRYPTO.score : null,
         usdChgPct: usd ? usd.changePct : null
     });
     const ctxNote = ctx.notes.length ? ' • Konteks: ' + ctx.notes.join('; ') : '';
-    if (ctx.align === 'against' && (sig.basis === 'actual' || sig.basis === 'momentum')) {
+    if (sig.phase === 'post' && ctx.align === 'against' && (sig.basis === 'actual' || sig.basis === 'momentum')) {
         return { ...sig, dir: null, blocked: true, basis: 'context-block', ctx, conf: null,
             note: `Sinyal dibatalkan: basis ${sig.basis === 'actual' ? 'Actual' : 'momentum'} lemah dan melawan konteks pasar.${ctxNote}` };
     }
-    const conf = Number.isFinite(sig.conf) ? Math.round(clampNum(sig.conf + (ctx.align === 'with' ? 6 : ctx.align === 'against' ? -12 : 0), 30, 92)) : sig.conf;
+    const conf = Number.isFinite(sig.conf) ? Math.round(clampNum(sig.conf + (ctx.align === 'with' ? 6 : ctx.align === 'against' ? -10 : 0), 30, 92)) : sig.conf;
     return { ...sig, ctx, conf, sizeFactor: ctx.size, note: `${sig.note || ''}${ctxNote}${ctx.size < 1 ? ` • ukuran posisi ${ctx.size}× (melawan konteks)` : ''}` };
 }
 
 function signalDirection(e, asset, kind, now = Date.now()) {
     return applyMarketContext(signalDirectionCore(e, asset, kind, now), kind, asset);
+}
+
+// Kalibrasi Watch Multi-Faktor: Makro Kalender + Sentimen (DXY/Risk-On/Off) +
+// Fear & Greed + Mikro Teknikal (EMA/RSI/ICT/Candle) + Deteksi Spike ATR.
+function calibratedWatchSignal({
+    kind, asset, event = null, now = Date.now(),
+    price = null, changePct = null, bars = null,
+    fg = null, cryptoFg = null, usdChgPct = null,
+    riskRegime = null, macroRegime = null, preBias = undefined
+} = {}) {
+    const px = Number.isFinite(Number(price)) && Number(price) > 0
+        ? Number(price)
+        : (typeof assetPrice === 'function' ? assetPrice(kind, asset) : null);
+    if (!Number.isFinite(px) || px <= 0) return { dir: null, basis: 'no-price', note: 'Menunggu harga live…', factors: [] };
+
+    const barList = Array.isArray(bars) ? bars : (typeof assetBars === 'function' ? assetBars(asset) : []);
+    const spike = typeof detectPriceSpike === 'function'
+        ? detectPriceSpike(barList, px)
+        : { state: 'NONE', dir: null, fadedDir: null, spikeZ: 0, label: 'Normal' };
+
+    if (event) {
+        const ph = newsPhase(event, now);
+        if (ph === 'live') {
+            return { dir: null, phase: 'live', basis: 'settling', spike, note: 'Rilis berlangsung — tunggu konfirmasi 15 menit.', factors: ['Fase: Live 15m Settle'] };
+        }
+        const relMs = Date.parse(event.Date);
+        if (ph === 'pre' && (+event.Importance || 1) >= 3 && Number.isFinite(relMs) && relMs - now <= 15 * 60 * 1000) {
+            return { dir: null, phase: 'pre', basis: 'imminent-high', spike, note: 'High-impact < 15 menit — tahan entry market, gunakan Straddle OCO.', factors: ['Guard: <15m High Impact'] };
+        }
+    }
+
+    const factors = [];
+    let macroScore = 0, fgScore = 0, microScore = 0, spikeScore = 0;
+    const currencies = kind === 'forex' ? pairCurrencies(asset) : ['USD'];
+
+    // 1. Makro & Kalender
+    const resolvedPreBias = preBias !== undefined ? preBias : (event && newsPhase(event, now) === 'pre' ? preNewsBias(event) : null);
+    const mappedPre = resolvedPreBias ? mapAssetBias(kind, asset, resolvedPreBias.dir, event) : null;
+    if (mappedPre) {
+        const w = (+(event && event.Importance) || 1) >= 3 ? 1.15 : (+(event && event.Importance) || 1) === 2 ? 0.9 : 0.45;
+        macroScore += mappedPre === 'long' ? w : -w;
+        factors.push(`Pre-News: ${mappedPre === 'long' ? 'BUY' : 'SELL'}`);
+    }
+
+    const macro = macroRegime !== null ? macroRegime : (typeof recentMacroRegime === 'function' ? recentMacroRegime(currencies, now) : null);
+    if (macro && (macro.dir === 'long' || macro.dir === 'short')) {
+        const mappedMacro = kind === 'forex'
+            ? mapPairBias(asset, macro.dir, macro.country)
+            : (kind === 'index' || kind === 'crypto')
+                ? (RATE_DRIVEN_EVENT.test(macro.event && macro.event.Event || '') ? macro.dir : null)
+                : macro.dir;
+        if (mappedMacro) {
+            const w = 0.9 * (macro.weight || 0.7);
+            macroScore += mappedMacro === 'long' ? w : -w;
+            factors.push(`Makro: ${macro.country} ${macro.z > 0 ? 'Hawkish' : 'Dovish'}`);
+        }
+    }
+
+    const usd = usdChgPct !== null ? usdChgPct : (typeof usdBias === 'function' && usdBias() ? usdBias().changePct : null);
+    if (Number.isFinite(usd) && Math.abs(usd) >= 0.08) {
+        let usdDir = 0;
+        if (kind === 'gold') usdDir = usd > 0 ? -0.7 : 0.7;
+        else if (kind === 'forex') {
+            const [b, q] = String(asset).toUpperCase().split('/');
+            if (b === 'USD') usdDir = usd > 0 ? 0.75 : -0.75;
+            else if (q === 'USD') usdDir = usd > 0 ? -0.75 : 0.75;
+        } else if ((kind === 'index' || kind === 'crypto') && Math.abs(usd) >= 0.12) {
+            usdDir = usd > 0 ? -0.5 : 0.5;
+        }
+        if (usdDir !== 0) {
+            macroScore += usdDir;
+            factors.push(`DXY ${usd >= 0 ? '+' : ''}${usd.toFixed(2)}%`);
+        }
+    }
+
+    const risk = riskRegime || (typeof riskSentimentSnapshot === 'function' ? riskSentimentSnapshot() : { regime: 'MIXED', score: 0 });
+    if (risk && risk.regime !== 'MIXED') {
+        const rSign = risk.regime === 'RISK-ON' ? 1 : -1;
+        if (kind === 'index' || kind === 'crypto') {
+            macroScore += rSign * 0.65;
+            factors.push(risk.regime);
+        } else if (kind === 'forex' && /JPY$/.test(String(asset)) && !/^USD/.test(String(asset))) {
+            macroScore += rSign * 0.55;
+            factors.push(risk.regime);
+        } else if (kind === 'gold') {
+            macroScore += risk.regime === 'RISK-OFF' ? 0.35 : -0.25;
+            factors.push(risk.regime);
+        }
+    }
+
+    // 2. Mikro Teknikal (EMA20/50, RSI14, ICT, Candle, Intraday Delta)
+    const cleanBars = (barList || []).slice(-120)
+        .map(b => ({ o: Number(b && b.o), h: Number(b && b.h), l: Number(b && b.l), c: Number(b && b.c) }))
+        .filter(b => b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0);
+    let emaFast = null, emaSlow = null, rsi = null;
+    if (cleanBars.length >= 30 && typeof emaSeries === 'function') {
+        const closes = cleanBars.map(b => b.c);
+        emaFast = emaSeries(closes, 20);
+        emaSlow = emaSeries(closes, 50);
+        rsi = rsiValue(closes, 14);
+        const candles = detectCandlePatterns(cleanBars);
+        const ict = detectICT(cleanBars);
+        if (emaFast && emaSlow) {
+            microScore += emaFast > emaSlow ? 0.75 : -0.75;
+            microScore += px > emaFast ? 0.35 : -0.35;
+        }
+        if (rsi !== null) {
+            if (rsi <= 32) microScore += 0.4;
+            else if (rsi >= 68) microScore -= 0.4;
+            else if (rsi >= 55) microScore += 0.35;
+            else if (rsi <= 45) microScore -= 0.35;
+        }
+        const ictNet = ict.reduce((s, x) => s + (x.dir === 'buy' ? 1 : x.dir === 'sell' ? -1 : 0), 0);
+        const cdlNet = candles.reduce((s, x) => s + (x.dir === 'buy' ? 1 : x.dir === 'sell' ? -1 : 0), 0);
+        microScore += clampNum(ictNet * 0.4, -0.8, 0.8) + clampNum(cdlNet * 0.3, -0.6, 0.6);
+        factors.push(`Mikro: ${emaFast && emaSlow ? (emaFast > emaSlow ? 'EMA↑' : 'EMA↓') : ''}${rsi != null ? ` RSI ${Math.round(rsi)}` : ''}`.trim());
+    }
+
+    let chg = Number(changePct);
+    if (!Number.isFinite(chg)) {
+        if (kind === 'crypto' && typeof CRYPTO_CHANGE !== 'undefined') chg = Number(CRYPTO_CHANGE[asset]);
+        else if (kind === 'index' && typeof INDEX_CHANGE !== 'undefined') chg = Number(INDEX_CHANGE[asset]);
+        else if (kind === 'forex' && typeof FOREX_QUOTES !== 'undefined') chg = Number(FOREX_QUOTES[asset] && FOREX_QUOTES[asset].changePct);
+    }
+    const chgFloor = kind === 'forex' ? 0.08 : kind === 'index' ? 0.25 : kind === 'gold' ? 0.30 : 0.75;
+    if (Number.isFinite(chg) && Math.abs(chg) >= chgFloor) {
+        microScore += chg > 0 ? 0.45 : -0.45;
+        factors.push(`24h/Day ${chg >= 0 ? '+' : ''}${chg.toFixed(2)}%`);
+    }
+
+    // 3. Sentimen Fear & Greed
+    const fgEff = typeof effectiveFearGreed === 'function' ? effectiveFearGreed() : null;
+    const cnnScore = Number.isFinite(Number(fg)) && fg !== null ? Number(fg) : (fgEff ? fgEff.primaryScore : null);
+    const cryScore = Number.isFinite(Number(cryptoFg)) && cryptoFg !== null ? Number(cryptoFg) : (typeof SENTIMENT_CRYPTO !== 'undefined' && SENTIMENT_CRYPTO ? SENTIMENT_CRYPTO.score : null);
+    if (kind === 'gold' && Number.isFinite(cnnScore)) {
+        if (cnnScore <= 25) fgScore += 0.85;
+        else if (cnnScore <= 42) fgScore += 0.35;
+        else if (cnnScore >= 75) fgScore -= 0.85;
+        else if (cnnScore >= 58) fgScore -= 0.35;
+        factors.push(`F&G ${Math.round(cnnScore)}`);
+    } else if (kind === 'crypto' && Number.isFinite(cryScore ?? cnnScore)) {
+        const sc = Number.isFinite(cryScore) ? cryScore : cnnScore;
+        if (sc <= 20) fgScore += microScore > 0 ? 0.35 : -0.35;
+        else if (sc <= 44) fgScore -= 0.45;
+        else if (sc >= 80) fgScore -= 0.45;
+        else if (sc >= 56) fgScore += 0.45;
+        factors.push(`Crypto F&G ${Math.round(sc)}`);
+    } else if (kind === 'index' && Number.isFinite(cnnScore)) {
+        if (cnnScore <= 20) fgScore += microScore > 0 ? 0.35 : -0.35;
+        else if (cnnScore <= 44) fgScore -= 0.45;
+        else if (cnnScore >= 80) fgScore -= 0.45;
+        else if (cnnScore >= 56) fgScore += 0.45;
+        factors.push(`F&G ${Math.round(cnnScore)}`);
+    } else if (kind === 'forex' && /JPY$/.test(String(asset)) && !/^USD/.test(String(asset)) && Number.isFinite(cnnScore)) {
+        if (cnnScore <= 35) fgScore -= 0.35;
+        else if (cnnScore >= 65) fgScore += 0.35;
+        factors.push(`F&G ${Math.round(cnnScore)}`);
+    }
+
+    // 4. Lonjakan Harga / Spike
+    if (spike.state === 'SPIKE_UP') {
+        spikeScore += 0.8;
+        factors.push(`⚡ ${spike.label}`);
+    } else if (spike.state === 'SPIKE_DOWN') {
+        spikeScore -= 0.8;
+        factors.push(`⚡ ${spike.label}`);
+    } else if (spike.state === 'SPIKE_FADED') {
+        spikeScore += spike.fadedDir === 'long' ? -0.9 : 0.9;
+        factors.push(`⚠️ ${spike.label}`);
+    }
+
+    const netScore = Number((macroScore + fgScore + microScore + spikeScore).toFixed(2));
+    const candidateDir = netScore > 0 ? 'long' : netScore < 0 ? 'short' : null;
+    const sign = candidateDir === 'long' ? 1 : -1;
+    const aligned = [
+        macroScore * sign >= 0.35,
+        fgScore * sign >= 0.30,
+        microScore * sign >= 0.35,
+        spikeScore * sign >= 0.40
+    ].filter(Boolean).length;
+
+    if (candidateDir && spike.state === 'SPIKE_FADED' && spike.fadedDir === candidateDir) {
+        return {
+            dir: null, phase: event ? newsPhase(event, now) : 'watch', basis: 'spike-fade',
+            modeLabel: 'FAKEOUT', spike, netScore, factors,
+            note: `Fakeout spike terdeteksi (${spike.label}) — tahan entry agar tidak terjebak reversal.`
+        };
+    }
+
+    const active = Boolean(candidateDir && Math.abs(netScore) >= 1.25 && (aligned >= 2 || Math.abs(netScore) >= 1.8));
+    if (!active) {
+        return {
+            dir: null, phase: event ? newsPhase(event, now) : 'watch', basis: 'neutral',
+            modeLabel: 'WAIT', spike, netScore, factors,
+            note: `Konfluensi netral (skor ${netScore >= 0 ? '+' : ''}${netScore.toFixed(2)}) — ${factors.join(' · ') || 'tunggu pemicu lebih jelas'}`
+        };
+    }
+
+    const conf = Math.round(clampNum(52 + Math.abs(netScore) * 9 + aligned * 3, 52, 88));
+    const isPre = Boolean(mappedPre);
+    return {
+        dir: candidateDir,
+        phase: event ? newsPhase(event, now) : 'watch',
+        basis: isPre ? 'pre-calibrated' : 'watch-calibrated',
+        modeLabel: isPre ? 'PRE-NEWS' : 'WATCH',
+        conf,
+        netScore,
+        aligned,
+        spike,
+        movePct: spike.state !== 'NONE' ? spike.move5mPct : (Number.isFinite(chg) ? chg : null),
+        factors,
+        note: `Kalibrasi ${isPre ? 'Pre-News' : 'Makro/Mikro'} (${conf}%, skor ${netScore >= 0 ? '+' : ''}${netScore.toFixed(2)}): ${factors.join(' · ')}`
+    };
 }
 
 function signalLockKey(e, asset) {
@@ -2197,8 +3511,10 @@ function marketsFresh(now = Date.now()) {
 }
 
 function assetBars(asset) {
+    const key = String(asset || '').toUpperCase();
+    if (typeof liveBarsFresh === 'function' && liveBarsFresh(key)) return LIVE_BARS[key].bars;
     const pairs = MARKETS && MARKETS.pairs;
-    const cfg = pairs && pairs[String(asset).toUpperCase()];
+    const cfg = pairs && pairs[key];
     return cfg && Array.isArray(cfg.bars) ? cfg.bars : [];
 }
 
@@ -2206,7 +3522,8 @@ function assetBars(asset) {
 // mencakup spike pasca-rilis bila rilis baru lewat, jadi SL otomatis melebar
 // saat pasar sedang liar dan menyempit saat tenang.
 function atrInfo(asset, price) {
-    if (!marketsFresh()) return null;
+    const hasLive = typeof liveBarsFresh === 'function' && liveBarsFresh(asset);
+    if (!hasLive && !marketsFresh()) return null;
     const rows = assetBars(asset).slice(-60)
         .map(b => ({ h: Number(b && b.h), l: Number(b && b.l), c: Number(b && b.c) }))
         .filter(r => r.h > 0 && r.l > 0 && r.c > 0 && Number.isFinite(r.h) && Number.isFinite(r.l) && Number.isFinite(r.c));
@@ -2891,6 +4208,9 @@ function render() {
     renderForexBoard();
     renderCryptoBoard();
     renderIndicesBoard();
+    if (typeof renderTechBoard === 'function') renderTechBoard();
+    if (typeof renderMacroBoard === 'function') renderMacroBoard();
+    if (typeof renderSignalHistory === 'function') renderSignalHistory();
 
     const totalEl = $('#total-events');
     const actualEl = $('#events-with-actual');
@@ -2924,13 +4244,16 @@ document.querySelector('.filters').addEventListener('click', ev => {
     render();
 });
 
-$('#refresh').onclick = () => { load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadTradeStats(); renderTradeStats(); loadSentiment(); };
+$('#refresh').onclick = () => { load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadLiveBarsFallback(true); loadTradeStats(); renderTradeStats(); loadSentiment(); };
 renderGoldBoard();
 renderCryptoBoard();
 renderForexBoard();
 renderIndicesBoard();
+if (typeof renderTechBoard === 'function') renderTechBoard();
+if (typeof renderMacroBoard === 'function') renderMacroBoard();
+if (typeof renderSignalHistory === 'function') renderSignalHistory();
 loadSentiment();
-load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadTradeStats(); renderTradeStats();
+load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadTradeStats(); renderTradeStats();
 setInterval(() => { loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); }, 60000);
 // Sentimen Fear & Greed jarang berubah; cukup ditarik ulang tiap 10 menit.
 setInterval(loadSentiment, 600000);

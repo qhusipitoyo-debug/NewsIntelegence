@@ -691,6 +691,20 @@ async function fetchCrypto() {
   const sources = [
     {
       name: 'Binance',
+      url: 'https://api.binance.com/api/v3/ticker/24hr?symbols=["BTCUSDT","ETHUSDT"]',
+      parse(j, sourceName) {
+        if (!Array.isArray(j)) return null;
+        const btc = j.find(x => x.symbol === 'BTCUSDT');
+        const eth = j.find(x => x.symbol === 'ETHUSDT');
+        return valid(
+          { 'BTC/USD': Number(btc && btc.lastPrice), 'ETH/USD': Number(eth && eth.lastPrice) },
+          sourceName,
+          { 'BTC/USD': finiteNumber(btc && btc.priceChangePercent), 'ETH/USD': finiteNumber(eth && eth.priceChangePercent) }
+        );
+      }
+    },
+    {
+      name: 'Binance',
       url: 'https://api.binance.com/api/v3/ticker/price?symbols=["BTCUSDT","ETHUSDT"]',
       parse(j, sourceName) {
         if (!Array.isArray(j)) return null;
@@ -701,9 +715,13 @@ async function fetchCrypto() {
     },
     {
       name: 'CoinGecko',
-      url: 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd',
+      url: 'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd&include_24hr_change=true',
       parse(j, sourceName) {
-        return valid({ 'BTC/USD': Number(j && j.bitcoin && j.bitcoin.usd), 'ETH/USD': Number(j && j.ethereum && j.ethereum.usd) }, sourceName);
+        return valid(
+          { 'BTC/USD': Number(j && j.bitcoin && j.bitcoin.usd), 'ETH/USD': Number(j && j.ethereum && j.ethereum.usd) },
+          sourceName,
+          { 'BTC/USD': finiteNumber(j && j.bitcoin && j.bitcoin.usd_24h_change), 'ETH/USD': finiteNumber(j && j.ethereum && j.ethereum.usd_24h_change) }
+        );
       }
     }
   ];
@@ -719,13 +737,16 @@ async function fetchCrypto() {
   }
   return null;
 
-  function valid(out, sourceName) {
+  function valid(out, sourceName, chg = {}) {
     const rates = {
       'BTC/USD': Number(out && out['BTC/USD']),
       'ETH/USD': Number(out && out['ETH/USD'])
     };
     if (!(rates['BTC/USD'] > 0 && rates['ETH/USD'] > 0)) return null;
-    return { rates, source: sourceName };
+    const changePct = {};
+    if (finiteNumber(chg['BTC/USD']) !== null) changePct['BTC/USD'] = Number(chg['BTC/USD'].toFixed(2));
+    if (finiteNumber(chg['ETH/USD']) !== null) changePct['ETH/USD'] = Number(chg['ETH/USD'].toFixed(2));
+    return { rates, changePct, source: sourceName };
   }
 }
 
@@ -788,6 +809,7 @@ const MARKET_SYMBOLS = [
 ];
 const MARKETS_FILE = 'data/markets.json';
 const CRYPTO_FILE = 'data/crypto.json';
+const HISTORY_BARS_FILE = 'data/history-bars.json';
 const MARKET_BARS = 270;
 
 // Bar 1 menit ^NDX/^GSPC hanya tersedia 13:30–21:00 UTC, jadi rilis pada sesi Asia/Eropa
@@ -833,7 +855,26 @@ function barsFromYahoo(payload) {
     if (!open || !high || !low || !close) continue;
     bars.push({ k, o: open, h: high, l: low, c: close });
   }
-  return { meta, bars: bars.slice(-MARKET_BARS) };
+  return { meta, bars: bars.slice(-MARKET_BARS), allBars: bars };
+}
+
+export function aggregateBars(bars, bucketMin = 5) {
+  if (!Array.isArray(bars) || !bars.length || bucketMin <= 1) return Array.isArray(bars) ? bars : [];
+  const out = [];
+  for (const b of bars) {
+    const k = Number(b && b.k), o = Number(b && b.o), h = Number(b && b.h), l = Number(b && b.l), c = Number(b && b.c);
+    if (!Number.isFinite(k) || !(o > 0 && h > 0 && l > 0 && c > 0)) continue;
+    const bk = Math.floor(k / bucketMin) * bucketMin;
+    const prev = out[out.length - 1];
+    if (prev && prev.k === bk) {
+      if (h > prev.h) prev.h = h;
+      if (l < prev.l) prev.l = l;
+      prev.c = c;
+    } else {
+      out.push({ k: bk, o, h, l, c });
+    }
+  }
+  return out;
 }
 
 export function buildMarketPayload({ price, forex, crypto, yahooByPair, now = new Date() }) {
@@ -841,7 +882,10 @@ export function buildMarketPayload({ price, forex, crypto, yahooByPair, now = ne
   if (finiteNumber(price) && price > 0) quotes['XAU/USD'] = { price, source: 'gold-api', changePct: null };
   if (crypto && crypto.rates) {
     for (const [pair, value] of Object.entries(crypto.rates)) {
-      if (finiteNumber(value) && value > 0) quotes[pair] = { price: value, source: crypto.source, changePct: null };
+      if (finiteNumber(value) && value > 0) {
+        const chg = crypto.changePct ? finiteNumber(crypto.changePct[pair]) : null;
+        quotes[pair] = { price: value, source: crypto.source, changePct: chg };
+      }
     }
   }
 
@@ -901,8 +945,23 @@ async function fetchMarkets({ price, forexData, cryptoData }) {
     await fs.writeFile(CRYPTO_FILE, JSON.stringify({
       generatedAt: payload.generatedAt,
       source: cryptoData.source,
-      pairs: cryptoData.rates
+      pairs: cryptoData.rates,
+      changePct: cryptoData.changePct || {}
     }, null, 2));
+  }
+  const histPairs = {};
+  for (const cfg of MARKET_SYMBOLS) {
+    const raw = yahooByPair[cfg.pair] && yahooByPair[cfg.pair].allBars;
+    const agg = aggregateBars(raw, 5);
+    if (agg.length) histPairs[cfg.pair] = agg;
+  }
+  if (Object.keys(histPairs).length) {
+    await fs.writeFile(HISTORY_BARS_FILE, JSON.stringify({
+      generatedAt: payload.generatedAt,
+      intervalMin: 5,
+      source: 'Yahoo Finance 5m resampled from 5d 1m OHLC',
+      pairs: histPairs
+    }));
   }
   console.log('Berhasil menyimpan markets.json:', Object.keys(payload.pairs).join(', '));
   return payload;
@@ -995,9 +1054,59 @@ export function buildReactionPayload(events, markets, now = Date.now(), holdMs =
   return { generatedAt: (markets && markets.generatedAt) || new Date(now).toISOString(), events: keyed };
 }
 
+const SENTIMENT_FILE = 'data/sentiment.json';
+
+async function fetchSentiment() {
+  const out = { generatedAt: new Date().toISOString(), cnn: null, crypto: null };
+  await Promise.all([
+    (async () => {
+      try {
+        const r = await fetch('https://production.dataviz.cnn.io/index/fearandgreed/graphdata', {
+          headers: { 'user-agent': 'Mozilla/5.0', referer: 'https://edition.cnn.com/' },
+          signal: AbortSignal.timeout(10000)
+        });
+        if (!r.ok) return;
+        const j = await r.json();
+        const fg = j && j.fear_and_greed;
+        const score = fg ? Number(fg.score) : NaN;
+        if (Number.isFinite(score)) {
+          out.cnn = {
+            score: Math.round(score),
+            rating: fg.rating || '',
+            previousClose: finiteNumber(fg.previous_close)
+          };
+        }
+      } catch {}
+    })(),
+    (async () => {
+      try {
+        const r = await fetch('https://api.alternative.me/fng/?limit=1', {
+          headers: { 'user-agent': 'Mozilla/5.0' },
+          signal: AbortSignal.timeout(10000)
+        });
+        if (!r.ok) return;
+        const j = await r.json();
+        const d = j && j.data && j.data[0];
+        const score = d ? Number(d.value) : NaN;
+        if (Number.isFinite(score)) {
+          out.crypto = {
+            score: Math.round(score),
+            rating: d.value_classification || ''
+          };
+        }
+      } catch {}
+    })()
+  ]);
+  if (out.cnn || out.crypto) {
+    await fs.writeFile(SENTIMENT_FILE, JSON.stringify(out, null, 2));
+    console.log('Sentimen Fear & Greed tersimpan:', out.cnn ? `CNN=${out.cnn.score}` : 'CNN=-', out.crypto ? `Crypto=${out.crypto.score}` : 'Crypto=-');
+  }
+  return out;
+}
+
 export async function main() {
   const events = await fetchCalendar();
-  const [price, forexData, cryptoData, indices] = await Promise.all([fetchMarket(), fetchForex(), fetchCrypto(), fetchIndices()]);
+  const [price, forexData, cryptoData, indices] = await Promise.all([fetchMarket(), fetchForex(), fetchCrypto(), fetchIndices(), fetchSentiment()]);
   const markets = await fetchMarkets({ price, forexData, cryptoData });
   const extraBars = await fetchReactionBars();
   const reaction = buildReactionPayload(events, markets, Date.now(), REACTION_HOLD_MS, extraBars);
