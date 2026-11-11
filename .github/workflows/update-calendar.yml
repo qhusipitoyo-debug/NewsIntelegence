@@ -1,0 +1,86 @@
+name: Update live economic calendar
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/fetch-calendar.mjs"
+      - ".github/workflows/update-calendar.yml"
+  schedule:
+    - cron: "*/15 * * * *"
+
+# Mencegah bentrok jika proses sebelumnya belum selesai
+concurrency:
+  group: update-calendar
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Fetch live calendar, gold, forex, crypto and indices
+        run: node scripts/fetch-calendar.mjs
+        env:
+          GOLD_API_KEY: ${{ secrets.GOLD_API_KEY }}
+          TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
+
+      # CEK DULU: Apakah data dari API benar-benar berubah?
+      - name: Check if data changed
+        id: check_diff
+        run: |
+          git add data
+          if git diff --cached --quiet; then
+            echo "Data tidak ada perubahan. Melewati proses commit."
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "Data berubah. Melanjutkan update."
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      # JIKA BERUBAH: Update cache-buster (dibuat tidak akan nge-crash jika gagal match)
+      - name: Refresh widget cache version
+        if: steps.check_diff.outputs.changed == 'true'
+        run: |
+          STAMP=$(date -u +%Y%m%d%H%M)
+          # Menggunakan || true agar tidak error/fail jika index.html tidak punya pola tersebut
+          perl -0pi -e "s#scripts/xauusd-price-widget\.js\?v=[0-9]+-[0-9]+#scripts/xauusd-price-widget.js?v=${STAMP}#g" index.html || true
+          
+          if grep -q "xauusd-price-widget.js?v=${STAMP}" index.html; then
+            echo "Cache-buster berhasil di-update."
+          else
+            echo "::warning::Cache-buster tidak match, tapi workflow dilanjutkan."
+          fi
+
+      # JIKA BERUBAH: Commit dan Push
+      - name: Commit refreshed data and assets
+        if: steps.check_diff.outputs.changed == 'true'
+        run: |
+          git config user.name calendar-bot
+          git config user.email actions@users.noreply.github.com
+          git add index.html
+          
+          # Pastikan ada yang di-commit sebelum push
+          if git diff --cached --quiet; then
+            echo "Tidak ada file yang berubah untuk di-commit setelah update."
+          else
+            git commit -m "chore: refresh live calendar, gold, forex & indices $(date -u +%Y%m%d-%H%M)"
+            for i in 1 2 3; do
+              git pull --rebase --autostash || true
+              if git push; then
+                exit 0
+              fi
+              echo "Push attempt $i failed (local MT5 bridge may have pushed); retrying..."
+              sleep 10
+            done
+            exit 1
+          fi

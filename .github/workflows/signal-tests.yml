@@ -1,0 +1,30 @@
+name: XAUUSD Signal Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  signal-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Run signal module regression tests
+        run: node tests/xauusd-signal-rules.test.mjs
+      - name: Run actual index.html signal tests
+        run: node tests/index-signal-regression.test.mjs
+      - name: Check calendar fetcher syntax
+        run: node --check scripts/fetch-calendar.mjs
+      - name: Run calendar actual-backfill and price-reaction tests
+        run: node tests/calendar-actuals.test.mjs
+      - name: Run pre-news snapshot store tests
+        run: node tests/prenews.test.mjs
+      - name: Run forex live-source tests
+        run: node tests/forex-source.test.mjs
+      - name: Run MT5 quote exporter tests
+        run: python tests/mt5_quotes_test.py
