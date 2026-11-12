@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T11:44:21.583Z",
+  "generatedAt": "2026-11-12T12:03:04.552Z",
   "events": {
     "2026-11-12T02:00:00-05:00|GDP m/m": {
       "releasedAt": "2026-11-12T07:00:00.000Z",
@@ -44,6 +44,208 @@
           "minutes": 45,
           "spikePct": 0.061,
           "faded": false
+        }
+      }
+    },
+    "2026-11-12T02:00:00-05:00|Goods Trade Balance": {
+      "releasedAt": "2026-11-12T07:00:00.000Z",
+      "pairs": {
+        "AUD/USD": {
+          "baseClose": 0.6832934617996216,
+          "lastClose": 0.682407557964325,
+          "movePct": -0.13,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": 0.021,
+          "faded": false
+        },
+        "NZD/USD": {
+          "baseClose": 0.5553087592124939,
+          "lastClose": 0.5552470684051514,
+          "movePct": -0.011,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": 0.061,
+          "faded": false
+        }
+      }
+    },
+    "2026-11-12T02:00:00-05:00|Industrial Production m/m": {
+      "releasedAt": "2026-11-12T07:00:00.000Z",
+      "pairs": {
+        "AUD/USD": {
+          "baseClose": 0.6832934617996216,
+          "lastClose": 0.682407557964325,
+          "movePct": -0.13,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": 0.021,
+          "faded": false
+        },
+        "NZD/USD": {
+          "baseClose": 0.5553087592124939,
+          "lastClose": 0.5552470684051514,
+          "movePct": -0.011,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": 0.061,
+          "faded": false
+        }
+      }
+    },
+    "2026-11-12T02:00:00-05:00|Manufacturing Production m/m": {
+      "releasedAt": "2026-11-12T07:00:00.000Z",
+      "pairs": {
+        "AUD/USD": {
+          "baseClose": 0.6832934617996216,
+          "lastClose": 0.682407557964325,
+          "movePct": -0.13,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": 0.021,
+          "faded": false
+        },
+        "NZD/USD": {
+          "baseClose": 0.5553087592124939,
+          "lastClose": 0.5552470684051514,
+          "movePct": -0.011,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": 0.061,
+          "faded": false
+        }
+      }
+    },
+    "2026-11-12T04:00:00-05:00|ECB Economic Bulletin": {
+      "releasedAt": "2026-11-12T09:00:00.000Z",
+      "pairs": {
+        "EUR/USD": {
+          "baseClose": 1.1096316576004028,
+          "lastClose": 1.1097548007965088,
+          "movePct": 0.011,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": -0.011,
+          "faded": false
+        },
+        "GBP/USD": {
+          "baseClose": 1.3271048069000244,
+          "lastClose": 1.32722806930542,
+          "movePct": 0.009,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": 0.019,
+          "faded": false
+        },
+        "USD/JPY": {
+          "baseClose": 159.68899536132812,
+          "lastClose": 159.70899963378906,
+          "movePct": 0.013,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": -0.018,
+          "faded": false
+        },
+        "USD/CHF": {
+          "baseClose": 0.8319900035858154,
+          "lastClose": 0.8318300247192383,
+          "movePct": -0.019,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": 0.002,
+          "faded": false
+        },
+        "AUD/USD": {
+          "baseClose": 0.6825007200241089,
+          "lastClose": 0.6830601096153259,
+          "movePct": 0.082,
+          "dir": "long",
+          "minutes": 45,
+          "spikePct": 0.048,
+          "faded": false
+        },
+        "USD/CAD": {
+          "baseClose": 1.4253599643707275,
+          "lastClose": 1.4249999523162842,
+          "movePct": -0.025,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": -0.015,
+          "faded": false
+        },
+        "NZD/USD": {
+          "baseClose": 0.5556790232658386,
+          "lastClose": 0.5563591718673706,
+          "movePct": 0.122,
+          "dir": "long",
+          "minutes": 45,
+          "spikePct": 0.05,
+          "faded": false
+        },
+        "GBP/JPY": {
+          "baseClose": 211.91600036621094,
+          "lastClose": 211.96299743652344,
+          "movePct": 0.022,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": 0,
+          "faded": false
+        },
+        "EUR/JPY": {
+          "baseClose": 177.13600158691406,
+          "lastClose": 177.17999267578125,
+          "movePct": 0.025,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": -0.024,
+          "faded": false
+        },
+        "XAU/USD": {
+          "baseClose": 3933.800048828125,
+          "lastClose": 3946.5,
+          "movePct": 0.323,
+          "dir": "long",
+          "minutes": 45,
+          "spikePct": 0.058,
+          "faded": false
+        },
+        "BTC/USD": {
+          "baseClose": 73502.0625,
+          "lastClose": 73308.84375,
+          "movePct": -0.263,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": -0.192,
+          "faded": false
+        },
+        "ETH/USD": {
+          "baseClose": 2047.699951171875,
+          "lastClose": 2042.8199462890625,
+          "movePct": -0.238,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": -0.248,
+          "faded": false
+        },
+        "NAS100": {
+          "baseClose": 28236.5,
+          "lastClose": 28283,
+          "movePct": 0.165,
+          "dir": "long",
+          "minutes": 45,
+          "spikePct": -0.085,
+          "faded": true,
+          "via": "NQ=F"
+        },
+        "US500": {
+          "baseClose": 7609,
+          "lastClose": 7616.75,
+          "movePct": 0.102,
+          "dir": "long",
+          "minutes": 45,
+          "spikePct": -0.03,
+          "faded": false,
+          "via": "ES=F"
         }
       }
     }
