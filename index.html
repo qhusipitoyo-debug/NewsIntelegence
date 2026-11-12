@@ -4146,9 +4146,9 @@ async function load() {
             const urls = ['https://nfs.faireconomy.media/ff_calendar_thisweek.json', 'https://nfs.faireconomy.media/ff_calendar_nextweek.json'];
             const batches = await Promise.all(urls.map(async u => { const r = await fetch(u, { cache: 'no-store' }); return r.ok ? r.json() : []; }));
             const rank = { Low: 1, Medium: 2, High: 3 };
-            const keywords = /fed|fomc|interest rate|inflation|cpi|pce|payroll|employment|unemployment|jobless|gdp|pmi|ism|retail sales|consumer confidence|jolts|durable goods|powell|treasury|oil|crude|energy|gas|opec|eia|rig|inventories|distillate|gasoline/i;
+            const keywords = /fed|fomc|interest rate|inflation|cpi|pce|ppi|adp|payroll|employment|unemployment|jobless|gdp|pmi|ism|retail sales|consumer confidence|jolts|durable goods|powell|treasury|oil|crude|energy|gas|opec|eia|rig|inventories|distillate|gasoline|home sales|housing|building permits|industrial production|manufacturing|trade balance|ecb|boj|boe|rba|boc|rbnz/i;
             const allowedCountries = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'NZD', 'CAD'];
-            raw = batches.flat().filter(e => allowedCountries.includes(String(e.country || '').toUpperCase()) && keywords.test(e.title || '')).map(e => ({
+            raw = batches.flat().filter(e => allowedCountries.includes(String(e.country || '').toUpperCase()) && (e.impact === 'High' || e.impact === 'Medium' || keywords.test(e.title || ''))).map(e => ({
                 Date: e.date, Event: e.title, Country: e.country, Importance: rank[e.impact] || 1, Forecast: e.forecast || '', Previous: e.previous || '', Actual: e.actual || ''
             }));
         }

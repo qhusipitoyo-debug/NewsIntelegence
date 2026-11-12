@@ -475,12 +475,12 @@ async function fetchCalendar() {
 
   const rank = { Low: 1, Medium: 2, High: 3 };
   
-  // FILTER KANADA & MINYAK/ENERGI DITAMBAHKAN DI SINI
-  const keywords = /fed|fomc|interest rate|inflation|cpi|pce|payroll|employment|unemployment|jobless|gdp|pmi|ism|retail sales|consumer confidence|jolts|durable goods|powell|treasury|oil|crude|energy|gas|opec|eia|rig|inventories|distillate|gasoline/i;
+  // FILTER KANADA, PERUMAHAN, INDUSTRI, BANK SENTRAL & MINYAK/ENERGI
+  const keywords = /fed|fomc|interest rate|inflation|cpi|pce|ppi|adp|payroll|employment|unemployment|jobless|gdp|pmi|ism|retail sales|consumer confidence|jolts|durable goods|powell|treasury|oil|crude|energy|gas|opec|eia|rig|inventories|distillate|gasoline|home sales|housing|building permits|industrial production|manufacturing|trade balance|ecb|boj|boe|rba|boc|rbnz/i;
   const allowedCountries = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'NZD', 'CAD'];
 
   const events = batches.flat()
-    .filter(e => allowedCountries.includes(String(e.country || '').toUpperCase()) && keywords.test(e.title || ''))
+    .filter(e => allowedCountries.includes(String(e.country || '').toUpperCase()) && (e.impact === 'High' || e.impact === 'Medium' || keywords.test(e.title || '')))
     .map(e => ({
       Date: e.date,
       Event: e.title,
