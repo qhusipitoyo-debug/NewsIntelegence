@@ -1,207 +1,207 @@
 {
-  "generatedAt": "2026-11-11T18:12:18.218Z",
+  "generatedAt": "2026-11-12T00:40:35.515Z",
   "source": "OANDA (TradingView live)",
   "anchor": "OANDA",
   "quotes": {
     "EUR/USD": {
-      "price": 1.10931,
-      "consensus": 1.1093,
+      "price": 1.10942,
+      "consensus": 1.10942,
       "source": "OANDA",
-      "changePct": -0.6413069764525742,
-      "crossCheckPct": 0.007,
-      "providers": {
-        "OANDA": 1.10931,
-        "SAXO": 1.109335,
-        "FOREXCOM": 1.10929,
-        "CAPITALCOM": 1.10926,
-        "PEPPERSTONE": 1.1093,
-        "VANTAGE": 1.10932,
-        "FPMARKETS": 1.10934,
-        "EIGHTCAP": 1.10924,
-        "BLACKBULL": 1.10923,
-        "THINKMARKETS": 1.1093,
-        "SKILLING": 1.10932
-      },
-      "updatedAt": "2026-11-11T18:12:18.218Z"
-    },
-    "GBP/USD": {
-      "price": 1.32772,
-      "consensus": 1.32772,
-      "source": "OANDA",
-      "changePct": -0.5065643546550042,
-      "crossCheckPct": 0.008,
-      "providers": {
-        "OANDA": 1.32772,
-        "SAXO": 1.327755,
-        "FOREXCOM": 1.32783,
-        "CAPITALCOM": 1.32768,
-        "PEPPERSTONE": 1.32775,
-        "VANTAGE": 1.32775,
-        "FPMARKETS": 1.32772,
-        "EIGHTCAP": 1.32767,
-        "BLACKBULL": 1.32767,
-        "THINKMARKETS": 1.32777,
-        "SKILLING": 1.32771
-      },
-      "updatedAt": "2026-11-11T18:12:18.218Z"
-    },
-    "USD/JPY": {
-      "price": 159.857,
-      "consensus": 159.856,
-      "source": "OANDA",
-      "changePct": 0.6884432239046567,
+      "changePct": 0.03877401960343669,
       "crossCheckPct": 0.005,
       "providers": {
-        "OANDA": 159.857,
-        "SAXO": 159.856,
-        "FOREXCOM": 159.859,
-        "CAPITALCOM": 159.856,
-        "PEPPERSTONE": 159.858,
-        "VANTAGE": 159.859,
-        "FPMARKETS": 159.858,
-        "EIGHTCAP": 159.854,
-        "BLACKBULL": 159.852,
-        "THINKMARKETS": 159.853,
-        "SKILLING": 159.849
+        "OANDA": 1.10942,
+        "SAXO": 1.10943,
+        "FOREXCOM": 1.10943,
+        "CAPITALCOM": 1.10938,
+        "PEPPERSTONE": 1.10942,
+        "VANTAGE": 1.10942,
+        "FPMARKETS": 1.10943,
+        "EIGHTCAP": 1.10938,
+        "BLACKBULL": 1.10936,
+        "THINKMARKETS": 1.10938,
+        "SKILLING": 1.10937
       },
-      "updatedAt": "2026-11-11T18:12:18.218Z"
+      "updatedAt": "2026-11-12T00:40:35.515Z"
     },
-    "USD/CHF": {
-      "price": 0.83335,
-      "consensus": 0.833345,
+    "GBP/USD": {
+      "price": 1.32753,
+      "consensus": 1.32747,
       "source": "OANDA",
-      "changePct": 0.9729559443609729,
+      "changePct": 0.012807377049180588,
       "crossCheckPct": 0.008,
       "providers": {
-        "OANDA": 0.83335,
-        "SAXO": 0.833385,
-        "FOREXCOM": 0.833345,
-        "CAPITALCOM": 0.83331,
-        "PEPPERSTONE": 0.83336,
-        "VANTAGE": 0.83337,
-        "FPMARKETS": 0.83336,
-        "EIGHTCAP": 0.83329,
-        "BLACKBULL": 0.83328,
-        "THINKMARKETS": 0.8333,
-        "SKILLING": 0.83331
+        "OANDA": 1.32753,
+        "SAXO": 1.327485,
+        "FOREXCOM": 1.32753,
+        "CAPITALCOM": 1.32742,
+        "PEPPERSTONE": 1.32747,
+        "VANTAGE": 1.32751,
+        "FPMARKETS": 1.32749,
+        "EIGHTCAP": 1.32744,
+        "BLACKBULL": 1.32742,
+        "THINKMARKETS": 1.32747,
+        "SKILLING": 1.32743
       },
-      "updatedAt": "2026-11-11T18:12:18.218Z"
+      "updatedAt": "2026-11-12T00:40:35.515Z"
     },
-    "AUD/USD": {
-      "price": 0.68503,
-      "consensus": 0.685,
+    "USD/JPY": {
+      "price": 159.614,
+      "consensus": 159.609,
       "source": "OANDA",
-      "changePct": -0.23156913576650556,
-      "crossCheckPct": 0.013,
-      "providers": {
-        "OANDA": 0.68503,
-        "SAXO": 0.68503,
-        "FOREXCOM": 0.68501,
-        "CAPITALCOM": 0.68498,
-        "PEPPERSTONE": 0.685,
-        "VANTAGE": 0.685,
-        "FPMARKETS": 0.68501,
-        "EIGHTCAP": 0.68496,
-        "BLACKBULL": 0.68495,
-        "THINKMARKETS": 0.68495,
-        "SKILLING": 0.68494
-      },
-      "updatedAt": "2026-11-11T18:12:18.218Z"
-    },
-    "USD/CAD": {
-      "price": 1.4248,
-      "consensus": 1.42477,
-      "source": "OANDA",
-      "changePct": 0.4186459552034772,
-      "crossCheckPct": 0.01,
-      "providers": {
-        "OANDA": 1.4248,
-        "SAXO": 1.42477,
-        "FOREXCOM": 1.42485,
-        "CAPITALCOM": 1.42468,
-        "PEPPERSTONE": 1.42483,
-        "VANTAGE": 1.42481,
-        "FPMARKETS": 1.4248,
-        "EIGHTCAP": 1.4247,
-        "BLACKBULL": 1.42472,
-        "THINKMARKETS": 1.4247,
-        "SKILLING": 1.42466
-      },
-      "updatedAt": "2026-11-11T18:12:18.218Z"
-    },
-    "NZD/USD": {
-      "price": 0.55654,
-      "consensus": 0.55652,
-      "source": "OANDA",
-      "changePct": -0.6870215385713556,
-      "crossCheckPct": 0.023,
-      "providers": {
-        "OANDA": 0.55654,
-        "SAXO": 0.556535,
-        "FOREXCOM": 0.55653,
-        "CAPITALCOM": 0.55647,
-        "PEPPERSTONE": 0.55653,
-        "VANTAGE": 0.55652,
-        "FPMARKETS": 0.55655,
-        "EIGHTCAP": 0.55647,
-        "BLACKBULL": 0.55644,
-        "THINKMARKETS": 0.55649,
-        "SKILLING": 0.55641
-      },
-      "updatedAt": "2026-11-11T18:12:18.218Z"
-    },
-    "GBP/JPY": {
-      "price": 212.263,
-      "consensus": 212.251,
-      "source": "OANDA",
-      "changePct": 0.18312684365781956,
-      "crossCheckPct": 0.012,
-      "providers": {
-        "OANDA": 212.263,
-        "SAXO": 212.251,
-        "FOREXCOM": 212.253,
-        "CAPITALCOM": 212.25,
-        "PEPPERSTONE": 212.237,
-        "VANTAGE": 212.248,
-        "FPMARKETS": 212.253,
-        "EIGHTCAP": 212.241,
-        "BLACKBULL": 212.252,
-        "THINKMARKETS": 212.255,
-        "SKILLING": 212.238
-      },
-      "updatedAt": "2026-11-11T18:12:18.218Z"
-    },
-    "EUR/JPY": {
-      "price": 177.332,
-      "consensus": 177.33,
-      "source": "OANDA",
-      "changePct": 0.03836086289375374,
+      "changePct": -0.1226456416995169,
       "crossCheckPct": 0.006,
       "providers": {
-        "OANDA": 177.332,
-        "SAXO": 177.3355,
-        "FOREXCOM": 177.3375,
-        "CAPITALCOM": 177.321,
-        "PEPPERSTONE": 177.334,
-        "VANTAGE": 177.331,
-        "FPMARKETS": 177.33,
-        "EIGHTCAP": 177.326,
-        "BLACKBULL": 177.323,
-        "THINKMARKETS": 177.328,
-        "SKILLING": 177.325
+        "OANDA": 159.614,
+        "SAXO": 159.615,
+        "FOREXCOM": 159.606,
+        "CAPITALCOM": 159.609,
+        "PEPPERSTONE": 159.613,
+        "VANTAGE": 159.616,
+        "FPMARKETS": 159.612,
+        "EIGHTCAP": 159.609,
+        "BLACKBULL": 159.608,
+        "THINKMARKETS": 159.607,
+        "SKILLING": 159.605
       },
-      "updatedAt": "2026-11-11T18:12:18.218Z"
+      "updatedAt": "2026-11-12T00:40:35.515Z"
+    },
+    "USD/CHF": {
+      "price": 0.83236,
+      "consensus": 0.83235,
+      "source": "OANDA",
+      "changePct": -0.09122335317841163,
+      "crossCheckPct": 0.011,
+      "providers": {
+        "OANDA": 0.83236,
+        "SAXO": 0.832355,
+        "FOREXCOM": 0.832365,
+        "CAPITALCOM": 0.83229,
+        "PEPPERSTONE": 0.83235,
+        "VANTAGE": 0.83235,
+        "FPMARKETS": 0.83235,
+        "EIGHTCAP": 0.83227,
+        "BLACKBULL": 0.83228,
+        "THINKMARKETS": 0.8323,
+        "SKILLING": 0.83227
+      },
+      "updatedAt": "2026-11-12T00:40:35.515Z"
+    },
+    "AUD/USD": {
+      "price": 0.68383,
+      "consensus": 0.68378,
+      "source": "OANDA",
+      "changePct": -0.13873068722801576,
+      "crossCheckPct": 0.015,
+      "providers": {
+        "OANDA": 0.68383,
+        "SAXO": 0.683805,
+        "FOREXCOM": 0.68382,
+        "CAPITALCOM": 0.68377,
+        "PEPPERSTONE": 0.68378,
+        "VANTAGE": 0.68378,
+        "FPMARKETS": 0.68382,
+        "EIGHTCAP": 0.68374,
+        "BLACKBULL": 0.68374,
+        "THINKMARKETS": 0.68375,
+        "SKILLING": 0.68373
+      },
+      "updatedAt": "2026-11-12T00:40:35.515Z"
+    },
+    "USD/CAD": {
+      "price": 1.42492,
+      "consensus": 1.42489,
+      "source": "OANDA",
+      "changePct": -0.018243309617025708,
+      "crossCheckPct": 0.011,
+      "providers": {
+        "OANDA": 1.42492,
+        "SAXO": 1.4249,
+        "FOREXCOM": 1.42493,
+        "CAPITALCOM": 1.42481,
+        "PEPPERSTONE": 1.4249,
+        "VANTAGE": 1.42492,
+        "FPMARKETS": 1.42489,
+        "EIGHTCAP": 1.42484,
+        "BLACKBULL": 1.42485,
+        "THINKMARKETS": 1.42482,
+        "SKILLING": 1.42476
+      },
+      "updatedAt": "2026-11-12T00:40:35.515Z"
+    },
+    "NZD/USD": {
+      "price": 0.55596,
+      "consensus": 0.55594,
+      "source": "OANDA",
+      "changePct": -0.07189589474440218,
+      "crossCheckPct": 0.022,
+      "providers": {
+        "OANDA": 0.55596,
+        "SAXO": 0.55596,
+        "FOREXCOM": 0.555955,
+        "CAPITALCOM": 0.55587,
+        "PEPPERSTONE": 0.55594,
+        "VANTAGE": 0.55595,
+        "FPMARKETS": 0.55596,
+        "EIGHTCAP": 0.55588,
+        "BLACKBULL": 0.55588,
+        "THINKMARKETS": 0.5559,
+        "SKILLING": 0.55584
+      },
+      "updatedAt": "2026-11-12T00:40:35.515Z"
+    },
+    "GBP/JPY": {
+      "price": 211.894,
+      "consensus": 211.881,
+      "source": "OANDA",
+      "changePct": -0.11219429411875603,
+      "crossCheckPct": 0.012,
+      "providers": {
+        "OANDA": 211.894,
+        "SAXO": 211.89,
+        "FOREXCOM": 211.8895,
+        "CAPITALCOM": 211.881,
+        "PEPPERSTONE": 211.884,
+        "VANTAGE": 211.887,
+        "FPMARKETS": 211.879,
+        "EIGHTCAP": 211.871,
+        "BLACKBULL": 211.869,
+        "THINKMARKETS": 211.878,
+        "SKILLING": 211.877
+      },
+      "updatedAt": "2026-11-12T00:40:35.515Z"
+    },
+    "EUR/JPY": {
+      "price": 177.08,
+      "consensus": 177.074,
+      "source": "OANDA",
+      "changePct": -0.08689077716465032,
+      "crossCheckPct": 0.012,
+      "providers": {
+        "OANDA": 177.08,
+        "SAXO": 177.0825,
+        "FOREXCOM": 177.0785,
+        "CAPITALCOM": 177.058,
+        "PEPPERSTONE": 177.077,
+        "VANTAGE": 177.082,
+        "FPMARKETS": 177.074,
+        "EIGHTCAP": 177.058,
+        "BLACKBULL": 177.071,
+        "THINKMARKETS": 177.063,
+        "SKILLING": 177.068
+      },
+      "updatedAt": "2026-11-12T00:40:35.515Z"
     }
   },
   "rates": {
     "USD": 1,
-    "EUR": 0.9014612687165896,
-    "GBP": 0.7531708492754496,
-    "JPY": 159.857,
-    "CHF": 0.83335,
-    "AUD": 1.4597900821861816,
-    "CAD": 1.4248,
-    "NZD": 1.7968160419736225
+    "EUR": 0.9013718880135566,
+    "GBP": 0.7532786453036843,
+    "JPY": 159.614,
+    "CHF": 0.83236,
+    "AUD": 1.462351754090929,
+    "CAD": 1.42492,
+    "NZD": 1.7986905532772142
   },
   "providers": {
     "OANDA": {
