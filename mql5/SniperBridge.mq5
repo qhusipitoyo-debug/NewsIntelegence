@@ -54,6 +54,13 @@ input int      InStatsDays       = 30;     // jendela statistik trade tertutup (
 input int      InStatsMax        = 300;    // maksimum baris yang ditulis ke sniper_trades.txt
 input int      InStatsBars       = 270;    // bar 1 menit per simbol ke sniper_bars.txt (0 = nonaktif)
 
+//--- BTS STRATEGY (CCI 45 + EMA 200 - Ahmad 12fx System)
+input bool     InUseBTS          = true;    // Izinkan sinyal BTS Strategy
+input int      InCCIPeriod       = 45;      // Periode CCI (Median HL/2)
+input double   InCCILevelBuy     = -190.0;  // Level Oversold Buy
+input double   InCCILevelSell    = 100.0;   // Level Overbought Sell
+input int      InBTSEMAPeriod    = 200;     // Periode EMA konfirmasi
+
 CTrade trade;
 
 ulong    g_ticket[];
@@ -857,5 +864,33 @@ double AtrPoints(const string sym)
    if(CopyBuffer(h, 0, 1, 1, buf) < 1) return 0;
    double point = PointOf(sym);
    return point > 0 ? buf[0] / point : 0;
+}
+
+//+------------------------------------------------------------------+
+//| Hitung CCI 45 Median HL/2 untuk BTS Strategy                     |
+//+------------------------------------------------------------------+
+double CalcCCI45(const string sym, const int shift = 0)
+{
+   int h = (int)iCCI(sym, PERIOD_CURRENT, InCCIPeriod, PRICE_MEDIAN);
+   if(h == INVALID_HANDLE) return 0.0;
+   double buf[];
+   double res = 0.0;
+   if(CopyBuffer(h, 0, shift, 1, buf) >= 1) res = buf[0];
+   IndicatorRelease(h);
+   return res;
+}
+
+//+------------------------------------------------------------------+
+//| Hitung EMA 200 Close untuk BTS Strategy baseline                 |
+//+------------------------------------------------------------------+
+double CalcEMA200(const string sym, const int shift = 0)
+{
+   int h = (int)iMA(sym, PERIOD_CURRENT, InBTSEMAPeriod, 0, MODE_EMA, PRICE_CLOSE);
+   if(h == INVALID_HANDLE) return 0.0;
+   double buf[];
+   double res = 0.0;
+   if(CopyBuffer(h, 0, shift, 1, buf) >= 1) res = buf[0];
+   IndicatorRelease(h);
+   return res;
 }
 //+------------------------------------------------------------------+

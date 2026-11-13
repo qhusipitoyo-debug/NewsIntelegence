@@ -3523,12 +3523,190 @@ function calibratedWatchSignal({
 }
 
 // =====================================================================
-// HYBRID INSTITUTIONAL STRATEGY ENGINE (SMC + Trend/RSI + News Straddle)
-// Menggabungkan 4 Pilar:
+// BTS STRATEGY INDICATOR & TRIGGER ENGINE (Ahmad 12fx System)
+// 1. Main Chart: EMA(200) Exponential pada Close
+// 2. Indicator Window 1: CCI(45, Median HL/2)
+//    - Extreme Demand Zone (BUY Trigger): CCI <= -190 (cross-up rebound)
+//    - Extreme Supply Zone (SELL Trigger): CCI >= +100 (cross-down rejection)
+// 3. Indicator Window 1 Overlay: EMA(200) Baseline pada data indikator
+// =====================================================================
+function calcCCI(bars, period = 45) {
+    if (!Array.isArray(bars) || bars.length < period) return [];
+    const tps = bars.map(b => {
+        const h = Number(b.h ?? b.high ?? b.c ?? b.close ?? 0);
+        const l = Number(b.l ?? b.low ?? b.c ?? b.close ?? 0);
+        return (h + l) / 2.0; // Median Price (HL/2)
+    });
+    const cci = new Array(bars.length).fill(0);
+    let sum = 0;
+    for (let i = 0; i < bars.length; i++) {
+        sum += tps[i];
+        if (i >= period) {
+            sum -= tps[i - period];
+        }
+        if (i >= period - 1) {
+            const sma = sum / period;
+            let mdSum = 0;
+            for (let j = i - period + 1; j <= i; j++) {
+                mdSum += Math.abs(tps[j] - sma);
+            }
+            const md = mdSum / period;
+            cci[i] = md > 0 ? (tps[i] - sma) / (0.015 * md) : 0;
+        }
+    }
+    return cci;
+}
+
+function calcEMA(values, period = 200) {
+    if (!Array.isArray(values) || values.length === 0) return [];
+    const ema = new Array(values.length).fill(0);
+    const k = 2 / (period + 1);
+    ema[0] = values[0];
+    for (let i = 1; i < values.length; i++) {
+        ema[i] = values[i] * k + ema[i - 1] * (1 - k);
+    }
+    return ema;
+}
+
+function btsStrategySignal({ kind = 'gold', asset = 'XAU/USD', price = null, bars = null } = {}) {
+    const px = Number.isFinite(Number(price)) && Number(price) > 0
+        ? Number(price)
+        : (typeof assetPrice === 'function' ? assetPrice(kind, asset) : null);
+    if (!Number.isFinite(px) || px <= 0) return { dir: 'wait', mode: 'WAIT', score: 0, reason: 'Menunggu harga live…', factors: [] };
+
+    const barList = Array.isArray(bars) ? bars : (typeof assetBars === 'function' ? assetBars(asset) : []);
+    const cleanBars = (barList || []).slice(-300)
+        .map(b => ({
+            o: Number(b && (b.o ?? b.open)),
+            h: Number(b && (b.h ?? b.high)),
+            l: Number(b && (b.l ?? b.low)),
+            c: Number(b && (b.c ?? b.close))
+        }))
+        .filter(b => b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0);
+
+    if (cleanBars.length < 46) {
+        return { dir: 'wait', mode: 'BTS_WAIT', score: 0, reason: `Bar histori belum cukup untuk BTS (${cleanBars.length}/46 bar).`, factors: [] };
+    }
+
+    const cci = calcCCI(cleanBars, 45);
+    const closes = cleanBars.map(b => b.c);
+    const ema200 = calcEMA(closes, Math.min(200, cleanBars.length));
+    const emaCCI = calcEMA(cci, Math.min(200, cleanBars.length));
+
+    const currIdx = cleanBars.length - 1;
+    const prevIdx = currIdx - 1;
+    const currCCI = cci[currIdx];
+    const prevCCI = cci[prevIdx];
+    const currEMA200 = ema200[currIdx];
+    const currEMACCI = emaCCI[currIdx];
+
+    const recentCCI = cci.slice(-8);
+    const minRecentCCI = Math.min(...recentCCI);
+    const maxRecentCCI = Math.max(...recentCCI);
+
+    const isOversoldDip = minRecentCCI <= -190.0;
+    const isOverboughtSpike = maxRecentCCI >= 100.0;
+
+    // Trigger BUY:
+    // Rebound dari -190 (Demand / Liquidity Run) & konfirmasi baseline EMA200
+    const crossUpBuy = (prevCCI <= -190.0 && currCCI > -190.0) || (isOversoldDip && currCCI > -180.0 && currCCI > prevCCI + 4);
+    const emaTrendBuy = px >= currEMA200 * 0.992; // Dekat atau di atas EMA200
+
+    // Trigger SELL:
+    // Reject dari +100 (Supply / Exhaustion) & konfirmasi baseline EMA200
+    const crossDownSell = (prevCCI >= 100.0 && currCCI < 100.0) || (isOverboughtSpike && currCCI < 90.0 && currCCI < prevCCI - 4);
+    const emaTrendSell = px <= currEMA200 * 1.008; // Dekat atau di bawah EMA200
+
+    let chosenDir = 'wait';
+    let score = 0;
+    const factors = [];
+    let reason = '';
+
+    if (crossUpBuy && emaTrendBuy) {
+        chosenDir = 'long';
+        score = 90;
+        factors.push(`CCI(45) Rebound dari Level -190 (${currCCI.toFixed(1)})`);
+        factors.push(`Konfirmasi EMA(200) Baseline (${currEMA200.toFixed(2)})`);
+        if (currCCI > currEMACCI) factors.push('CCI Cross di atas Signal EMA');
+        reason = `🚀 BTS STRATEGY BUY: CCI(45) rebound dari -190 (${currCCI.toFixed(1)}) & harga di atas EMA200 (${currEMA200.toFixed(2)}).`;
+    } else if (crossDownSell && emaTrendSell) {
+        chosenDir = 'short';
+        score = 90;
+        factors.push(`CCI(45) Reject dari Level +100 (${currCCI.toFixed(1)})`);
+        factors.push(`Konfirmasi EMA(200) Resistance (${currEMA200.toFixed(2)})`);
+        if (currCCI < currEMACCI) factors.push('CCI Cross di bawah Signal EMA');
+        reason = `🔻 BTS STRATEGY SELL: CCI(45) reject dari +100 (${currCCI.toFixed(1)}) & harga di bawah EMA200 (${currEMA200.toFixed(2)}).`;
+    } else {
+        chosenDir = 'wait';
+        score = 50;
+        const status = currCCI <= -190 ? 'Zona Extreme Oversold (siap BUY saat cross up)'
+            : currCCI >= 100 ? 'Zona Extreme Overbought (siap SELL saat cross down)'
+            : 'Netral';
+        reason = `BTS Strategy Standby: CCI(45)=${currCCI.toFixed(1)}, Status=${status}, EMA(200)=${currEMA200.toFixed(2)}`;
+    }
+
+    // Hitung Level Presisi SL & TP (Gold SL max $8.50)
+    let levels = null;
+    if (chosenDir === 'long' || chosenDir === 'short') {
+        const isBuy = chosenDir === 'long';
+        const dec = (kind === 'gold' || String(asset).includes('XAU') ? 2 : (px > 10 ? 3 : 5));
+        const recentSwings = cleanBars.slice(-12);
+        
+        let slDist = 0;
+        if (kind === 'gold' || String(asset).includes('XAU')) {
+            slDist = 8.5; // Batas risiko maksimal $8.50 untuk lot 0.01 di akun $1050
+            if (isBuy) {
+                const swingLo = Math.min(...recentSwings.map(b => b.l));
+                const structDist = px - swingLo + 0.5;
+                if (structDist > 0 && structDist <= 8.5) slDist = structDist;
+            } else {
+                const swingHi = Math.max(...recentSwings.map(b => b.h));
+                const structDist = swingHi - px + 0.5;
+                if (structDist > 0 && structDist <= 8.5) slDist = structDist;
+            }
+        } else {
+            slDist = px > 10 ? 0.35 : 0.0025; // Forex 25-35 pips
+            if (isBuy) {
+                const swingLo = Math.min(...recentSwings.map(b => b.l));
+                const structDist = px - swingLo + (px > 10 ? 0.05 : 0.0005);
+                if (structDist > 0 && structDist <= slDist * 1.5) slDist = structDist;
+            } else {
+                const swingHi = Math.max(...recentSwings.map(b => b.h));
+                const structDist = swingHi - px + (px > 10 ? 0.05 : 0.0005);
+                if (structDist > 0 && structDist <= slDist * 1.5) slDist = structDist;
+            }
+        }
+
+        const entry = px;
+        const sl = Number((isBuy ? entry - slDist : entry + slDist).toFixed(dec));
+        const tp1 = Number((isBuy ? entry + slDist * 1.5 : entry - slDist * 1.5).toFixed(dec));
+        const tp2 = Number((isBuy ? entry + slDist * 2.5 : entry - slDist * 2.5).toFixed(dec));
+        levels = { entry, sl, tp1, tp: tp2, rr: 2.5, slDist, dec };
+    }
+
+    return {
+        dir: chosenDir,
+        mode: chosenDir === 'wait' ? 'BTS_WAIT' : 'BTS_ACTIVE',
+        score,
+        factors,
+        reason,
+        levels,
+        cci: Number(currCCI.toFixed(1)),
+        ema200: Number(currEMA200.toFixed(2)),
+        emaCCI: Number(currEMACCI.toFixed(1)),
+        minRecentCCI: Number(minRecentCCI.toFixed(1)),
+        maxRecentCCI: Number(maxRecentCCI.toFixed(1))
+    };
+}
+
+// =====================================================================
+// HYBRID INSTITUTIONAL STRATEGY ENGINE (SMC + Trend/RSI + News Straddle + BTS)
+// Menggabungkan 5 Pilar:
 // 1. News Guard & Straddle Breakout OCO (<2m pra-rilis / 15m post settle)
 // 2. Trend & Momentum Filter (EMA20 vs EMA50, RSI Safe Zone)
 // 3. Smart Money Concepts (Liquidity Sweep, BOS/CHoCH, FVG/OTE Retest)
-// 4. Dynamic Risk & Auto-Breakeven (+1R zero-risk lock)
+// 4. BTS Strategy (CCI 45 Median HL/2 Levels -190 / +100 + EMA 200)
+// 5. Dynamic Risk & Auto-Breakeven (+1R zero-risk lock)
 // =====================================================================
 function hybridConfluenceSignal({ kind, asset, event = null, now = Date.now(), price = null, bars = null } = {}) {
     const px = Number.isFinite(Number(price)) && Number(price) > 0
@@ -3647,6 +3825,25 @@ function hybridConfluenceSignal({ kind, asset, event = null, now = Date.now(), p
         if (spike.fadedDir === 'short') scoreSell -= 25;
     }
 
+    // Pilar 4: BTS Strategy Confluence (CCI 45 Median HL/2 + EMA 200)
+    let btsBuy = false;
+    let btsSell = false;
+    let btsInfo = null;
+    try {
+        if (typeof btsStrategySignal === 'function') {
+            btsInfo = btsStrategySignal({ kind, asset, price: px, bars: cleanBars });
+            if (btsInfo && btsInfo.dir === 'long') {
+                btsBuy = true;
+                scoreBuy += 30;
+                buyFactors.push(`BTS Rebound > -190 (CCI ${btsInfo.cci})`);
+            } else if (btsInfo && btsInfo.dir === 'short') {
+                btsSell = true;
+                scoreSell += 30;
+                sellFactors.push(`BTS Reject < +100 (CCI ${btsInfo.cci})`);
+            }
+        }
+    } catch (e) {}
+
     // Evaluasi Keputusan Akhir:
     const minConfluence = 75;
     let chosenDir = 'wait';
@@ -3654,12 +3851,12 @@ function hybridConfluenceSignal({ kind, asset, event = null, now = Date.now(), p
     let chosenFactors = [];
     let chosenReason = '';
 
-    if (scoreBuy >= minConfluence && !rsiBuyBlocked && (sweepBuy || oteBuy || bosBuy)) {
+    if (scoreBuy >= minConfluence && !rsiBuyBlocked && (sweepBuy || oteBuy || bosBuy || btsBuy)) {
         chosenDir = 'long';
         chosenScore = scoreBuy;
         chosenFactors = buyFactors;
         chosenReason = `🔥 Konfluensi Hybrid KUAT (BUY ${scoreBuy}%): ${buyFactors.join(' · ')}`;
-    } else if (scoreSell >= minConfluence && !rsiSellBlocked && (sweepSell || oteSell || bosSell)) {
+    } else if (scoreSell >= minConfluence && !rsiSellBlocked && (sweepSell || oteSell || bosSell || btsSell)) {
         chosenDir = 'short';
         chosenScore = scoreSell;
         chosenFactors = sellFactors;
@@ -3670,7 +3867,7 @@ function hybridConfluenceSignal({ kind, asset, event = null, now = Date.now(), p
         if (rsiBuyBlocked) reasons.push('RSI jenuh beli (>68), tahan buy di pucuk');
         if (rsiSellBlocked) reasons.push('RSI jenuh jual (<32), tahan sell di dasar');
         if (!isTrendBull && !isTrendBear) reasons.push('Tren EMA belum jelas/sideways');
-        if (!sweepBuy && !sweepSell && !oteBuy && !oteSell) reasons.push('Menunggu retest ke zona OTE / FVG');
+        if (!sweepBuy && !sweepSell && !oteBuy && !oteSell && !btsBuy && !btsSell) reasons.push('Menunggu retest ke zona OTE / FVG / BTS Trigger');
         chosenReason = `WAIT (Skor Buy ${scoreBuy}%, Sell ${scoreSell}%): ${reasons.join(' · ') || 'Konfluensi belum mencapai 75%'}`;
         chosenFactors = scoreBuy > scoreSell ? buyFactors : sellFactors;
     }
@@ -3722,10 +3919,16 @@ function hybridConfluenceSignal({ kind, asset, event = null, now = Date.now(), p
         isTrendBull,
         isTrendBear,
         rsi: rsi !== null ? Math.round(rsi) : null,
+        bts: btsInfo,
         spike
     };
 }
-if (typeof window !== 'undefined') window.hybridConfluenceSignal = hybridConfluenceSignal;
+if (typeof window !== 'undefined') {
+    window.hybridConfluenceSignal = hybridConfluenceSignal;
+    window.calcCCI = calcCCI;
+    window.calcEMA = calcEMA;
+    window.btsStrategySignal = btsStrategySignal;
+}
 
 function signalLockKey(e, asset) {
     return SIGNAL_LOCK_PREFIX + dateEventKey(e) + '|' + String(asset).toUpperCase();
@@ -4792,7 +4995,7 @@ function renderMt5Modal() {
 
             <div style="background:rgba(39,213,224,0.08); border:1px solid rgba(39,213,224,0.25); border-radius:12px; padding:12px; margin-bottom:16px; font-size:12px; line-height:1.5;">
                 <div style="font-weight:800; color:var(--aqua); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
-                    <span>🛡️</span> STRATEGI AKTIF: HYBRID INSTITUSIONAL 4-IN-1
+                    <span>🛡️</span> STRATEGI AKTIF: HYBRID INSTITUSIONAL + BTS SYSTEM
                 </div>
                 <ul style="margin:0; padding-left:18px; color:var(--ink);">
                     <li><b>SMC & Order Block:</b> Menunggu Liquidity Sweep & Retest FVG (Tanpa FOMO di pucuk).</li>
@@ -4800,6 +5003,29 @@ function renderMt5Modal() {
                     <li><b>News Straddle OCO:</b> Menjebak lonjakan berita dengan Buy Stop + Sell Stop tanpa tebak data.</li>
                     <li><b>Proteksi Modal:</b> Auto-Breakeven di +1R (Zero Risk Trade), Time-stop 60m nonaktif.</li>
                 </ul>
+            </div>
+
+            <div style="background:rgba(16,185,129,0.08); border:1px solid rgba(16,185,129,0.25); border-radius:12px; padding:12px; margin-bottom:16px; font-size:12px; line-height:1.5;">
+                <div style="font-weight:800; color:#10b981; margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                    <span>🎯</span> STRATEGI BTS (AHMAD 12FX - YOUTUBE SYSTEM)
+                </div>
+                <div style="color:var(--ink); margin-bottom:8px;">
+                    • <b>Indicator Window 1:</b> CCI(45, Median HL/2) Level Buy: <b>-190</b>, Level Sell: <b>+100</b>.<br>
+                    • <b>Main Chart:</b> EMA(200) Exponential pada Close (Filter Tren Baseline).<br>
+                    • <b>Trigger BUY:</b> CCI &le; -190 (Demand Liquidity) & rebound cross-up ke atas -190.<br>
+                    • <b>Trigger SELL:</b> CCI &ge; +100 (Supply Liquidity) & reject cross-down ke bawah +100.<br>
+                    • <b>Risk Management:</b> Stop Loss swing terkalibrasi &le; $8.50 pada Gold (aman batas risiko 1%).
+                </div>
+                <div id="btsStatusBadge" style="background:rgba(0,0,0,0.3); border-radius:8px; padding:6px 10px; font-family:monospace; font-size:11px; color:var(--aqua);">
+                    ${(() => {
+                        try {
+                            const bts = typeof btsStrategySignal === 'function' ? btsStrategySignal({ kind: 'gold', asset: 'XAU/USD' }) : null;
+                            if (!bts) return 'Indikator BTS: Menghubungkan data…';
+                            const st = bts.dir === 'long' ? '🟢 BUY TRIGGER' : (bts.dir === 'short' ? '🔴 SELL TRIGGER' : '⚪ Standby / Netral');
+                            return `XAUUSD BTS: CCI(45)=${bts.cci} (min:${bts.minRecentCCI}, max:${bts.maxRecentCCI}) | EMA200=${bts.ema200} | Status: ${st}`;
+                        } catch(e) { return 'Indikator BTS: Siap'; }
+                    })()}
+                </div>
             </div>
 
             <div style="background:rgba(5,17,25,0.6); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:16px;">
@@ -4810,11 +5036,12 @@ function renderMt5Modal() {
                 </label>
                 <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                     <input type="checkbox" ${MT5_BRIDGE_CFG.autoTrade ? 'checked' : ''} onchange="toggleMt5AutoTrade(this.checked)">
-                    <span><b>Auto-Trade Sinyal Hybrid:</b> Eksekusi otomatis jika Konfluensi Hybrid ≥ 75%</span>
+                    <span><b>Auto-Trade Sinyal Hybrid & BTS:</b> Eksekusi otomatis jika konfluensi & trigger terpenuhi</span>
                 </label>
             </div>
 
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button type="button" onclick="testOrderBTS('XAUUSD')" class="btn-mt5-exec" style="padding:8px 14px; font-size:12px; background:linear-gradient(135deg, #10b981, #059669); color:#fff; font-weight:700;">🚀 Tes Order BTS Strategy Gold</button>
                 <button type="button" onclick="testOrderMt5('EURUSD')" class="btn-mt5-exec" style="padding:8px 14px; font-size:12px;">🧪 Tes Order EURUSD (0.01 lot)</button>
                 <button type="button" onclick="testOrderMt5('XAUUSD')" class="btn-mt5-exec" style="padding:8px 14px; font-size:12px; background:linear-gradient(135deg, #27d5e0, #1793a3); color:#031510;">🧪 Tes Order Gold (0.01 lot)</button>
                 <button type="button" onclick="testStraddleMt5('XAUUSD')" class="btn-mt5-exec" style="padding:8px 14px; font-size:12px; background:linear-gradient(135deg, #f2b84b, #d99b26); color:#031510;">⚡ Tes Straddle OCO Gold</button>
@@ -4864,6 +5091,41 @@ async function testStraddleMt5(symbol = 'XAUUSD') {
     showMt5Toast(`⚡ Mengirim Straddle OCO ${sym}: Buy Stop @${buyStop} & Sell Stop @${sellStop}`, 'info');
     await sendOrderToMt5(sym, 'BUY_STOP', buyStop, slBuy, tpBuy);
     await sendOrderToMt5(sym, 'SELL_STOP', sellStop, slSell, tpSell);
+}
+
+async function testOrderBTS(symbol = 'XAUUSD') {
+    const sym = symbol.replace('/', '').toUpperCase();
+    const kind = sym.includes('XAU') ? 'gold' : 'forex';
+    const pair = sym.includes('XAU') ? 'XAU/USD' : (sym.slice(0,3) + '/' + sym.slice(3));
+    
+    const q = (mt5StatusState.quotes && (mt5StatusState.quotes[sym] || mt5StatusState.quotes[pair])) || null;
+    const px = q ? q.ask : (typeof assetPrice === 'function' ? assetPrice(kind, pair) : (sym === 'XAUUSD' ? 3898.0 : 1.1050));
+    
+    let bts = typeof btsStrategySignal === 'function' ? btsStrategySignal({ kind, asset: pair, price: px }) : null;
+    
+    let act = 'BUY';
+    let entry = px;
+    let sl = 0;
+    let tp = 0;
+    
+    if (bts && bts.levels && bts.dir !== 'wait') {
+        act = bts.dir === 'long' ? 'BUY' : 'SELL';
+        entry = bts.levels.entry;
+        sl = bts.levels.sl;
+        tp = bts.levels.tp;
+        showMt5Toast(`🚀 Mengeksekusi Sinyal Realtime BTS Strategy ${sym}: ${act} @${entry} (CCI ${bts.cci})`, 'info');
+    } else {
+        const slDist = (sym === 'XAUUSD' ? 8.5 : 0.0025);
+        const dec = (sym === 'XAUUSD' ? 2 : 5);
+        const cciVal = bts ? bts.cci : -45;
+        act = cciVal < 0 ? 'BUY' : 'SELL';
+        entry = px;
+        sl = Number((act === 'BUY' ? entry - slDist : entry + slDist).toFixed(dec));
+        tp = Number((act === 'BUY' ? entry + slDist * 2.5 : entry - slDist * 2.5).toFixed(dec));
+        showMt5Toast(`🧪 Tes Order BTS Strategy ${sym}: ${act} @${entry} (SL $${slDist}, TP 1:2.5, CCI ${cciVal})`, 'info');
+    }
+
+    await sendOrderToMt5(sym, act, entry, sl, tp, 0.01);
 }
 
 function scanAndAutoTradeFromWeb() {
@@ -4920,6 +5182,20 @@ function scanAndAutoTradeFromWeb() {
             }
         }
     });
+
+    // 3. Scan BTS Strategy (CCI 45 Median HL/2 + Levels -190 / +100 + EMA 200)
+    if (typeof btsStrategySignal === 'function') {
+        const btsGold = btsStrategySignal({ kind: 'gold', asset: 'XAU/USD' });
+        if (btsGold && btsGold.dir && btsGold.dir !== 'wait' && btsGold.levels) {
+            const act = btsGold.dir === 'long' ? 'BUY' : 'SELL';
+            const key = `XAUUSD|${act}|BTS|${Math.round(btsGold.levels.entry)}`;
+            if (!MT5_BRIDGE_CFG.executedMap.has(key)) {
+                MT5_BRIDGE_CFG.executedMap.add(key);
+                showMt5Toast(`🚀 Auto-Trade BTS Strategy Gold: ${act} (CCI ${btsGold.cci}). Mengeksekusi...`, 'info');
+                sendOrderToMt5('XAUUSD', act, btsGold.levels.entry, btsGold.levels.sl, btsGold.levels.tp);
+            }
+        }
+    }
 }
 
 // Inisialisasi pengecekan MT5 bridge & scanner auto-trade
