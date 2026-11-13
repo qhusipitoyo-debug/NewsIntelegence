@@ -3522,6 +3522,211 @@ function calibratedWatchSignal({
     };
 }
 
+// =====================================================================
+// HYBRID INSTITUTIONAL STRATEGY ENGINE (SMC + Trend/RSI + News Straddle)
+// Menggabungkan 4 Pilar:
+// 1. News Guard & Straddle Breakout OCO (<2m pra-rilis / 15m post settle)
+// 2. Trend & Momentum Filter (EMA20 vs EMA50, RSI Safe Zone)
+// 3. Smart Money Concepts (Liquidity Sweep, BOS/CHoCH, FVG/OTE Retest)
+// 4. Dynamic Risk & Auto-Breakeven (+1R zero-risk lock)
+// =====================================================================
+function hybridConfluenceSignal({ kind, asset, event = null, now = Date.now(), price = null, bars = null } = {}) {
+    const px = Number.isFinite(Number(price)) && Number(price) > 0
+        ? Number(price)
+        : (typeof assetPrice === 'function' ? assetPrice(kind, asset) : null);
+    if (!Number.isFinite(px) || px <= 0) return { dir: 'wait', mode: 'WAIT', score: 0, reason: 'Menunggu harga live…', factors: [] };
+
+    const barList = Array.isArray(bars) ? bars : (typeof assetBars === 'function' ? assetBars(asset) : []);
+    const cleanBars = (barList || []).slice(-120)
+        .map(b => ({ o: Number(b && b.o), h: Number(b && b.h), l: Number(b && b.l), c: Number(b && b.c) }))
+        .filter(b => b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0);
+
+    // 1. Pilar 1: Mode Kalender Berita (News Straddle OCO & Spread Settle)
+    if (event) {
+        const ph = typeof newsPhase === 'function' ? newsPhase(event, now) : null;
+        const relMs = Date.parse(event.Date);
+        const imp = +(event.Importance) || 1;
+
+        // A. Pra-Rilis < 2 Menit pada Event High-Impact -> Aktifkan STRADDLE BREAKOUT OCO
+        if (imp >= 3 && Number.isFinite(relMs) && relMs - now <= 2 * 60 * 1000 && relMs - now > 0) {
+            const rangeBars = cleanBars.slice(-15);
+            if (rangeBars.length >= 5) {
+                const high = Math.max(...rangeBars.map(b => b.h));
+                const low = Math.min(...rangeBars.map(b => b.l));
+                const spreadBuf = (kind === 'gold' ? 0.8 : (kind === 'forex' ? 0.0008 : 5.0));
+                const buyStop = Number((high + spreadBuf).toFixed(px > 10 ? 2 : 5));
+                const sellStop = Number((low - spreadBuf).toFixed(px > 10 ? 2 : 5));
+                const slDist = Math.max(spreadBuf * 3, (high - low) * 0.5);
+                return {
+                    dir: 'straddle',
+                    mode: 'STRADDLE',
+                    score: 90,
+                    buyStop,
+                    sellStop,
+                    slBuy: Number((buyStop - slDist).toFixed(px > 10 ? 2 : 5)),
+                    tpBuy: Number((buyStop + slDist * 2).toFixed(px > 10 ? 2 : 5)),
+                    slSell: Number((sellStop + slDist).toFixed(px > 10 ? 2 : 5)),
+                    tpSell: Number((sellStop - slDist * 2).toFixed(px > 10 ? 2 : 5)),
+                    reason: `⚡ High-Impact News < 2m (${event.Event}): Mode Straddle OCO aktif di atas ${buyStop} & di bawah ${sellStop}.`,
+                    factors: ['Straddle OCO', 'No Blind Market Order', 'High-Impact Guard']
+                };
+            }
+        }
+
+        // B. Waktu Rilis 15 Menit Pertama -> Settle Guard (Hindari Spread Spike & Whipsaw)
+        if (ph === 'live' || (imp >= 2 && Number.isFinite(relMs) && now - relMs >= 0 && now - relMs <= 10 * 60 * 1000)) {
+            return {
+                dir: 'wait',
+                mode: 'SETTLE',
+                score: 30,
+                reason: `⏳ Rilis berita baru saja terjadi (${event.Event || 'High-Impact'}): Menunggu lilin M5 menutup dan spread kembali normal.`,
+                factors: ['Post-News Settle', 'Spread Protection']
+            };
+        }
+    }
+
+    if (cleanBars.length < 25) {
+        return { dir: 'wait', mode: 'WAIT', score: 35, reason: 'Bar teknikal belum cukup untuk validasi SMC.', factors: ['Insufficient Bars'] };
+    }
+
+    // 2. Pilar 2: Filter Tren Makro & Momentum (EMA 20/50 + RSI Smoothed)
+    const closes = cleanBars.map(b => b.c);
+    const ema20 = typeof emaSeries === 'function' ? emaSeries(closes, 20) : null;
+    const ema50 = typeof emaSeries === 'function' ? emaSeries(closes, 50) : null;
+    const rsi = typeof rsiValue === 'function' ? rsiValue(closes, 14) : null;
+    const spike = typeof detectPriceSpike === 'function' ? detectPriceSpike(cleanBars, px) : { state: 'NONE', fadedDir: null };
+
+    const isTrendBull = ema20 && ema50 ? (ema20 > ema50 && px > ema50) : false;
+    const isTrendBear = ema20 && ema50 ? (ema20 < ema50 && px < ema50) : false;
+
+    // 3. Pilar 3: Smart Money Concepts (SMC)
+    const ict = typeof detectICT === 'function' ? detectICT(cleanBars) : [];
+    const sweepBuy = ict.some(x => x.dir === 'buy' && /sweep/i.test(x.tag));
+    const sweepSell = ict.some(x => x.dir === 'sell' && /sweep/i.test(x.tag));
+    const bosBuy = ict.some(x => x.dir === 'buy' && /bos/i.test(x.tag));
+    const bosSell = ict.some(x => x.dir === 'sell' && /bos/i.test(x.tag));
+    const oteBuy = ict.some(x => x.dir === 'buy' && /ote|fvg/i.test(x.tag));
+    const oteSell = ict.some(x => x.dir === 'sell' && /ote|fvg/i.test(x.tag));
+
+    // Skoring Konfluensi Hybrid:
+    let scoreBuy = 0;
+    let scoreSell = 0;
+    const buyFactors = [];
+    const sellFactors = [];
+
+    // Bobot Tren (30 pts)
+    if (isTrendBull) { scoreBuy += 30; buyFactors.push('Tren Bullish (EMA20 > EMA50)'); }
+    if (isTrendBear) { scoreSell += 30; sellFactors.push('Tren Bearish (EMA20 < EMA50)'); }
+
+    // Bobot SMC Liquidity Sweep & Structure Shift (35 pts)
+    if (sweepBuy) { scoreBuy += 20; buyFactors.push('Liquidity Sweep Low (Stop Hunt Bawah)'); }
+    if (bosBuy) { scoreBuy += 15; buyFactors.push('Bullish BOS (Break of Structure)'); }
+    if (sweepSell) { scoreSell += 20; sellFactors.push('Liquidity Sweep High (Stop Hunt Atas)'); }
+    if (bosSell) { scoreSell += 15; sellFactors.push('Bearish BOS (Break of Structure)'); }
+
+    // Bobot Retest ke Zona Diskon / FVG / OTE (20 pts)
+    if (oteBuy) { scoreBuy += 20; buyFactors.push('Retest ke FVG / OTE Discount Zone'); }
+    if (oteSell) { scoreSell += 20; sellFactors.push('Retest ke FVG / OTE Premium Zone'); }
+
+    // Bobot RSI Filter Sehat (15 pts) & Guard Jenuh
+    let rsiBuyBlocked = false;
+    let rsiSellBlocked = false;
+    if (rsi !== null) {
+        if (rsi > 68) { rsiBuyBlocked = true; } // Dilarang BUY di pucuk jenuh beli
+        else if (rsi >= 40 && rsi <= 65) { scoreBuy += 15; buyFactors.push(`RSI Sehat (${Math.round(rsi)})`); }
+        else if (rsi < 35) { scoreBuy += 10; buyFactors.push(`RSI Oversold Pullback (${Math.round(rsi)})`); }
+
+        if (rsi < 32) { rsiSellBlocked = true; } // Dilarang SELL di dasar jenuh jual
+        else if (rsi >= 35 && rsi <= 60) { scoreSell += 15; sellFactors.push(`RSI Sehat (${Math.round(rsi)})`); }
+        else if (rsi > 65) { scoreSell += 10; sellFactors.push(`RSI Overbought Pullback (${Math.round(rsi)})`); }
+    }
+
+    // Penalti Fakeout Spikes
+    if (spike.state === 'SPIKE_FADED') {
+        if (spike.fadedDir === 'long') scoreBuy -= 25;
+        if (spike.fadedDir === 'short') scoreSell -= 25;
+    }
+
+    // Evaluasi Keputusan Akhir:
+    const minConfluence = 75;
+    let chosenDir = 'wait';
+    let chosenScore = Math.max(scoreBuy, scoreSell);
+    let chosenFactors = [];
+    let chosenReason = '';
+
+    if (scoreBuy >= minConfluence && !rsiBuyBlocked && (sweepBuy || oteBuy || bosBuy)) {
+        chosenDir = 'long';
+        chosenScore = scoreBuy;
+        chosenFactors = buyFactors;
+        chosenReason = `🔥 Konfluensi Hybrid KUAT (BUY ${scoreBuy}%): ${buyFactors.join(' · ')}`;
+    } else if (scoreSell >= minConfluence && !rsiSellBlocked && (sweepSell || oteSell || bosSell)) {
+        chosenDir = 'short';
+        chosenScore = scoreSell;
+        chosenFactors = sellFactors;
+        chosenReason = `🔥 Konfluensi Hybrid KUAT (SELL ${scoreSell}%): ${sellFactors.join(' · ')}`;
+    } else {
+        chosenDir = 'wait';
+        const reasons = [];
+        if (rsiBuyBlocked) reasons.push('RSI jenuh beli (>68), tahan buy di pucuk');
+        if (rsiSellBlocked) reasons.push('RSI jenuh jual (<32), tahan sell di dasar');
+        if (!isTrendBull && !isTrendBear) reasons.push('Tren EMA belum jelas/sideways');
+        if (!sweepBuy && !sweepSell && !oteBuy && !oteSell) reasons.push('Menunggu retest ke zona OTE / FVG');
+        chosenReason = `WAIT (Skor Buy ${scoreBuy}%, Sell ${scoreSell}%): ${reasons.join(' · ') || 'Konfluensi belum mencapai 75%'}`;
+        chosenFactors = scoreBuy > scoreSell ? buyFactors : sellFactors;
+    }
+
+    // Hitung Level Presisi Hybrid (SL di balik sweep swing, R:R 1:2.5)
+    let levels = null;
+    if (chosenDir === 'long' || chosenDir === 'short') {
+        const isBuy = chosenDir === 'long';
+        const dec = (kind === 'gold' ? 2 : (px > 10 ? 3 : 5));
+        
+        let slDist = 0;
+        if (kind === 'gold') {
+            slDist = 8.5; // Auto-kalibrasi Gold $8.50 ($8.50 risiko per 0.01 lot)
+        } else if (kind === 'forex') {
+            slDist = 0.0025; // 25 pips
+        } else {
+            slDist = px * 0.008;
+        }
+
+        const recentSwings = cleanBars.slice(-10);
+        if (isBuy) {
+            const swingLo = Math.min(...recentSwings.map(b => b.l));
+            const structDist = px - swingLo + (kind === 'gold' ? 0.5 : 0.0005);
+            if (structDist > 0 && structDist <= (kind === 'gold' ? 8.5 : 0.0035)) {
+                slDist = structDist;
+            }
+        } else {
+            const swingHi = Math.max(...recentSwings.map(b => b.h));
+            const structDist = swingHi - px + (kind === 'gold' ? 0.5 : 0.0005);
+            if (structDist > 0 && structDist <= (kind === 'gold' ? 8.5 : 0.0035)) {
+                slDist = structDist;
+            }
+        }
+
+        const entry = px;
+        const sl = Number((isBuy ? entry - slDist : entry + slDist).toFixed(dec));
+        const tp1 = Number((isBuy ? entry + slDist * 1.5 : entry - slDist * 1.5).toFixed(dec));
+        const tp2 = Number((isBuy ? entry + slDist * 2.5 : entry - slDist * 2.5).toFixed(dec));
+        levels = { entry, sl, tp1, tp: tp2, rr: 2.5, slDist, dec };
+    }
+
+    return {
+        dir: chosenDir,
+        mode: chosenDir === 'wait' ? 'WAIT' : (event && imp >= 3 && Math.abs(relMs - now) <= 120000 ? 'STRADDLE' : 'HYBRID_ACTIVE'),
+        score: chosenScore,
+        factors: chosenFactors,
+        reason: chosenReason,
+        levels,
+        isTrendBull,
+        isTrendBear,
+        rsi: rsi !== null ? Math.round(rsi) : null,
+        spike
+    };
+}
+if (typeof window !== 'undefined') window.hybridConfluenceSignal = hybridConfluenceSignal;
+
 function signalLockKey(e, asset) {
     return SIGNAL_LOCK_PREFIX + dateEventKey(e) + '|' + String(asset).toUpperCase();
 }
@@ -4572,7 +4777,7 @@ function renderMt5Modal() {
         body.innerHTML = `
             <div style="background:rgba(24,209,154,0.1); border:1px solid rgba(24,209,154,0.3); border-radius:12px; padding:14px; margin-bottom:16px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="color:var(--green); font-weight:800; font-size:14px;">🟢 BRIDGE TERHUBUNG</span>
+                    <span style="color:var(--green); font-weight:800; font-size:14px;">🟢 BRIDGE MT5 TERHUBUNG</span>
                     <span style="background:rgba(24,209,154,0.2); color:var(--green); font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">DEMO FBS</span>
                 </div>
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; font-size:13px;">
@@ -4585,6 +4790,18 @@ function renderMt5Modal() {
                 </div>
             </div>
 
+            <div style="background:rgba(39,213,224,0.08); border:1px solid rgba(39,213,224,0.25); border-radius:12px; padding:12px; margin-bottom:16px; font-size:12px; line-height:1.5;">
+                <div style="font-weight:800; color:var(--aqua); margin-bottom:6px; display:flex; align-items:center; gap:6px;">
+                    <span>🛡️</span> STRATEGI AKTIF: HYBRID INSTITUSIONAL 4-IN-1
+                </div>
+                <ul style="margin:0; padding-left:18px; color:var(--ink);">
+                    <li><b>SMC & Order Block:</b> Menunggu Liquidity Sweep & Retest FVG (Tanpa FOMO di pucuk).</li>
+                    <li><b>Trend & RSI Filter:</b> Searah EMA20/50, dilarang Buy di RSI >68 / Sell di RSI <32.</li>
+                    <li><b>News Straddle OCO:</b> Menjebak lonjakan berita dengan Buy Stop + Sell Stop tanpa tebak data.</li>
+                    <li><b>Proteksi Modal:</b> Auto-Breakeven di +1R (Zero Risk Trade), Time-stop 60m nonaktif.</li>
+                </ul>
+            </div>
+
             <div style="background:rgba(5,17,25,0.6); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:16px;">
                 <div style="font-weight:700; margin-bottom:10px; font-size:13px; color:var(--aqua);">⚙️ Pengaturan Eksekusi:</div>
                 <label style="display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:8px; cursor:pointer;">
@@ -4593,13 +4810,14 @@ function renderMt5Modal() {
                 </label>
                 <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
                     <input type="checkbox" ${MT5_BRIDGE_CFG.autoTrade ? 'checked' : ''} onchange="toggleMt5AutoTrade(this.checked)">
-                    <span><b>Auto-Trade Sinyal Kuat:</b> Eksekusi otomatis jika Confidence ≥ 75%</span>
+                    <span><b>Auto-Trade Sinyal Hybrid:</b> Eksekusi otomatis jika Konfluensi Hybrid ≥ 75%</span>
                 </label>
             </div>
 
             <div style="display:flex; gap:10px; flex-wrap:wrap;">
                 <button type="button" onclick="testOrderMt5('EURUSD')" class="btn-mt5-exec" style="padding:8px 14px; font-size:12px;">🧪 Tes Order EURUSD (0.01 lot)</button>
                 <button type="button" onclick="testOrderMt5('XAUUSD')" class="btn-mt5-exec" style="padding:8px 14px; font-size:12px; background:linear-gradient(135deg, #27d5e0, #1793a3); color:#031510;">🧪 Tes Order Gold (0.01 lot)</button>
+                <button type="button" onclick="testStraddleMt5('XAUUSD')" class="btn-mt5-exec" style="padding:8px 14px; font-size:12px; background:linear-gradient(135deg, #f2b84b, #d99b26); color:#031510;">⚡ Tes Straddle OCO Gold</button>
                 <button type="button" onclick="closeAllMt5Positions()" style="background:rgba(255,100,125,0.15); border:1px solid rgba(255,100,125,0.4); color:var(--red); padding:8px 14px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">❌ Close All Positions</button>
             </div>
         `;
@@ -4627,44 +4845,81 @@ function renderMt5Modal() {
     }
 }
 
+async function testStraddleMt5(symbol = 'XAUUSD') {
+    const sym = symbol.replace('/', '').toUpperCase();
+    const q = (mt5StatusState.quotes && (mt5StatusState.quotes[symbol] || mt5StatusState.quotes['XAU/USD'])) || null;
+    const px = q ? q.ask : (typeof assetPrice === 'function' ? assetPrice('gold', 'XAU/USD') : 3912.0);
+    const buf = (sym === 'XAUUSD' ? 2.5 : 0.0020);
+    const slDist = (sym === 'XAUUSD' ? 8.5 : 0.0025);
+    const dec = (sym === 'XAUUSD' ? 2 : 5);
+
+    const buyStop = Number((px + buf).toFixed(dec));
+    const slBuy = Number((buyStop - slDist).toFixed(dec));
+    const tpBuy = Number((buyStop + slDist * 2.0).toFixed(dec));
+
+    const sellStop = Number((px - buf).toFixed(dec));
+    const slSell = Number((sellStop + slDist).toFixed(dec));
+    const tpSell = Number((sellStop - slDist * 2.0).toFixed(dec));
+
+    showMt5Toast(`⚡ Mengirim Straddle OCO ${sym}: Buy Stop @${buyStop} & Sell Stop @${sellStop}`, 'info');
+    await sendOrderToMt5(sym, 'BUY_STOP', buyStop, slBuy, tpBuy);
+    await sendOrderToMt5(sym, 'SELL_STOP', sellStop, slSell, tpSell);
+}
+
 function scanAndAutoTradeFromWeb() {
     if (!MT5_BRIDGE_CFG.autoTrade || !mt5StatusState.connected) return;
 
-    // 1. Scan Gold Board
-    if (typeof goldBoardState === 'function') {
-        const gst = goldBoardState();
-        if (gst && gst.dir && gst.levels && Number(gst.conf) >= MT5_BRIDGE_CFG.minConfidence) {
-            if (!gst.stopped && !gst.tpReached && !gst.conflict && !gst.missed) {
-                const act = gst.dir === 'long' ? 'BUY' : 'SELL';
-                const key = `XAUUSD|${act}|${gst.event || ''}|${Math.round(gst.levels.entry)}`;
+    // 1. Scan Gold (XAUUSD) dengan Engine Hybrid Institutional (SMC + Trend/RSI + Straddle)
+    if (typeof hybridConfluenceSignal === 'function') {
+        const hg = hybridConfluenceSignal({ kind: 'gold', asset: 'XAU/USD' });
+        if (hg && hg.dir && hg.dir !== 'wait' && hg.score >= MT5_BRIDGE_CFG.minConfidence) {
+            if (hg.mode === 'STRADDLE' && hg.buyStop && hg.sellStop) {
+                const key = `XAUUSD|STRADDLE|${Math.round(hg.buyStop)}`;
                 if (!MT5_BRIDGE_CFG.executedMap.has(key)) {
                     MT5_BRIDGE_CFG.executedMap.add(key);
-                    showMt5Toast(`🤖 Auto-Trade: Sinyal konfluensi kuat Gold terdeteksi (${gst.conf}% conf). Mengeksekusi...`, 'info');
-                    sendOrderToMt5('XAUUSD', act, gst.levels.entry, gst.levels.sl, gst.levels.tp);
+                    showMt5Toast(`⚡ News Straddle OCO Terpicu: Buy Stop @${hg.buyStop} & Sell Stop @${hg.sellStop}`, 'info');
+                    sendOrderToMt5('XAUUSD', 'BUY_STOP', hg.buyStop, hg.slBuy, hg.tpBuy);
+                    sendOrderToMt5('XAUUSD', 'SELL_STOP', hg.sellStop, hg.slSell, hg.tpSell);
+                }
+            } else if (hg.levels) {
+                const act = hg.dir === 'long' ? 'BUY' : 'SELL';
+                const key = `XAUUSD|${act}|HYBRID|${Math.round(hg.levels.entry)}`;
+                if (!MT5_BRIDGE_CFG.executedMap.has(key)) {
+                    MT5_BRIDGE_CFG.executedMap.add(key);
+                    showMt5Toast(`🔥 Auto-Trade Hybrid Gold: ${act} (Konfluensi ${hg.score}%). Mengeksekusi...`, 'info');
+                    sendOrderToMt5('XAUUSD', act, hg.levels.entry, hg.levels.sl, hg.levels.tp);
                 }
             }
         }
     }
 
-    // 2. Scan Forex Board
-    if (typeof forexBoardState === 'function') {
-        const fst = forexBoardState();
-        const items = fst && Array.isArray(fst.items) ? fst.items : [];
-        items.forEach(it => {
-            if (it && it.dir && it.levels && Number(it.conf) >= MT5_BRIDGE_CFG.minConfidence) {
-                if (!it.stopped && !it.tpReached && !it.conflict && !it.missed) {
-                    const act = it.dir === 'long' ? 'BUY' : 'SELL';
-                    const sym = String(it.pair || '').replace('/', '').toUpperCase();
-                    const key = `${sym}|${act}|${it.eventLabel || ''}|${Math.round(it.levels.entry * 100)}`;
+    // 2. Scan Forex Majors dengan Engine Hybrid
+    const pairs = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'AUD/USD', 'USD/CAD', 'NZD/USD'];
+    pairs.forEach(pair => {
+        if (typeof hybridConfluenceSignal === 'function') {
+            const hf = hybridConfluenceSignal({ kind: 'forex', asset: pair });
+            if (hf && hf.dir && hf.dir !== 'wait' && hf.score >= MT5_BRIDGE_CFG.minConfidence) {
+                const sym = pair.replace('/', '').toUpperCase();
+                if (hf.mode === 'STRADDLE' && hf.buyStop && hf.sellStop) {
+                    const key = `${sym}|STRADDLE|${Math.round(hf.buyStop * 10000)}`;
                     if (!MT5_BRIDGE_CFG.executedMap.has(key)) {
                         MT5_BRIDGE_CFG.executedMap.add(key);
-                        showMt5Toast(`🤖 Auto-Trade: Sinyal konfluensi kuat ${sym} terdeteksi (${it.conf}% conf). Mengeksekusi...`, 'info');
-                        sendOrderToMt5(sym, act, it.levels.entry, it.levels.sl, it.levels.tp);
+                        showMt5Toast(`⚡ News Straddle OCO ${sym}: Pasang Bracket Buy/Sell Stop`, 'info');
+                        sendOrderToMt5(sym, 'BUY_STOP', hf.buyStop, hf.slBuy, hf.tpBuy);
+                        sendOrderToMt5(sym, 'SELL_STOP', hf.sellStop, hf.slSell, hf.tpSell);
+                    }
+                } else if (hf.levels) {
+                    const act = hf.dir === 'long' ? 'BUY' : 'SELL';
+                    const key = `${sym}|${act}|HYBRID|${Math.round(hf.levels.entry * 10000)}`;
+                    if (!MT5_BRIDGE_CFG.executedMap.has(key)) {
+                        MT5_BRIDGE_CFG.executedMap.add(key);
+                        showMt5Toast(`🔥 Auto-Trade Hybrid ${sym}: ${act} (Konfluensi ${hf.score}%). Mengeksekusi...`, 'info');
+                        sendOrderToMt5(sym, act, hf.levels.entry, hf.levels.sl, hf.levels.tp);
                     }
                 }
             }
-        });
-    }
+        }
+    });
 }
 
 // Inisialisasi pengecekan MT5 bridge & scanner auto-trade

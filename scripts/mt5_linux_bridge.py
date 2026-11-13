@@ -95,7 +95,8 @@ def default_sl_tp(symbol: str, action: str, price: float) -> tuple[float, float,
     else:
         dist = 0.0025  # 25 pips for EURUSD, GBPUSD, etc.
 
-    if action == "BUY":
+    is_buy = action in ("BUY", "BUY_STOP", "BUY_LIMIT")
+    if is_buy:
         sl = round(price - dist, digits)
         tp1 = round(price + dist, digits)
         tp2 = round(price + dist * 2.0, digits)
@@ -298,6 +299,9 @@ class MT5FileBridge:
     def resume(self) -> dict[str, Any]:
         return self.send_command({"cmd": "RESUME"})
 
+    def cancel_pending(self, symbol: str = "") -> dict[str, Any]:
+        return self.send_command({"cmd": "CANCEL_PENDING", "symbol": symbol})
+
     def order(
         self,
         action: str,
@@ -310,15 +314,16 @@ class MT5FileBridge:
         risk_usd: float = 5.0,
     ) -> dict[str, Any]:
         action = action.upper()
-        if action not in ("BUY", "SELL"):
+        if action not in ("BUY", "SELL", "BUY_STOP", "SELL_STOP", "BUY_LIMIT", "SELL_LIMIT"):
             raise ValueError(f"Invalid order action: {action}")
 
+        is_buy = action in ("BUY", "BUY_STOP", "BUY_LIMIT")
         st = self.read_status()
         if st and not price:
             quotes = st.get("quotes", {})
             pair = SYMBOL_TO_PAIR.get(symbol, symbol)
             if pair in quotes:
-                price = quotes[pair]["ask"] if action == "BUY" else quotes[pair]["bid"]
+                price = quotes[pair]["ask"] if is_buy else quotes[pair]["bid"]
 
         # Ensure SL and TP are set (SniperBridge rejects orders without SL/TP)
         if (not sl or not tp2) and price > 0:
@@ -328,16 +333,13 @@ class MT5FileBridge:
             tp2 = tp2 or calc_tp2
 
         # Kalibrasi proteksi risiko Gold (XAUUSD) untuk akun ~$1000:
-        # SniperBridge EA memiliki batas risiko 1.0% ($10.50 pada saldo $1050).
-        # Pada XAUUSD (1 lot = 100 oz), lot minimum 0.01 memiliki risiko $1 per kenaikan/penurunan $1.
-        # Jika jarak SL > $9.00, EA akan menolak karena melebihi $10.50. Sesuaikan jarak SL agar pas.
         sym_up = symbol.upper()
         if "XAU" in sym_up and price > 0 and sl > 0:
             current_dist = abs(price - sl)
             max_allowed_dist = 8.5
             if current_dist > max_allowed_dist:
                 log(f"⚡ Menyesuaikan jarak SL Gold dari ${current_dist:.2f} ke ${max_allowed_dist:.2f} agar pas dengan batas risiko 1% akun ($1050).")
-                if action == "BUY":
+                if is_buy:
                     sl = round(price - max_allowed_dist, 2)
                     tp2 = round(price + max_allowed_dist * 2.0, 2)
                 else:
@@ -623,6 +625,12 @@ class BridgeHTTPHandler(BaseHTTPRequestHandler):
         elif path in ("/closeall", "/api/closeall"):
             log("📥 Permintaan Close All dari Web")
             res = self.bridge.close_all() if self.bridge else {"ok": False, "reason": "Bridge offline"}
+            self._send_cors(200)
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+        elif path in ("/cancel", "/api/cancel"):
+            sym = body.get("symbol", "").upper().replace("/", "")
+            log(f"📥 Permintaan Cancel Pending Orders dari Web: {sym or 'ALL'}")
+            res = self.bridge.cancel_pending(sym) if self.bridge else {"ok": False, "reason": "Bridge offline"}
             self._send_cors(200)
             self.wfile.write(json.dumps(res).encode("utf-8"))
         else:
