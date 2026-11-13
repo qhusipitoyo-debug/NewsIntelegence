@@ -212,8 +212,8 @@
   <section class="indices-board glass" id="indicesBoard">
     <div>
       <div class="eyebrow">Index watch</div>
-      <h3>Nasdaq 100 &amp; S&amp;P 500</h3>
-      <p>NAS100 and US500 react to the same USD catalyst, with event-aware mapping: growth/employment surprises are read as risk-on/risk-off, while inflation keeps its rate-pressure direction. BUY means risk-on/stronger index, SELL means risk-off/weaker index. Confirmed levels are locked with adaptive 1:2 R:R.</p>
+      <h3>S&amp;P 500 (US500)</h3>
+      <p>US500 bereaksi terhadap katalis USD yang sama, dengan pemetaan sadar-event: kejutan pertumbuhan/ketenagakerjaan dibaca sebagai risk-on/risk-off, sedangkan inflasi mempertahankan arah tekanan suku bunga. BUY berarti risk-on/indeks menguat, SELL berarti risk-off/indeks melemah. Level terkonfirmasi dikunci dengan adaptif 1:2 R:R.</p>
     </div>
     <div class="idx-grid" id="idxGrid"></div>
   </section>
@@ -297,7 +297,6 @@ const FOREX_MAJORS = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'US
 const FOREX_CROSSES = ['GBP/JPY', 'EUR/JPY'];
 const FOREX_PAIRS = [...FOREX_MAJORS, ...FOREX_CROSSES];
 const INDICES = [
-    { symbol: 'NAS100', name: 'Nasdaq 100', yahoo: '^NDX', slPct: 1.0, tpPct: 2.0 },
     { symbol: 'US500', name: 'S&P 500', yahoo: '^GSPC', slPct: 0.75, tpPct: 1.5 }
 ];
 
@@ -539,7 +538,6 @@ function reactionFloor(pair) {
     if (key === 'XAU/USD') return 0.12;
     if (key === 'BTC/USD') return 0.18;
     if (key === 'ETH/USD') return 0.22;
-    if (key === 'NAS100') return 0.12;
     if (key === 'US500') return 0.10;
     return /JPY$/.test(key) ? 0.08 : 0.06;
 }
@@ -1091,7 +1089,7 @@ function signalHistoryHtml(res) {
         if (asset.includes('/') && !asset.includes('XAU') && !asset.includes('BTC') && !asset.includes('ETH')) return n > 10 ? n.toFixed(3) : n.toFixed(5);
         return n.toFixed(2);
     };
-    const kindNames = { gold: 'Gold (XAU/USD)', forex: 'Forex Majors', crypto: 'Crypto', index: 'Index (US500/NAS100)' };
+    const kindNames = { gold: 'Gold (XAU/USD)', forex: 'Forex Majors', crypto: 'Crypto', index: 'Index (US500)' };
     const classCards = ['gold', 'forex', 'crypto', 'index'].map(k => {
         const s = res.byKind[k];
         const tagCls = s.verdict === 'PROFIT' ? 'win' : s.verdict === 'LOSS' ? 'loss' : 'open';
@@ -2144,7 +2142,7 @@ function indicesBoardHtml(state) {
             ${postLine}
         </div>`;
     }).join('');
-    return cards || '<div class="idx-card wait"><div class="pair"><span>NAS100 · US500</span></div><div class="idx-note">Menunggu data index…</div></div>';
+    return cards || '<div class="idx-card wait"><div class="pair"><span>US500</span></div><div class="idx-note">Menunggu data index…</div></div>';
 }
 
 function renderIndicesBoard() {
@@ -2585,7 +2583,6 @@ const TECH_ASSETS = [
     { asset: 'EUR/USD', kind: 'forex', name: 'EUR/USD' },
     { asset: 'USD/JPY', kind: 'forex', name: 'USD/JPY' },
     { asset: 'GBP/USD', kind: 'forex', name: 'GBP/USD' },
-    { asset: 'NAS100', kind: 'index', name: 'NAS100' },
     { asset: 'US500', kind: 'index', name: 'US500' }
 ];
 
@@ -2928,10 +2925,8 @@ function riskSentimentSnapshot({ indexRates, cryptoChange, forexQuotes } = {}) {
     const cry = cryptoChange || (typeof CRYPTO_CHANGE !== 'undefined' ? CRYPTO_CHANGE : {});
     const fx = forexQuotes || (typeof FOREX_QUOTES !== 'undefined' ? FOREX_QUOTES : {});
     const readings = [];
-    const nas = Number(idx && idx.NAS100 && idx.NAS100.changePct);
     const sp = Number(idx && idx.US500 && idx.US500.changePct);
-    if (Number.isFinite(nas)) readings.push({ name: 'NAS100', chg: nas, w: 1.2 });
-    if (Number.isFinite(sp)) readings.push({ name: 'US500', chg: sp, w: 1.0 });
+    if (Number.isFinite(sp)) readings.push({ name: 'US500', chg: sp, w: 1.5 });
     const btc = Number(cry && cry['BTC/USD']);
     const eth = Number(cry && cry['ETH/USD']);
     if (Number.isFinite(btc)) readings.push({ name: 'BTC', chg: btc * 0.35, w: 0.8 });
@@ -3205,6 +3200,11 @@ function signalDirectionCore(e, asset, kind, now = Date.now()) {
         }
     }
 
+    // Bila momentum harga live sudah bergerak berlawanan dengan Actual, jangan paksakan Actual.
+    if (!blocked && actualDir && mom && ((actualDir === 'long' && mom.changePct < -0.05) || (actualDir === 'short' && mom.changePct > 0.05))) {
+        blocked = 'KONFLIK/REVERSAL: Pergerakan harga live berlawanan dengan Actual — batalkan sinyal searah Actual, tunggu konfirmasi breakout.';
+    }
+
     // Actual dipakai bila tidak ada arah harga sama sekali, hanya event impact >= 2 dan
     // hanya 3 jam pertama (setelahnya sinyal yang sudah terkonfirmasi dibawa signal lock).
     if (!blocked && actualDir && impact >= 2 && ageMin <= 180) {
@@ -3224,9 +3224,9 @@ function signalDirectionCore(e, asset, kind, now = Date.now()) {
     };
 }
 
-// Lapisan konteks pasar: sentimen (Fear & Greed) + USD sintetis. Basis lemah
-// (Actual/momentum) yang MELAWAN konteks dibatalkan; basis reaksi harga (kebenaran
-// pasar) tetap jalan tetapi ukuran posisi dikurangi.
+// Lapisan konteks pasar: sentimen (Fear & Greed) + USD sintetis + Trend & Structure Teknikal.
+// Basis lemah (Actual/momentum/forecast) yang MELAWAN tren teknikal atau konteks dibatalkan;
+// sinyal yang SEARAH tren teknikal diperkuat konfluensinya.
 function applyMarketContext(sig, kind, asset) {
     if (!sig || (sig.dir !== 'long' && sig.dir !== 'short') || (sig.phase !== 'post' && sig.phase !== 'pre')) return sig;
     const usd = typeof usdBias === 'function' ? usdBias() : null;
@@ -3242,8 +3242,38 @@ function applyMarketContext(sig, kind, asset) {
         return { ...sig, dir: null, blocked: true, basis: 'context-block', ctx, conf: null,
             note: `Sinyal dibatalkan: basis ${sig.basis === 'actual' ? 'Actual' : 'momentum'} lemah dan melawan konteks pasar.${ctxNote}` };
     }
-    const conf = Number.isFinite(sig.conf) ? Math.round(clampNum(sig.conf + (ctx.align === 'with' ? 6 : ctx.align === 'against' ? -10 : 0), 30, 92)) : sig.conf;
-    return { ...sig, ctx, conf, sizeFactor: ctx.size, note: `${sig.note || ''}${ctxNote}${ctx.size < 1 ? ` • ukuran posisi ${ctx.size}× (melawan konteks)` : ''}` };
+
+    // Guard Konfluensi Tren Teknikal (EMA20 vs EMA50 & Price Action)
+    const tech = typeof technicalView === 'function' ? technicalView(kind, asset) : null;
+    let techNote = '';
+    if (tech && Number.isFinite(tech.emaFast) && Number.isFinite(tech.emaSlow)) {
+        const isBullTrend = tech.emaFast > tech.emaSlow;
+        const isBearTrend = tech.emaFast < tech.emaSlow;
+        const sigIsBuy = sig.dir === 'long';
+        const sigIsSell = sig.dir === 'short';
+
+        if (sigIsBuy && isBearTrend && (tech.dir === 'sell' || (tech.price && tech.price < tech.emaFast))) {
+            if (sig.basis !== 'reaction' || (sig.reaction && sig.reaction.faded)) {
+                return {
+                    ...sig, dir: null, blocked: true, basis: 'conflict-trend', ctx, conf: null,
+                    note: `Sinyal BUY dibatalkan: Melawan tren bearish teknikal (${tech.trendText}, harga < EMA20). Hindari counter-trend; gunakan Straddle/Breakout OCO.${ctxNote}`
+                };
+            }
+        } else if (sigIsSell && isBullTrend && (tech.dir === 'buy' || (tech.price && tech.price > tech.emaFast))) {
+            if (sig.basis !== 'reaction' || (sig.reaction && sig.reaction.faded)) {
+                return {
+                    ...sig, dir: null, blocked: true, basis: 'conflict-trend', ctx, conf: null,
+                    note: `Sinyal SELL dibatalkan: Melawan tren bullish teknikal (${tech.trendText}, harga > EMA20). Hindari counter-trend; gunakan Straddle/Breakout OCO.${ctxNote}`
+                };
+            }
+        } else if ((sigIsBuy && isBullTrend) || (sigIsSell && isBearTrend)) {
+            techNote = ` • ✅ Konfluensi Tren: Sinyal searah ${tech.trendText}`;
+        }
+    }
+
+    const confBoost = techNote ? 8 : (ctx.align === 'with' ? 6 : ctx.align === 'against' ? -10 : 0);
+    const conf = Number.isFinite(sig.conf) ? Math.round(clampNum(sig.conf + confBoost, 30, 95)) : sig.conf;
+    return { ...sig, ctx, conf, sizeFactor: ctx.size, note: `${sig.note || ''}${ctxNote}${techNote}${ctx.size < 1 ? ` • ukuran posisi ${ctx.size}× (melawan konteks)` : ''}` };
 }
 
 function signalDirection(e, asset, kind, now = Date.now()) {
@@ -3541,7 +3571,7 @@ function atrInfo(asset, price) {
 // Setengah-spread yang wajar saat bid/ask broker tidak tersedia. Spread dari
 // quote broker tetap dipakai walau sudah basi — spread jauh lebih stabil
 // daripada level harganya. Ini HANYA estimasi; sumber utama tetap MT5 bridge.
-const DEFAULT_SPREAD_PCT = { 'XAU/USD': 0.0075, 'BTC/USD': 0.045, 'ETH/USD': 0.055, 'NAS100': 0.004, 'US500': 0.004 };
+const DEFAULT_SPREAD_PCT = { 'XAU/USD': 0.0075, 'BTC/USD': 0.045, 'ETH/USD': 0.055, 'US500': 0.004 };
 function halfSpreadEstimate(asset, price) {
     const p = Number(price);
     if (!Number.isFinite(p) || p <= 0) return null;
@@ -3624,7 +3654,7 @@ function computeSignalLevels(kind, asset, dir, price, e, signal) {
 
     const base = kind === 'gold' ? 0.55
         : kind === 'crypto' ? (asset === 'BTC/USD' ? 1.2 : 1.5)
-        : (asset === 'NAS100' ? 0.8 : 0.6);
+        : 0.6;
     const riskPctFixed = clampNum(base * (1 + 0.30 * Math.max(0, impact - 2)) + 0.20 * vol, base, base * 2.0);
     const info = atrInfo(asset, price);
     // Lantai ATR diterapkan SETELAH clamp pola tetap: kalau volatilitas riil
@@ -3998,7 +4028,7 @@ function tpSl(a, e) {
             ? `(${actionOf(focusData.dir)} • ${basisText(focusData.basis)})`
             : phase === 'post' ? '(menunggu konfirmasi harga)' : '(breakout level)';
         const fmtIdx = n => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        html += `<div class="forex-container" style="border-top: 1px dashed rgba(255,255,255,.1); margin-top: 10px; padding-top: 10px;"><span style="color:#8bd4ff; font-weight:bold; width:100%;">Indices (Nasdaq 100 &amp; S&amp;P 500) ${idxStatus}</span>`;
+        html += `<div class="forex-container" style="border-top: 1px dashed rgba(255,255,255,.1); margin-top: 10px; padding-top: 10px;"><span style="color:#8bd4ff; font-weight:bold; width:100%;">Indices (S&amp;P 500) ${idxStatus}</span>`;
         INDICES.forEach(cfg => {
             const rate = indexRate(cfg.symbol);
             if (!rate) return;

@@ -94,8 +94,8 @@ t('USD/JPY & EUR/USD tetap dipetakan benar untuk event USD', () => {
   assert.equal(L.mapPairBias('EUR/USD', 'long', 'USD'), 'long');
 });
 t('Indeks/crypto: inflasi dipetakan, NFP/claims TIDAK (bergantung rezim)', () => {
-  assert.equal(L.mapAssetBias('index', 'NAS100', 'short', { Event: 'CPI m/m' }), 'short');
-  assert.equal(L.mapAssetBias('index', 'NAS100', 'short', { Event: 'Nonfarm Payrolls' }), null);
+  assert.equal(L.mapAssetBias('index', 'US500', 'short', { Event: 'CPI m/m' }), 'short');
+  assert.equal(L.mapAssetBias('index', 'US500', 'short', { Event: 'Nonfarm Payrolls' }), null);
   assert.equal(L.mapAssetBias('crypto', 'BTC/USD', 'long', { Event: 'Unemployment Claims' }), null);
 });
 
@@ -195,5 +195,38 @@ t('CPI m/m (10 Nov, 0.4 vs 0.3, paket hawkish) = FINAL SELL emas', () => {
 t('Core CPI m/m = FINAL SELL', () => { assert.match(cardOf('Core CPI m/m'), /<b>SELL<\/b>/); });
 t('Rilis lama low-impact non-USD (BRC GBP) = NO TRADE', () => { assert.match(cardOf('BRC Retail Sales Monitor y/y', 'GBP'), /NO TRADE/); });
 t('Rilis lama tidak menampilkan Entry/SL/TP', () => { assert.doesNotMatch(cardOf("CPI m/m"), /<b>Entry<\/b>|<b>SL<\/b>|<b>TP<\/b>/); });
+
+console.log('Konfluensi tren teknikal & proteksi counter-trend');
+t('applyMarketContext membatalkan BUY bila tren teknikal Bearish (EMA20 < EMA50)', () => {
+  const res = vm.runInContext(`
+    technicalView = () => ({ emaFast: 3940, emaSlow: 3960, price: 3935, dir: 'sell', trendText: 'tren turun (EMA20 < EMA50)' });
+    applyMarketContext({ phase: 'post', dir: 'long', basis: 'actual', conf: 60 }, 'gold', 'XAU/USD');
+  `, ctx);
+  assert.equal(res.dir, null);
+  assert.equal(res.blocked, true);
+  assert.equal(res.basis, 'conflict-trend');
+  assert.match(res.note, /Melawan tren bearish teknikal/);
+});
+
+t('applyMarketContext membatalkan SELL bila tren teknikal Bullish (EMA20 > EMA50)', () => {
+  const res = vm.runInContext(`
+    technicalView = () => ({ emaFast: 3970, emaSlow: 3950, price: 3980, dir: 'buy', trendText: 'tren naik (EMA20 > EMA50)' });
+    applyMarketContext({ phase: 'post', dir: 'short', basis: 'actual', conf: 60 }, 'gold', 'XAU/USD');
+  `, ctx);
+  assert.equal(res.dir, null);
+  assert.equal(res.blocked, true);
+  assert.equal(res.basis, 'conflict-trend');
+  assert.match(res.note, /Melawan tren bullish teknikal/);
+});
+
+t('applyMarketContext memperkuat sinyal bila Fundamental dan Tren Teknikal selaras', () => {
+  const res = vm.runInContext(`
+    technicalView = () => ({ emaFast: 3940, emaSlow: 3960, price: 3935, dir: 'sell', trendText: 'tren turun (EMA20 < EMA50)' });
+    applyMarketContext({ phase: 'post', dir: 'short', basis: 'actual', conf: 60 }, 'gold', 'XAU/USD');
+  `, ctx);
+  assert.equal(res.dir, 'short');
+  assert.ok(res.conf >= 68);
+  assert.match(res.note, /Konfluensi Tren/);
+});
 
 console.log(`\n${pass} tes lulus${process.exitCode ? ' — ADA YANG GAGAL' : ''}`);

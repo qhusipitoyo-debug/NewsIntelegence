@@ -2,14 +2,6 @@
   "generatedAt": "2026-11-13T02:43:43.134Z",
   "items": [
     {
-      "symbol": "NAS100",
-      "name": "Nasdaq 100",
-      "yahoo": "^NDX",
-      "price": 28289.188,
-      "previousClose": 28374.252,
-      "changePct": -0.3
-    },
-    {
       "symbol": "US500",
       "name": "S&P 500",
       "yahoo": "^GSPC",

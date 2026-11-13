@@ -37,7 +37,6 @@ export const FOREX_FEEDS = [
   { id: 'SKILLING', name: 'Skilling', prefix: 'SKILLING' }
 ];
 const INDICES = [
-  { symbol: 'NAS100', name: 'Nasdaq 100', yahoo: '^NDX' },
   { symbol: 'US500', name: 'S&P 500', yahoo: '^GSPC' }
 ];
 
@@ -804,7 +803,6 @@ const MARKET_SYMBOLS = [
   { pair: 'XAU/USD', yahoo: 'GC=F' },
   { pair: 'BTC/USD', yahoo: 'BTC-USD' },
   { pair: 'ETH/USD', yahoo: 'ETH-USD' },
-  { pair: 'NAS100', yahoo: '^NDX', reactionFrom: 'NQ=F' },
   { pair: 'US500', yahoo: '^GSPC', reactionFrom: 'ES=F' }
 ];
 const MARKETS_FILE = 'data/markets.json';
@@ -1037,7 +1035,7 @@ export function buildReactionPayload(events, markets, now = Date.now(), holdMs =
     if (!Number.isFinite(releasedAt) || releasedAt > now || now - releasedAt > holdMs) continue;
     const reaction = {};
     for (const [pair, cfg] of Object.entries(pairs)) {
-      // Bar milik sendiri diprioritaskan; sumber cadangan (mis. NQ=F untuk NAS100)
+      // Bar milik sendiri diprioritaskan; sumber cadangan (mis. ES=F untuk US500)
       // hanya dipakai kalau bar sendiri tidak menutupi rilis.
       const sources = [cfg, extraBars && extraBars[pair]];
       for (const source of sources) {

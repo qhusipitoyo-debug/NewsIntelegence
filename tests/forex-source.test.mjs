@@ -114,8 +114,6 @@ assert.equal(markets.pairs['BTC/USD'].price, 77000);
 assert.equal(markets.pairs['ETH/USD'].price, 2200);
 assert.equal(markets.pairs['GBP/JPY'].price, 212.8);
 assert.equal(markets.pairs['EUR/JPY'].price, 177.61);
-assert.equal(markets.pairs['NAS100'].price, 28180.26);
-assert.equal(markets.pairs['NAS100'].source, 'Yahoo Finance');
 assert.equal(markets.pairs['US500'].price, 7568.92);
 assert.equal(markets.pairs['US500'].source, 'Yahoo Finance');
 
