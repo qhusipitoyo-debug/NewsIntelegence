@@ -20,14 +20,13 @@ const market = {
   price: 4000,
   forex: { EUR: 0.92, GBP: 0.79, JPY: 150, CHF: 0.88, AUD: 0.65, CAD: 1.36 },
   crypto: { 'BTC/USD': 65000, 'ETH/USD': 3200 },
-  indices: { NAS100: 21000, US500: 5800 },
+  indices: { US500: 5800 },
 };
 
 const store = updatePreNewsStore({}, events, market, now);
 assert.equal(store[`${soon}|CPI`].gold, 4000);
 assert.equal(store[`${soon}|CPI`].forex.EUR, 0.92);
 assert.equal(store[`${soon}|CPI`].crypto['BTC/USD'], 65000);
-assert.equal(store[`${soon}|CPI`].indices.NAS100, 21000);
 assert.equal(store[`${soon}|CPI`].indices.US500, 5800);
 assert.equal(store[`${soon}|CPI`].capturedAt, new Date(now).toISOString());
 assert.equal(store[`${soon}|CPI`].price, undefined);
@@ -43,7 +42,7 @@ assert.equal(refreshed[`${soon}|CPI`].gold, 4000);
 assert.equal(refreshed[`${soon}|CPI`].forex.EUR, 0.92);
 assert.equal(refreshed[`${soon}|CPI`].forex.GBP, 0.79);
 assert.equal(refreshed[`${soon}|CPI`].crypto['BTC/USD'], 65000);
-assert.equal(refreshed[`${soon}|CPI`].indices.NAS100, 21000);
+assert.equal(refreshed[`${soon}|CPI`].indices.US500, 5800);
 
 const oldEvent = new Date(now - 8 * 24 * 60 * min).toISOString();
 const keptEvent = new Date(now - 2 * 24 * 60 * min).toISOString();

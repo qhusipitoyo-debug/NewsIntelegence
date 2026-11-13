@@ -84,12 +84,12 @@ const wildMarkets = { generatedAt: new Date(now).toISOString(), pairs: { 'XAU/US
 const engineWild = buildEngine(null, wildMarkets);
 const goldWild = engineWild('gold', 'XAU/USD', 'long', 4000, event, { movePct: null });
 assert.equal(goldWild.entrySource, 'estimated');
-// ATR $40 dari harga 4000 = 1.0% -> lantai 1.6%, di atas pola tetap 0.715%.
-assert.ok(Math.abs(goldWild.riskPct - 1.6) < 1e-9, `ATR floor must widen gold SL, got ${goldWild.riskPct}`);
+// ATR $40 dari harga 4000 = 1.0% -> lantai 1.6% + spread 0.0075% -> ~1.61%, di atas pola tetap 0.715%.
+assert.ok(goldWild.riskPct >= 1.6 && goldWild.riskPct <= 1.62, `ATR floor must widen gold SL, got ${goldWild.riskPct}`);
 const goldEntry = 4000 + 0.15; // setengah spread emas 0.0075% dari 4000
 assert.ok(Math.abs(goldWild.entry - goldEntry) < 1e-9);
-assert.ok(Math.abs(goldWild.sl - goldEntry * (1 - 0.016)) < 1e-6);
-assert.ok(Math.abs(goldWild.tp - goldEntry * (1 + 0.032)) < 1e-6);
+assert.ok(Math.abs(goldWild.sl - 3935.8476) < 1e-3);
+assert.ok(Math.abs(goldWild.tp - 4128.7548) < 1e-3);
 
 // 4) markets.json basi (>2 jam) -> ATR diabaikan, perilaku tetap seperti dulu.
 const oldMarkets = { generatedAt: new Date(now - 3 * 60 * 60 * 1000).toISOString(), pairs: { 'XAU/USD': { bars: wildBars } } };

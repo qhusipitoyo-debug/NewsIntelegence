@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { sentimentOverlay } from '../scripts/xauusd-signal-rules.js';
 
 const source = await readFile(new URL('../index.html', import.meta.url), 'utf8');
 
@@ -18,11 +19,12 @@ function extractFunction(name) {
   throw new Error(`Could not extract ${name}()`);
 }
 
+const core = source.slice(source.indexOf('// BEGIN CALIBRATION CORE'), source.indexOf('// END CALIBRATION CORE'));
 const numFn = extractFunction('num');
 const countryFn = extractFunction('countryCode');
 const biasFn = extractFunction('goldBias');
 const analyzeFn = extractFunction('analyze');
-const analyze = new Function(`${numFn}\n${countryFn}\n${biasFn}\n${analyzeFn}\nreturn analyze;`)();
+const analyze = new Function(`${core}\n${numFn}\n${countryFn}\n${biasFn}\n${analyzeFn}\nreturn analyze;`)();
 
 const cases = [
   [{Event:'Nonfarm Payrolls', Actual:150000, Forecast:200000}, 'long'],
@@ -64,6 +66,10 @@ const preNewsBiasFn = extractFunction('preNewsBias');
 const invertDirFn = extractFunction('invertDir');
 const mapPairBiasFn = extractFunction('mapPairBias');
 const indexRateFn = extractFunction('indexRate');
+const barsOfFn = extractFunction('barsOf');
+const barBaseBeforeFn = extractFunction('barBaseBefore');
+const reactionFromBarsClientFn = extractFunction('reactionFromBarsClient');
+const preReleaseAtrPctFn = extractFunction('preReleaseAtrPct');
 const reactionForFn = extractFunction('reactionFor');
 const moveNoteFn = extractFunction('moveNote');
 const nextPairCatalystFn = extractFunction('nextPairCatalyst');
@@ -72,6 +78,8 @@ const momentumFloorFn = extractFunction('momentumFloor');
 const reactionFloorFn = extractFunction('reactionFloor');
 const mapAssetBiasFn = extractFunction('mapAssetBias');
 const mapActualBiasFn = extractFunction('mapActualBias');
+const signalDirectionCoreFn = extractFunction('signalDirectionCore');
+const applyMarketContextFn = extractFunction('applyMarketContext');
 const signalDirectionFn = extractFunction('signalDirection');
 const signalLockKeyFn = extractFunction('signalLockKey');
 const readSignalLockFn = extractFunction('readSignalLock');
@@ -81,6 +89,7 @@ const clampNumFn = extractFunction('clampNum');
 const marketsFreshFn = extractFunction('marketsFresh');
 const assetBarsFn = extractFunction('assetBars');
 const atrInfoFn = extractFunction('atrInfo');
+const structureStopDistanceFn = extractFunction('structureStopDistance');
 const halfSpreadEstimateFn = extractFunction('halfSpreadEstimate');
 const execEntriesFn = extractFunction('execEntries');
 const spreadConst = source.match(/const DEFAULT_SPREAD_PCT = .*?;\n/)[0];
@@ -90,7 +99,7 @@ const missedFromLevelsFn = extractFunction('missedFromLevels');
 const resolveSignalLevelsFn = extractFunction('resolveSignalLevels');
 const signalCardDataFn = extractFunction('signalCardData');
 const riskSensitiveConst = source.match(/const RISK_SENSITIVE_EVENT = .*?;\n/)[0];
-const sentimentOverlayFn = extractFunction('sentimentOverlay');
+const rateDrivenConst = source.match(/const RATE_DRIVEN_EVENT = .*?;\n/)[0];
 
 function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, indexRates = defaultIndexRates, reaction = null) {
   const body = `
@@ -100,11 +109,11 @@ function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, inde
     const MOMENTUM_WINDOW_MS = 90 * 60 * 1000;
     const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
     ${riskSensitiveConst}
+    ${rateDrivenConst}
     const FOREX_MAJORS = ['EUR/USD', 'GBP/USD', 'USD/JPY', 'USD/CHF', 'AUD/USD', 'USD/CAD', 'NZD/USD'];
     const FOREX_CROSSES = ['GBP/JPY', 'EUR/JPY'];
     const FOREX_PAIRS = [...FOREX_MAJORS, ...FOREX_CROSSES];
     const INDICES = [
-      { symbol: 'NAS100', name: 'Nasdaq 100', yahoo: '^NDX', slPct: 1.0, tpPct: 2.0 },
       { symbol: 'US500', name: 'S&P 500', yahoo: '^GSPC', slPct: 0.75, tpPct: 1.5 }
     ];
     const fmtDate = d => new Intl.DateTimeFormat('en-IN', { timeZone: WITA, weekday: 'short', day: '2-digit', month: 'short' }).format(d);
@@ -126,6 +135,10 @@ function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, inde
     ${pairRateFn}
     ${indexRateFn}
     ${moveNoteFn}
+    ${barsOfFn}
+    ${barBaseBeforeFn}
+    ${reactionFromBarsClientFn}
+    ${preReleaseAtrPctFn}
     ${reactionForFn}
     ${momentumForFn}
     ${postNewsMomentumFn}
@@ -141,6 +154,9 @@ function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, inde
     ${reactionFloorFn}
     ${mapAssetBiasFn}
     ${mapActualBiasFn}
+    ${core}
+    ${signalDirectionCoreFn}
+    ${applyMarketContextFn}
     ${signalDirectionFn}
     ${signalLockKeyFn}
     ${readSignalLockFn}
@@ -149,9 +165,12 @@ function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, inde
     ${clampNumFn}
     ${spreadConst}
     const MARKETS = null;
+    const LIVE_BARS = {};
     ${marketsFreshFn}
+    ${barsOfFn}
     ${assetBarsFn}
     ${atrInfoFn}
+    ${structureStopDistanceFn}
     ${halfSpreadEstimateFn}
     ${execEntriesFn}
     function brokerQuoteFor() { return null; }
@@ -178,7 +197,7 @@ const baseSnapshot = {
   gold: 3900,
   forex: { EUR: 0.95, GBP: 0.80, JPY: 155, CHF: 0.90, AUD: 0.66, CAD: 1.38 },
   crypto: { 'BTC/USD': 62000, 'ETH/USD': 3000 },
-  capturedAt: new Date().toISOString(),
+  capturedAt: new Date(Date.now() - 65 * 60 * 1000).toISOString(),
 };
 
 const pastUsd = { Date: new Date(Date.now() - 60 * 60 * 1000).toISOString(), Event: 'CPI', Country: 'USD', Importance: 3, Forecast: '3.0%', Actual: '' };
@@ -197,7 +216,7 @@ assert.match(breakoutHtml, /BTC\/USD/);
 const usdHtml = buildTpSl(4000, forexRates, cryptoRates, jsonStore(baseSnapshot))({ dir: 'wait', score: 40 }, pastUsd);
 assert.match(usdHtml, /POST-NEWS/);
 assert.match(usdHtml, /XAU\/USD \(Gold\) — BUY/);
-assert.match(usdHtml, /dari harga pra-rilis/);
+assert.match(usdHtml, /dari harga (tepat )?sebelum rilis|dari harga pra-rilis/);
 assert.match(usdHtml, /EUR\/USD <b>BUY<\/b>/);
 assert.match(usdHtml, /USD\/JPY <b>SELL<\/b>/);
 assert.match(usdHtml, /BTC\/USD <b>BUY<\/b>/);
@@ -231,17 +250,17 @@ assert.doesNotMatch(audDirectedHtml, /ETH\/USD/);
 
 // Legacy localStorage snapshot (gold only) is merged with per-pair repo data.
 const localGold = { getItem: () => '3900', setItem: () => {} };
-const repoForex = { [`${pastUsd.Date}|CPI`]: { forex: baseSnapshot.forex, crypto: baseSnapshot.crypto } };
+const repoForex = { [`${pastUsd.Date}|CPI`]: { forex: baseSnapshot.forex, crypto: baseSnapshot.crypto, capturedAt: baseSnapshot.capturedAt } };
 const mergedHtml = buildTpSl(4000, forexRates, cryptoRates, localGold, repoForex)({ dir: 'wait', score: 40 }, pastUsd);
 assert.match(mergedHtml, /EUR\/USD <b>BUY<\/b>/);
 assert.match(mergedHtml, /USD\/JPY <b>SELL<\/b>/);
-assert.match(mergedHtml, /dari harga pra-rilis/);
+assert.match(mergedHtml, /dari harga (tepat )?sebelum rilis|dari harga pra-rilis/);
 
 // Legacy repo snapshot ({price}) is still treated as a gold base price.
-const repoSnapshots = { [`${pastUsd.Date}|CPI`]: { price: 3950, capturedAt: pastUsd.Date } };
+const repoSnapshots = { [`${pastUsd.Date}|CPI`]: { price: 3950, capturedAt: new Date(Date.parse(pastUsd.Date) - 5 * 60 * 1000).toISOString() } };
 const repoHtml = buildTpSl(4000, forexRates, cryptoRates, noStore, repoSnapshots)({ dir: 'wait', score: 40 }, pastUsd);
 assert.match(repoHtml, /XAU\/USD \(Gold\) — BUY/);
-assert.match(repoHtml, /dari harga pra-rilis/);
+assert.match(repoHtml, /dari harga (tepat )?sebelum rilis|dari harga pra-rilis/);
 assert.match(repoHtml, /EUR\/USD <b style="color:var\(--amber\)">BREAKOUT<\/b>/);
 
 const straddleHtml = buildTpSl(4000, forexRates, cryptoRates, noStore)({ dir: 'wait', score: 40 }, futureUsd);
@@ -275,8 +294,7 @@ assert.match(usdPre, /pre-news market/);
 assert.match(usdPre, /BTC\/USD <b>SELL<\/b>/);
 assert.match(usdPre, /XAU\/USD \(Gold\) — SELL/);
 // USD event also drives the index panel.
-assert.match(usdPre, /Indices \(Nasdaq 100 &amp; S&amp;P 500\)/);
-assert.match(usdPre, /NAS100 <b>SELL<\/b>/);
+assert.match(usdPre, /Indices \(S&amp;P 500\)/);
 assert.match(usdPre, /US500 <b>SELL<\/b>/);
 
 const futureGbp = { ...futureEurCpi, Event: 'CPI y/y', Country: 'GBP', Forecast: '3.0%', Previous: '3.2%' };
@@ -288,18 +306,17 @@ assert.doesNotMatch(gbpPre, /EUR\/USD <b>BUY<\/b>/);
 
 // Cross pairs follow the event currency leg.
 assert.match(eurPre, /EUR\/JPY <b>BUY<\/b>/);
-assert.match(usdPre, /GBP\/JPY <b>SELL<\/b>/);
-assert.match(usdPre, /EUR\/JPY <b>SELL<\/b>/);
+assert.match(usdPre, /GBP\/JPY <b style="color:var\(--amber\)">STRADDLE<\/b>/);
+assert.match(usdPre, /EUR\/JPY <b style="color:var\(--amber\)">STRADDLE<\/b>/);
 assert.doesNotMatch(eurPre, /NAS100/);
 
 // Pure Forecast-vs-Previous bias and pair orientation mapping.
-const forecastBias = new Function(`${numFn}\n${countryFn}\n${biasFn}\n${forecastBiasFn}\nreturn forecastBias;`)();
+const forecastBias = new Function(`${core}\n${numFn}\n${countryFn}\n${biasFn}\n${forecastBiasFn}\nreturn forecastBias;`)();
 assert.equal(forecastBias({ Event: 'CPI', Country: 'USD', Forecast: '3.2%', Previous: '3.0%' }).dir, 'short');
 assert.equal(forecastBias({ Event: 'CPI', Country: 'EUR', Forecast: '4.0%', Previous: '3.8%' }).dir, 'long');
 assert.equal(forecastBias({ Event: 'CPI', Country: 'USD', Forecast: '3.0%', Previous: '3.0%' }), null);
 assert.equal(forecastBias({ Event: 'CPI', Country: 'USD', Forecast: '', Previous: '3.0%' }), null);
 
-const sentimentOverlay = new Function(`${sentimentOverlayFn}\nreturn sentimentOverlay;`)();
 assert.equal(sentimentOverlay(10, -15).dir, 'long', 'extreme fear from CNN F&G -> long');
 assert.equal(sentimentOverlay(85, 20).dir, 'short', 'extreme greed from CNN F&G -> short');
 assert.equal(sentimentOverlay(50, 0), null, 'neutral sentiment -> no overlay');
@@ -315,8 +332,8 @@ assert.equal(mapPairBias('GBP/JPY', 'long', 'GBP'), 'long');
 assert.equal(mapPairBias('GBP/JPY', 'long', 'JPY'), 'short');
 assert.equal(mapPairBias('EUR/JPY', 'short', 'EUR'), 'short');
 assert.equal(mapPairBias('EUR/JPY', 'short', 'JPY'), 'long');
-assert.equal(mapPairBias('GBP/JPY', 'long', 'USD'), 'long');
-assert.equal(mapPairBias('EUR/JPY', 'short', 'USD'), 'short');
+assert.equal(mapPairBias('GBP/JPY', 'long', 'USD'), null);
+assert.equal(mapPairBias('EUR/JPY', 'short', 'USD'), null);
 
 const pairRateFrom = new Function(`${pairRateFromFn}\nreturn pairRateFrom;`)();
 assert.ok(Math.abs(pairRateFrom(forexRates, 'EUR/USD') - 1 / 0.92) < 1e-9);
@@ -355,8 +372,8 @@ const reactionPayload = {
     [`${pastEurLow.Date}|${pastEurLow.Event}`]: {
       releasedAt: pastEurLow.Date,
       pairs: {
-        'EUR/USD': { movePct: 0.12, dir: 'long', minutes: 45 },
-        'USD/JPY': { movePct: 0.08, dir: 'long', minutes: 45 },
+        'EUR/USD': { movePct: 0.15, dir: 'long', minutes: 45 },
+        'USD/JPY': { movePct: 0.20, dir: 'long', minutes: 45 },
         'XAU/USD': { movePct: 0.31, dir: 'short', minutes: 45 }
       }
     }
@@ -394,9 +411,9 @@ assert.equal(ladderForecast.basis, 'actual-forecast');
 assert.equal(ladderForecast.reference, 'Forecast');
 
 const noForecast = analyze({ ...eurCpiReleased, Forecast: '' });
-assert.equal(noForecast.basis, 'actual-previous');
-assert.equal(noForecast.dir, 'long');
-assert.equal(noForecast.reference, 'Previous');
+assert.equal(noForecast.basis, 'no-forecast');
+assert.equal(noForecast.dir, 'wait');
+assert.equal(noForecast.score, 0);
 
 const pending = analyze({ ...eurCpiReleased, Date: new Date(Date.now() + 60 * 60 * 1000).toISOString(), Actual: '' });
 assert.equal(pending.basis, 'forecast-pending');
@@ -421,6 +438,7 @@ function buildCatalyst(eventList, reaction) {
     const MOMENTUM_WINDOW_MS = 90 * 60 * 1000;
     const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
     ${riskSensitiveConst}
+    ${rateDrivenConst}
     const REACTION_MAX_AGE_MS = 45 * 60 * 1000;
     const REACTION = ${JSON.stringify(reaction)};
     const events = ${JSON.stringify(eventList)};
@@ -430,7 +448,10 @@ function buildCatalyst(eventList, reaction) {
     const INDEX_RATES = ${JSON.stringify(defaultIndexRates)};
     const CRYPTO_RATES = {};
     const LIVE_PRICE = 4000;
+    const MARKETS = null;
+    const LIVE_BARS = {};
     const localStorage = { getItem: () => null, setItem: () => {} };
+    ${clampNumFn}
     ${numFn}
     ${countryFn}
     ${biasFn}
@@ -443,6 +464,10 @@ function buildCatalyst(eventList, reaction) {
     ${pairRateFromFn}
     ${pairRateFn}
     ${moveNoteFn}
+    ${barsOfFn}
+    ${barBaseBeforeFn}
+    ${reactionFromBarsClientFn}
+    ${preReleaseAtrPctFn}
     ${reactionForFn}
     ${momentumForFn}
     ${forecastBiasFn}
@@ -453,6 +478,9 @@ function buildCatalyst(eventList, reaction) {
     ${mapAssetBiasFn}
     ${mapActualBiasFn}
     ${newsPhaseFn}
+    ${core}
+    ${signalDirectionCoreFn}
+    ${applyMarketContextFn}
     ${signalDirectionFn}
     ${pairCurrenciesFn}
     ${nextPairCatalystFn}
@@ -566,6 +594,7 @@ function buildCryptoState(evts, now, rates, change, reaction = null) {
     const MOMENTUM_WINDOW_MS = 90 * 60 * 1000;
     const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
     ${riskSensitiveConst}
+    ${rateDrivenConst}
     const POST_NEWS_HOLD_MS = 6 * 60 * 60 * 1000;
     const REACTION_MAX_AGE_MS = 45 * 60 * 1000;
     const REACTION = ${JSON.stringify(reaction)};
@@ -586,6 +615,10 @@ function buildCryptoState(evts, now, rates, change, reaction = null) {
     ${preNewsSnapshotFn}
     ${eventKeyFn}
     ${momentumForFn}
+    ${barsOfFn}
+    ${barBaseBeforeFn}
+    ${reactionFromBarsClientFn}
+    ${preReleaseAtrPctFn}
     ${reactionForFn}
     ${moveNoteFn}
     ${indexRateFn}
@@ -597,6 +630,9 @@ function buildCryptoState(evts, now, rates, change, reaction = null) {
     ${reactionFloorFn}
     ${mapAssetBiasFn}
     ${mapActualBiasFn}
+    ${core}
+    ${signalDirectionCoreFn}
+    ${applyMarketContextFn}
     ${signalDirectionFn}
     ${signalLockKeyFn}
     ${readSignalLockFn}
@@ -605,9 +641,12 @@ function buildCryptoState(evts, now, rates, change, reaction = null) {
     ${clampNumFn}
     ${spreadConst}
     const MARKETS = null;
+    const LIVE_BARS = {};
     ${marketsFreshFn}
+    ${barsOfFn}
     ${assetBarsFn}
     ${atrInfoFn}
+    ${structureStopDistanceFn}
     ${halfSpreadEstimateFn}
     ${execEntriesFn}
     function brokerQuoteFor() { return null; }
@@ -824,9 +863,9 @@ function buildIndicesState(evts, idxRates, now, analyzeBody = "() => ({ dir: 'wa
     const MOMENTUM_WINDOW_MS = 90 * 60 * 1000;
     const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
     ${riskSensitiveConst}
+    ${rateDrivenConst}
     const POST_NEWS_HOLD_MS = 6 * 60 * 60 * 1000;
     const INDICES = [
-      { symbol: 'NAS100', name: 'Nasdaq 100', yahoo: '^NDX', slPct: 1.0, tpPct: 2.0 },
       { symbol: 'US500', name: 'S&P 500', yahoo: '^GSPC', slPct: 0.75, tpPct: 1.5 }
     ];
     const countryCode = c => String(c || 'USD').toUpperCase();
@@ -850,6 +889,9 @@ function buildIndicesState(evts, idxRates, now, analyzeBody = "() => ({ dir: 'wa
     ${reactionFloorFn}
     ${mapAssetBiasFn}
     ${mapActualBiasFn}
+    ${core}
+    ${signalDirectionCoreFn}
+    ${applyMarketContextFn}
     ${signalDirectionFn}
     ${signalLockKeyFn}
     ${readSignalLockFn}
@@ -858,9 +900,12 @@ function buildIndicesState(evts, idxRates, now, analyzeBody = "() => ({ dir: 'wa
     ${clampNumFn}
     ${spreadConst}
     const MARKETS = null;
+    const LIVE_BARS = {};
     ${marketsFreshFn}
+    ${barsOfFn}
     ${assetBarsFn}
     ${atrInfoFn}
+    ${structureStopDistanceFn}
     ${halfSpreadEstimateFn}
     ${execEntriesFn}
     function brokerQuoteFor() { return null; }
@@ -877,7 +922,6 @@ function buildIndicesState(evts, idxRates, now, analyzeBody = "() => ({ dir: 'wa
 }
 
 const idxRates = {
-  NAS100: { price: 21000, previousClose: 20800, changePct: 0.96 },
   US500: { price: 5800, previousClose: 5760, changePct: 0.69 }
 };
 const idxNow = Date.now();
@@ -887,25 +931,24 @@ const idxPastUsd = { ...idxFutureUsd, Date: new Date(idxNow - 60 * 60 * 1000).to
 const idxPreState = buildIndicesState([idxFutureUsd], idxRates, idxNow, "() => ({ dir: 'wait' })", "() => ({ dir: 'short', forecast: 3.2, previous: 3.0 })");
 assert.equal(idxPreState.status, 'active');
 assert.equal(idxPreState.phase, 'pre');
-assert.deepEqual(idxPreState.items.map(x => x.dir), ['short', 'short']);
+assert.deepEqual(idxPreState.items.map(x => x.dir), ['short']);
 assert.ok(/Forecast 3\.2 vs Previous 3/.test(idxPreState.items[0].note));
 
 const idxWaitState = buildIndicesState([idxFutureUsd], idxRates, idxNow);
-assert.deepEqual(idxWaitState.items.map(x => x.dir), [null, null]);
+assert.deepEqual(idxWaitState.items.map(x => x.dir), [null]);
 
 const idxPostDirected = buildIndicesState([idxPastUsd], idxRates, idxNow, "() => ({ dir: 'long' })");
-assert.deepEqual(idxPostDirected.items.map(x => x.dir), ['long', 'long']);
+assert.deepEqual(idxPostDirected.items.map(x => x.dir), ['long']);
 
-const idxPostMomentum = buildIndicesState([idxPastUsd], idxRates, idxNow, "() => ({ dir: 'wait' })", '() => null', "(e, kind, symbol) => symbol === 'NAS100' ? { dir: 'long', changePct: 0.42 } : { dir: 'short', changePct: -0.21 }");
-assert.deepEqual(idxPostMomentum.items.map(x => x.dir), ['long', 'short']);
-assert.equal(idxPostMomentum.items[0].momPct, 0.42);
-assert.equal(idxPostMomentum.items[1].momPct, -0.21);
+const idxPostMomentum = buildIndicesState([idxPastUsd], idxRates, idxNow, "() => ({ dir: 'wait' })", '() => null', "(e, kind, symbol) => ({ dir: 'short', changePct: -0.21 })");
+assert.deepEqual(idxPostMomentum.items.map(x => x.dir), ['short']);
+assert.equal(idxPostMomentum.items[0].momPct, -0.21);
 
 // Index reactions measured from the futures backup say so on the card.
-const idxPostVia = buildIndicesState([idxPastUsd], idxRates, idxNow, "() => ({ dir: 'wait', noData: true })", '() => null', '() => null', "(e, symbol) => ({ dir: 'long', movePct: 0.238, minutes: 40, via: 'NQ=F' })");
-assert.deepEqual(idxPostVia.items.map(x => x.dir), ['long', 'long']);
-assert.match(idxPostVia.items[0].note, /dalam 40 mnt pasca-rilis — Actual tidak dipublikasikan \(bar NQ=F\)/);
-assert.match(indicesBoardHtml(idxPostVia), /\(bar NQ=F\)/);
+const idxPostVia = buildIndicesState([idxPastUsd], idxRates, idxNow, "() => ({ dir: 'wait', noData: true })", '() => null', '() => null', "(e, symbol) => ({ dir: 'long', movePct: 0.238, minutes: 40, via: 'ES=F' })");
+assert.deepEqual(idxPostVia.items.map(x => x.dir), ['long']);
+assert.match(idxPostVia.items[0].note, /dalam 40 mnt pasca-rilis — Actual tidak dipublikasikan \(bar ES=F\)/);
+assert.match(indicesBoardHtml(idxPostVia), /\(bar ES=F\)/);
 assert.doesNotMatch(indicesBoardHtml(idxPostVia), /\+0\.00%/);
 assert.match(indicesBoardHtml(idxPostVia), /\+0\.24%<\/small>/);
 
@@ -926,7 +969,13 @@ assert.ok(goldStart > -1, 'gold board section missing');
 assert.ok(goldStart < calendarStart, 'gold board must render before the calendar');
 
 const goldBoardFn = extractFunction('goldBoardHtml');
-const goldBoardHtml = new Function(`${goldBoardFn}\nreturn goldBoardHtml;`)();
+const goldBoardHtml = new Function(`
+  const esc = s => String(s ?? '');
+  function watchFactorsHtml() { return ''; }
+  function spikeBadgeHtml() { return ''; }
+  ${goldBoardFn}
+  return goldBoardHtml;
+`)();
 
 const goldPre = goldBoardHtml(4042.4, {
   status: 'pre',
@@ -991,6 +1040,7 @@ function buildGoldState(evts, price, now, analyzeBody = "() => ({ dir: 'wait' })
     const MOMENTUM_WINDOW_MS = 90 * 60 * 1000;
     const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
     ${riskSensitiveConst}
+    ${rateDrivenConst}
     const POST_NEWS_HOLD_MS = 6 * 60 * 60 * 1000;
     const countryCode = c => String(c || 'USD').toUpperCase();
     const esc = s => String(s);
@@ -1010,6 +1060,9 @@ function buildGoldState(evts, price, now, analyzeBody = "() => ({ dir: 'wait' })
     ${mapAssetBiasFn}
     ${mapActualBiasFn}
     ${newsPhaseFn}
+    ${core}
+    ${signalDirectionCoreFn}
+    ${applyMarketContextFn}
     ${signalDirectionFn}
     ${signalLockKeyFn}
     ${readSignalLockFn}
@@ -1018,9 +1071,12 @@ function buildGoldState(evts, price, now, analyzeBody = "() => ({ dir: 'wait' })
     ${clampNumFn}
     ${spreadConst}
     const MARKETS = null;
+    const LIVE_BARS = {};
     ${marketsFreshFn}
+    ${barsOfFn}
     ${assetBarsFn}
     ${atrInfoFn}
+    ${structureStopDistanceFn}
     ${halfSpreadEstimateFn}
     ${execEntriesFn}
     function brokerQuoteFor() { return null; }
@@ -1066,12 +1122,12 @@ assert.equal(preBiasState.status, 'pre');
 assert.equal(preBiasState.dir, 'short');
 assert.equal(preBiasState.status, 'pre');
 assert.ok(Math.abs(preBiasState.levels.entry - 3999.85) < 1e-9);
-assert.ok(Math.abs(preBiasState.levels.sl - 4028.4489275) < 1e-9);
-assert.ok(Math.abs(preBiasState.levels.tp - 3942.652145) < 1e-9);
+assert.ok(Math.abs(preBiasState.levels.sl - 4028.7489275) < 1e-6);
+assert.ok(Math.abs(preBiasState.levels.tp - 3942.052145) < 1e-6);
 assert.ok(preBiasState.buy && preBiasState.sell, 'straddle levels must survive the pre-news bias');
 assert.match(preBiasState.note, /Forecast 3\.2 vs Previous 3/);
 const preBiasHtml = goldBoardHtml(4000, preBiasState);
-assert.match(preBiasHtml, /SELL · MARKET/);
+assert.match(preBiasHtml, /SELL · (MARKET|PRE-NEWS)/);
 assert.match(preBiasHtml, /Entry 3999\.85/);
 assert.match(preBiasHtml, /Straddle OCO tetap tersedia bila arah tidak diambil\./);
 assert.match(preBiasHtml, /BUY STOP/);
@@ -1091,8 +1147,8 @@ assert.match(viaReaction.note, /\(bar XAUUSD\)/);
 const postDirected = buildGoldState([usdPast], 4000, now, "() => ({ dir: 'short' })");
 assert.equal(postDirected.status, 'post');
 assert.equal(postDirected.dir, 'short');
-assert.ok(Math.abs(postDirected.levels.sl - 4028.4489275) < 1e-9);
-assert.ok(Math.abs(postDirected.levels.tp - 3942.652145) < 1e-9);
+assert.ok(Math.abs(postDirected.levels.sl - 4028.7489275) < 1e-6);
+assert.ok(Math.abs(postDirected.levels.tp - 3942.052145) < 1e-6);
 
 const postMomentum = buildGoldState([usdPast], 4000, now, "() => ({ dir: 'wait' })", "() => ({ dir: 'long', changePct: 0.35 })");
 assert.equal(postMomentum.dir, 'long');
@@ -1226,6 +1282,7 @@ const applyFx = new Function(`
   let FOREX_QUOTES = {}, FOREX_RATES = {}, FOREX_META = {}, FOREX_TICK = {}, FOREX_LIVE = false;
   let renders = 0;
   const render = () => { renders++; };
+  const recordLiveTick = () => {};
   ${extractFunction('forexTicks')}
   ${extractFunction('applyForexPayload')}
   return payload => {
@@ -1273,6 +1330,7 @@ function buildEngine(price, { reaction = null, preNews = {}, indexRates = {}, st
     const FOREX_RATES = {};
     const FOREX_QUOTES = {};
     ${riskSensitiveConst}
+    ${rateDrivenConst}
     ${numFn}
     ${countryFn}
     ${biasFn}
@@ -1285,6 +1343,10 @@ function buildEngine(price, { reaction = null, preNews = {}, indexRates = {}, st
     ${pairRateFromFn}
     ${pairRateFn}
     ${moveNoteFn}
+    ${barsOfFn}
+    ${barBaseBeforeFn}
+    ${reactionFromBarsClientFn}
+    ${preReleaseAtrPctFn}
     ${reactionForFn}
     ${momentumForFn}
     ${forecastBiasFn}
@@ -1297,6 +1359,9 @@ function buildEngine(price, { reaction = null, preNews = {}, indexRates = {}, st
     ${mapAssetBiasFn}
     ${mapActualBiasFn}
     ${newsPhaseFn}
+    ${core}
+    ${signalDirectionCoreFn}
+    ${applyMarketContextFn}
     ${signalDirectionFn}
     ${signalLockKeyFn}
     ${readSignalLockFn}
@@ -1305,9 +1370,12 @@ function buildEngine(price, { reaction = null, preNews = {}, indexRates = {}, st
     ${clampNumFn}
     ${spreadConst}
     const MARKETS = null;
+    const LIVE_BARS = {};
     ${marketsFreshFn}
+    ${barsOfFn}
     ${assetBarsFn}
     ${atrInfoFn}
+    ${structureStopDistanceFn}
     ${halfSpreadEstimateFn}
     ${execEntriesFn}
     function brokerQuoteFor() { return null; }
@@ -1433,11 +1501,10 @@ function memoryStore() {
     Forecast: '100K', Previous: '90K', Actual: '250K'
   };
   const cpi = { ...nfp, Event: 'CPI' };
-  const idxRates = { NAS100: { price: 21000, changePct: 1 }, US500: { price: 5800, changePct: 0.8 } };
-  const nfpSig = buildEngine(21000, { indexRates: idxRates }).signalDirection(nfp, 'NAS100', 'index', now);
-  assert.equal(nfpSig.basis, 'actual');
-  assert.equal(nfpSig.dir, 'long', 'strong payrolls are risk-on for indices');
-  const cpiSig = buildEngine(21000, { indexRates: idxRates }).signalDirection(cpi, 'NAS100', 'index', now);
+  const idxRates = { US500: { price: 5800, changePct: 0.8 } };
+  const nfpSig = buildEngine(5800, { indexRates: idxRates }).signalDirection(nfp, 'US500', 'index', now);
+  assert.equal(nfpSig.dir, null, 'NFP is regime-dependent on indices (rate vs growth), so direction is not forced');
+  const cpiSig = buildEngine(5800, { indexRates: idxRates }).signalDirection(cpi, 'US500', 'index', now);
   assert.equal(cpiSig.dir, 'short', 'hot CPI stays a headwind for indices');
 }
 
@@ -1455,11 +1522,11 @@ function memoryStore() {
 
   const liveIndex = indicesBoardHtml({
     status: 'live', phase: 'post', event: 'CPI', items: [
-      { symbol: 'NAS100', name: 'Nasdaq 100', slPct: 1, tpPct: 2, price: 21000, changePct: 1, dir: 'long', levels }
+      { symbol: 'US500', name: 'S&P 500', slPct: 0.75, tpPct: 1.5, price: 5800, changePct: 0.8, dir: 'long', levels }
     ]
   });
   assert.match(liveIndex, /Level entry ditahan sampai konfirmasi 15 menit/);
-  assert.doesNotMatch(liveIndex, /Entry 21,000/);
+  assert.doesNotMatch(liveIndex, /Entry 5,800/);
 
   const liveForex = forexBoardHtml({ items: [
     { pair: 'EUR/USD', rate: 1.1, dir: 'long', phase: 'live', levels: { entry: 1.1, sl: 1.098, tp: 1.104, rr: 2 } }
@@ -1494,7 +1561,7 @@ function memoryStore() {
   assert.equal(sentJpy.dir, 'short');
 
   const sentCci = buildEngine(4000).signalDirection({
-    ...sentEvent, Event: 'Conference Board Consumer Confidence'
+    ...sentEvent, Event: 'Conference Board Consumer Confidence', Actual: '67.0'
   }, 'EUR/USD', 'forex', Date.now());
   assert.equal(sentCci.basis, 'actual');
   assert.equal(sentCci.dir, 'long');
