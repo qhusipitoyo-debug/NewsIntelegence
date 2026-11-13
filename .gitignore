@@ -1,3 +1,5 @@
 .env
 bridge/
 __pycache__/
+*.log
+data/mt5_bridge.log

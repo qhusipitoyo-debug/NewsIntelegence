@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13T04:10:58Z",
+  "generatedAt": "2026-11-13T04:34:38Z",
   "source": "MT5 Linux Bottles Bridge",
   "broker": {
     "id": "FBS",
@@ -7,28 +7,28 @@
     "server": "FBS-Demo",
     "accountType": "demo",
     "login": "105075645",
-    "balance": 1055.27,
-    "equity": 1055.27,
-    "marginFree": 1055.27,
+    "balance": 1055.02,
+    "equity": 1055.02,
+    "marginFree": 1055.02,
     "tradeAllowed": true,
     "tradeExpert": true
   },
   "quotes": {
     "EUR/USD": {
       "symbol": "EURUSD",
-      "bid": 1.10606,
-      "ask": 1.10616,
-      "mid": 1.10611,
-      "spread": 0.0001,
-      "spreadPips": 1.0,
+      "bid": 1.10592,
+      "ask": 1.10601,
+      "mid": 1.10596,
+      "spread": 9e-05,
+      "spreadPips": 0.9,
       "digits": 5,
-      "rawPoints": 10.0
+      "rawPoints": 9.0
     },
     "USD/JPY": {
       "symbol": "USDJPY",
-      "bid": 159.906,
-      "ask": 159.916,
-      "mid": 159.911,
+      "bid": 159.91,
+      "ask": 159.92,
+      "mid": 159.915,
       "spread": 0.01,
       "spreadPips": 1.0,
       "digits": 3,
@@ -36,39 +36,39 @@
     },
     "GBP/USD": {
       "symbol": "GBPUSD",
-      "bid": 1.32329,
-      "ask": 1.32341,
-      "mid": 1.32335,
-      "spread": 0.00012,
-      "spreadPips": 1.2,
-      "digits": 5,
-      "rawPoints": 12.0
-    },
-    "USD/CHF": {
-      "symbol": "USDCHF",
-      "bid": 0.83525,
-      "ask": 0.83534,
-      "mid": 0.8353,
-      "spread": 9e-05,
-      "spreadPips": 0.9,
-      "digits": 5,
-      "rawPoints": 9.0
-    },
-    "AUD/USD": {
-      "symbol": "AUDUSD",
-      "bid": 0.68056,
-      "ask": 0.68067,
-      "mid": 0.68061,
+      "bid": 1.32304,
+      "ask": 1.32315,
+      "mid": 1.32309,
       "spread": 0.00011,
       "spreadPips": 1.1,
       "digits": 5,
       "rawPoints": 11.0
     },
+    "USD/CHF": {
+      "symbol": "USDCHF",
+      "bid": 0.83531,
+      "ask": 0.83541,
+      "mid": 0.83536,
+      "spread": 0.0001,
+      "spreadPips": 1.0,
+      "digits": 5,
+      "rawPoints": 10.0
+    },
+    "AUD/USD": {
+      "symbol": "AUDUSD",
+      "bid": 0.68043,
+      "ask": 0.68053,
+      "mid": 0.68048,
+      "spread": 0.0001,
+      "spreadPips": 1.0,
+      "digits": 5,
+      "rawPoints": 10.0
+    },
     "USD/CAD": {
       "symbol": "USDCAD",
-      "bid": 1.42582,
-      "ask": 1.42593,
-      "mid": 1.42588,
+      "bid": 1.42593,
+      "ask": 1.42604,
+      "mid": 1.42598,
       "spread": 0.00011,
       "spreadPips": 1.1,
       "digits": 5,
@@ -76,9 +76,9 @@
     },
     "NZD/USD": {
       "symbol": "NZDUSD",
-      "bid": 0.55438,
-      "ask": 0.5545,
-      "mid": 0.55444,
+      "bid": 0.55428,
+      "ask": 0.5544,
+      "mid": 0.55434,
       "spread": 0.00012,
       "spreadPips": 1.2,
       "digits": 5,
@@ -86,19 +86,19 @@
     },
     "XAU/USD": {
       "symbol": "XAUUSD",
-      "bid": 3916.35,
-      "ask": 3916.7,
-      "mid": 3916.52,
-      "spread": 0.35,
-      "spreadPips": 35.0,
+      "bid": 3910.46,
+      "ask": 3910.79,
+      "mid": 3910.62,
+      "spread": 0.33,
+      "spreadPips": 33.0,
       "digits": 2,
-      "rawPoints": 35.0
+      "rawPoints": 33.0
     },
     "BTC/USD": {
       "symbol": "BTCUSD",
-      "bid": 68864.3,
-      "ask": 68883.95,
-      "mid": 68874.12,
+      "bid": 69043.7,
+      "ask": 69063.35,
+      "mid": 69053.52,
       "spread": 19.65,
       "spreadPips": 196500.0,
       "digits": 2,
@@ -106,13 +106,13 @@
     },
     "ETH/USD": {
       "symbol": "ETHUSD",
-      "bid": 1935.54,
-      "ask": 1937.55,
-      "mid": 1936.55,
-      "spread": 2.01,
-      "spreadPips": 20100.0,
+      "bid": 1933.12,
+      "ask": 1935.05,
+      "mid": 1934.09,
+      "spread": 1.93,
+      "spreadPips": 19300.0,
       "digits": 2,
-      "rawPoints": 201.0
+      "rawPoints": 193.0
     }
   },
   "providers": {
