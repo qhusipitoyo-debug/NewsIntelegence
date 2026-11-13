@@ -4,7 +4,14 @@
 # ==============================================================================
 set -e
 
-DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Resolve physical directory even if executed via symlink
+TARGET="${BASH_SOURCE[0]}"
+while [ -h "$TARGET" ]; do
+    DIR="$(cd -P "$(dirname "$TARGET")" && pwd)"
+    TARGET="$(readlink "$TARGET")"
+    [[ $TARGET != /* ]] && TARGET="$DIR/$TARGET"
+done
+DIR="$(cd -P "$(dirname "$TARGET")" && pwd)"
 cd "$DIR"
 
 echo "=================================================================="
@@ -27,4 +34,4 @@ fi
 
 # 3. Jalankan bridge daemon
 echo "📡 Menghubungkan ke folder MQL5/Files di Bottle..."
-exec python3 "$DIR/scripts/mt5_linux_bridge.py" --daemon
+exec python3 "$DIR/scripts/mt5_linux_bridge.py" "$@"
