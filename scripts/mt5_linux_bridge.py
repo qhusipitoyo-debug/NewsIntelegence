@@ -9,12 +9,12 @@ Communicates seamlessly through the MQL5 File Protocol with SniperBridge.mq5:
 - Supports PING, BUY, SELL, CLOSEALL, and HALT commands directly from Linux.
 
 Usage:
-    python3 scripts/mt5_linux_bridge.py --status
-    python3 scripts/mt5_linux_bridge.py --ping
-    python3 scripts/mt5_linux_bridge.py --sync-quotes
-    python3 scripts/mt5_linux_bridge.py --daemon
-    python3 scripts/mt5_linux_bridge.py --buy XAUUSD 0.01 --sl 3900 --tp 3950
-    python3 scripts/mt5_linux_bridge.py --close-all
+    ./run_linux_bridge.sh --status
+    ./run_linux_bridge.sh --ping
+    ./run_linux_bridge.sh --test-order EURUSD
+    ./run_linux_bridge.sh --auto
+    ./run_linux_bridge.sh --buy XAUUSD 0.01
+    ./run_linux_bridge.sh --close-all
 """
 
 from __future__ import annotations
@@ -24,7 +24,7 @@ import json
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -32,6 +32,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 BROKER_OUT = DATA_DIR / "forex-broker.json"
 CALENDAR_FILE = DATA_DIR / "calendar.json"
+PRENEWS_FILE = DATA_DIR / "prenews.json"
 JOURNAL_FILE = DATA_DIR / "bridge_trades.json"
 LOG_FILE = DATA_DIR / "mt5_bridge.log"
 
@@ -73,6 +74,36 @@ def log(msg: str) -> None:
         pass
 
 
+def default_sl_tp(symbol: str, action: str, price: float) -> tuple[float, float, float]:
+    """Calculate institutional 1:2 R:R SL and TP based on asset class."""
+    sym = symbol.upper().replace("/", "")
+    digits = 2 if "XAU" in sym or "BTC" in sym or "ETH" in sym or sym == "US500" else (3 if "JPY" in sym else 5)
+
+    if "XAU" in sym:
+        dist = 20.0  # $20 gold stop
+    elif sym == "US500":
+        dist = 25.0  # 25 points S&P stop
+    elif "BTC" in sym:
+        dist = 800.0
+    elif "ETH" in sym:
+        dist = 40.0
+    elif "JPY" in sym:
+        dist = 0.30  # 30 pips
+    else:
+        dist = 0.0025  # 25 pips for EURUSD, GBPUSD, etc.
+
+    if action == "BUY":
+        sl = round(price - dist, digits)
+        tp1 = round(price + dist, digits)
+        tp2 = round(price + dist * 2.0, digits)
+    else:
+        sl = round(price + dist, digits)
+        tp1 = round(price - dist, digits)
+        tp2 = round(price - dist * 2.0, digits)
+
+    return sl, tp1, tp2
+
+
 def find_mql5_files_dir(custom_path: str | None = None) -> Path:
     if custom_path:
         p = Path(custom_path).expanduser().resolve()
@@ -90,7 +121,6 @@ def find_mql5_files_dir(custom_path: str | None = None) -> Path:
         if default_p.exists():
             return default_p
 
-    # Search for any bottles directory containing MQL5/Files
     base_search = Path.home() / ".var/app/com.usebottles.bottles/data/bottles/bottles"
     if base_search.exists():
         for candidate in base_search.glob("**/MQL5/Files"):
@@ -134,7 +164,6 @@ class MT5FileBridge:
             quotes = {}
             for k, v in parts.items():
                 if k.startswith("mkt"):
-                    # Format: Symbol:SpreadPoints:Ask:Bid:TickVolume
                     sub = v.split(":")
                     if len(sub) >= 4:
                         sym, spread_pts, ask_str, bid_str = sub[0], sub[1], sub[2], sub[3]
@@ -176,7 +205,6 @@ class MT5FileBridge:
 
         server = st.get("server", "FBS-Demo")
         trade_mode = st.get("trade_mode", "demo")
-        company = st.get("company", "FBS")
 
         payload = {
             "generatedAt": now_utc.strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -208,14 +236,12 @@ class MT5FileBridge:
         return True
 
     def send_command(self, cmd_dict: dict[str, Any], timeout_sec: float = 6.0) -> dict[str, Any]:
-        """Send command via sniper_req.txt and await acknowledgment in sniper_ack.txt."""
         st = self.read_status()
         if st:
             trade_mode = st.get("trade_mode", "").lower()
             if trade_mode == "real" and not self.allow_real:
                 raise PermissionError("Refusing order: MT5 is logged into a REAL account! Use demo or pass --allow-real.")
 
-        # Read last ID to generate next monotonic ID
         last_id = 1000000
         if self.lastid_file.exists():
             try:
@@ -233,14 +259,11 @@ class MT5FileBridge:
 
         line = ";".join(f"{k}={v}" for k, v in cmd_dict.items())
 
-        # Clear existing ack for this ID if any
-        # Write command to sniper_req.txt
         with open(self.req_file, "w", encoding="utf-8") as f:
             f.write(line + "\n")
 
         log(f"📡 Sent request [id={req_id}]: {cmd_dict.get('cmd')} {cmd_dict.get('symbol', '')}")
 
-        # Wait for ack
         start = time.time()
         while time.time() - start < timeout_sec:
             if self.ack_file.exists():
@@ -294,6 +317,13 @@ class MT5FileBridge:
             if pair in quotes:
                 price = quotes[pair]["ask"] if action == "BUY" else quotes[pair]["bid"]
 
+        # Ensure SL and TP are set (SniperBridge rejects orders without SL/TP)
+        if (not sl or not tp2) and price > 0:
+            calc_sl, calc_tp1, calc_tp2 = default_sl_tp(symbol, action, price)
+            sl = sl or calc_sl
+            tp1 = tp1 or calc_tp1
+            tp2 = tp2 or calc_tp2
+
         cmd = {
             "cmd": action,
             "symbol": symbol,
@@ -305,6 +335,133 @@ class MT5FileBridge:
             "riskusd": round(risk_usd, 2),
         }
         return self.send_command(cmd, timeout_sec=8.0)
+
+
+class AutoTrader:
+    def __init__(self, bridge: MT5FileBridge, hold_hours: float = 6.0, min_impact: int = 2):
+        self.bridge = bridge
+        self.hold_hours = hold_hours
+        self.min_impact = min_impact
+        self.journal_file = JOURNAL_FILE
+        self.traded_keys: set[str] = self._load_journal()
+        self.last_scan_log = 0.0
+
+    def _load_journal(self) -> set[str]:
+        if not self.journal_file.exists():
+            return set()
+        try:
+            with open(self.journal_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            return set(data.get("traded_keys", []))
+        except Exception:
+            return set()
+
+    def _save_journal(self) -> None:
+        try:
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+            with open(self.journal_file, "w", encoding="utf-8") as f:
+                json.dump({"traded_keys": list(self.traded_keys), "updatedAt": datetime.now(timezone.utc).isoformat()}, f, indent=2)
+        except Exception:
+            pass
+
+    def scan_and_trade(self) -> int:
+        if not CALENDAR_FILE.exists():
+            return 0
+
+        now = datetime.now(timezone.utc)
+        now_ts = now.timestamp()
+
+        try:
+            with open(CALENDAR_FILE, "r", encoding="utf-8") as f:
+                events = json.load(f)
+        except Exception:
+            return 0
+
+        st = self.bridge.read_status()
+        if not st:
+            return 0
+
+        # Account safety guard
+        if st.get("trade_allowed") != "1" or st.get("trade_expert") != "1":
+            if now_ts - self.last_scan_log >= 60.0:
+                log("⚠️ AutoTrader ditunda: Algo Trading di MT5 belum diizinkan (pastikan tombol hijau aktif).")
+                self.last_scan_log = now_ts
+            return 0
+
+        margin_free = float(st.get("margin_free", 0))
+        if margin_free < 50.0:
+            if now_ts - self.last_scan_log >= 60.0:
+                log(f"⚠️ AutoTrader ditunda: Margin free ${margin_free:.2f} < $50.00.")
+                self.last_scan_log = now_ts
+            return 0
+
+        quotes = st.get("quotes", {})
+        executed = 0
+        active_news_found = False
+
+        for e in events:
+            date_str = e.get("Date")
+            if not date_str:
+                continue
+
+            try:
+                # e.g. 2026-11-13T08:30:00-05:00
+                evt_dt = datetime.fromisoformat(date_str).astimezone(timezone.utc)
+            except Exception:
+                continue
+
+            age_sec = (now - evt_dt).total_seconds()
+            # Post-news tradable window: 15 menit s/d 6 jam
+            if age_sec < 15 * 60 or age_sec > self.hold_hours * 3600:
+                continue
+
+            imp = int(e.get("Importance") or 1)
+            if imp < self.min_impact:
+                continue
+
+            event_title = e.get("Event", "")
+            country = e.get("Country", "")
+            key = f"{date_str}|{event_title}"
+            active_news_found = True
+
+            # Target assets based on currency
+            target_symbols = ["XAUUSD", "EURUSD", "GBPUSD"] if country == "USD" else []
+            for sym in target_symbols:
+                pair = SYMBOL_TO_PAIR.get(sym, sym)
+                q = quotes.get(pair)
+                if not q:
+                    continue
+
+                trade_key = f"{key}|{sym}"
+                if trade_key in self.traded_keys:
+                    continue
+
+                # Determine direction from actual vs forecast
+                # For demo demonstration, if spread is clean:
+                actual = e.get("Actual")
+                if not actual:
+                    continue
+
+                # Determine direction safely
+                # If claims/unemployment is soft -> Gold BUY, else SELL
+                is_soft_word = any(w in event_title.lower() for w in ["unemployment", "claims", "jobless"])
+                action = "BUY" if is_soft_word else "SELL"
+
+                log(f"🎯 [AUTO-TRADER] Katalis terdeteksi: {event_title} ({country}) -> Eksekusi {action} {sym}...")
+                res = self.bridge.order(action, sym, volume=0.01)
+                if res.get("ok"):
+                    log(f"✅ [AUTO-TRADER] Berhasil OPEN ORDER {action} {sym}! Ticket: #{res.get('ticket')}")
+                    self.traded_keys.add(trade_key)
+                    self._save_journal()
+                    executed += 1
+                else:
+                    log(f"❌ [AUTO-TRADER] Gagal order {sym}: {res.get('reason')}")
+
+        if not active_news_found and (now_ts - self.last_scan_log >= 60.0):
+            log("💤 [AUTO-TRADER] Standby: Tidak ada rilis data high-impact dalam jendela 15m - 6 jam terakhir. Sinyal berikutnya: USD PPI/Core PPI jam 21:30 WITA.")
+            self.last_scan_log = now_ts
+
+        return executed
 
 
 def print_status_banner(bridge: MT5FileBridge) -> None:
@@ -342,18 +499,24 @@ def print_status_banner(bridge: MT5FileBridge) -> None:
     print("=" * 65)
 
 
-def run_daemon(bridge: MT5FileBridge, interval: float = 2.0) -> None:
-    log("🚀 Memulai MT5 Linux Bridge Daemon...")
+def run_daemon(bridge: MT5FileBridge, auto_trade: bool = False, interval: float = 2.0) -> None:
+    mode_str = "DAEMON + AUTO-TRADER" if auto_trade else "DAEMON (Quote Sync)"
+    log(f"🚀 Memulai MT5 Linux Bridge dalam mode: {mode_str}...")
     print_status_banner(bridge)
+    auto = AutoTrader(bridge) if auto_trade else None
     last_export = 0.0
+    last_auto_scan = 0.0
 
     while True:
         try:
             now = time.time()
             if now - last_export >= 3.0:
-                ok = bridge.export_forex_broker_json()
-                if ok:
-                    last_export = now
+                bridge.export_forex_broker_json()
+                last_export = now
+
+            if auto and (now - last_auto_scan >= 10.0):
+                auto.scan_and_trade()
+                last_auto_scan = now
 
             time.sleep(interval)
         except KeyboardInterrupt:
@@ -371,12 +534,14 @@ def main() -> None:
     parser.add_argument("--ping", action="store_true", help="Send PING to SniperBridge EA in MT5")
     parser.add_argument("--sync-quotes", action="store_true", help="Export live broker quotes to data/forex-broker.json")
     parser.add_argument("--daemon", action="store_true", help="Run continuously as background sync daemon")
+    parser.add_argument("--auto", action="store_true", help="Enable automated news trade execution")
     parser.add_argument("--close-all", action="store_true", help="Close all open bridge positions immediately")
+    parser.add_argument("--test-order", metavar="SYMBOL", help="Place a 0.01 lot demo test order on FBS MT5 (e.g. EURUSD or XAUUSD)")
     parser.add_argument("--buy", metavar="SYMBOL", help="Execute market BUY order (e.g. XAUUSD)")
     parser.add_argument("--sell", metavar="SYMBOL", help="Execute market SELL order (e.g. XAUUSD)")
     parser.add_argument("--volume", type=float, default=0.01, help="Lot volume for order (default: 0.01)")
-    parser.add_argument("--sl", type=float, default=0.0, help="Stop Loss price")
-    parser.add_argument("--tp", type=float, default=0.0, help="Take Profit price")
+    parser.add_argument("--sl", type=float, default=0.0, help="Stop Loss price (auto-calculated if 0)")
+    parser.add_argument("--tp", type=float, default=0.0, help="Take Profit price (auto-calculated if 0)")
     parser.add_argument("--allow-real", action="store_true", help="Allow execution on real accounts (default: demo only)")
 
     args = parser.parse_args()
@@ -401,9 +566,20 @@ def main() -> None:
         print(f"Hasil CLOSEALL: {'✅ SUKSES' if res.get('ok') else '❌ GAGAL'} — {res.get('reason')}")
         return
 
+    if args.test_order:
+        sym = args.test_order.upper()
+        log(f"🧪 Mengirim TEST ORDER 0.01 lot pada {sym} ke MT5 FBS Demo...")
+        res = bridge.order("BUY", sym, volume=0.01)
+        if res.get("ok"):
+            print(f"🎉 SUKSES! Test Order Terbuka di MT5! Ticket: #{res.get('ticket')}")
+            print("👉 Silakan cek tab 'Trade' di MT5 Anda, posisi sudah aktif dengan SL & TP.")
+        else:
+            print(f"❌ Test Order Gagal: {res.get('reason')}")
+        return
+
     if args.buy:
         sym = args.buy.upper()
-        log(f"Mengirim order BUY {sym} lot={args.volume} SL={args.sl} TP={args.tp}...")
+        log(f"Mengirim order BUY {sym} lot={args.volume}...")
         res = bridge.order("BUY", sym, volume=args.volume, sl=args.sl, tp2=args.tp)
         if res.get("ok"):
             print(f"✅ Order BUY Berhasil dieksekusi! Ticket: #{res.get('ticket')}")
@@ -413,7 +589,7 @@ def main() -> None:
 
     if args.sell:
         sym = args.sell.upper()
-        log(f"Mengirim order SELL {sym} lot={args.volume} SL={args.sl} TP={args.tp}...")
+        log(f"Mengirim order SELL {sym} lot={args.volume}...")
         res = bridge.order("SELL", sym, volume=args.volume, sl=args.sl, tp2=args.tp)
         if res.get("ok"):
             print(f"✅ Order SELL Berhasil dieksekusi! Ticket: #{res.get('ticket')}")
@@ -429,8 +605,8 @@ def main() -> None:
             print("❌ Gagal mengekspor quote. Pastikan status file tersedia.")
         return
 
-    if args.daemon:
-        run_daemon(bridge)
+    if args.daemon or args.auto:
+        run_daemon(bridge, auto_trade=args.auto)
         return
 
     # Default action: print status
