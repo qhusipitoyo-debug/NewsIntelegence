@@ -4626,9 +4626,50 @@ function renderMt5Modal() {
     }
 }
 
-// Inisialisasi pengecekan MT5 bridge
+function scanAndAutoTradeFromWeb() {
+    if (!MT5_BRIDGE_CFG.autoTrade || !mt5StatusState.connected) return;
+
+    // 1. Scan Gold Board
+    if (typeof goldBoardState === 'function') {
+        const gst = goldBoardState();
+        if (gst && gst.dir && gst.levels && Number(gst.conf) >= MT5_BRIDGE_CFG.minConfidence) {
+            if (!gst.stopped && !gst.tpReached && !gst.conflict && !gst.missed) {
+                const act = gst.dir === 'long' ? 'BUY' : 'SELL';
+                const key = `XAUUSD|${act}|${gst.event || ''}|${Math.round(gst.levels.entry)}`;
+                if (!MT5_BRIDGE_CFG.executedMap.has(key)) {
+                    MT5_BRIDGE_CFG.executedMap.add(key);
+                    showMt5Toast(`🤖 Auto-Trade: Sinyal konfluensi kuat Gold terdeteksi (${gst.conf}% conf). Mengeksekusi...`, 'info');
+                    sendOrderToMt5('XAUUSD', act, gst.levels.entry, gst.levels.sl, gst.levels.tp);
+                }
+            }
+        }
+    }
+
+    // 2. Scan Forex Board
+    if (typeof forexBoardState === 'function') {
+        const fst = forexBoardState();
+        const items = fst && Array.isArray(fst.items) ? fst.items : [];
+        items.forEach(it => {
+            if (it && it.dir && it.levels && Number(it.conf) >= MT5_BRIDGE_CFG.minConfidence) {
+                if (!it.stopped && !it.tpReached && !it.conflict && !it.missed) {
+                    const act = it.dir === 'long' ? 'BUY' : 'SELL';
+                    const sym = String(it.pair || '').replace('/', '').toUpperCase();
+                    const key = `${sym}|${act}|${it.eventLabel || ''}|${Math.round(it.levels.entry * 100)}`;
+                    if (!MT5_BRIDGE_CFG.executedMap.has(key)) {
+                        MT5_BRIDGE_CFG.executedMap.add(key);
+                        showMt5Toast(`🤖 Auto-Trade: Sinyal konfluensi kuat ${sym} terdeteksi (${it.conf}% conf). Mengeksekusi...`, 'info');
+                        sendOrderToMt5(sym, act, it.levels.entry, it.levels.sl, it.levels.tp);
+                    }
+                }
+            }
+        });
+    }
+}
+
+// Inisialisasi pengecekan MT5 bridge & scanner auto-trade
 checkMt5Bridge();
 setInterval(checkMt5Bridge, 3500);
+setInterval(scanAndAutoTradeFromWeb, 5000);
 </script>
   <!-- MT5 Modal & Toast Container -->
   <div id="mt5Modal" class="mt5-modal-backdrop hidden" onclick="if(event.target===this)closeMt5Modal()">
