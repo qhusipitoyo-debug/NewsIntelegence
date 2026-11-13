@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13T02:43:43.607Z",
+  "generatedAt": "2026-11-13T03:23:59.097Z",
   "events": {
     "2026-11-12T16:30:00-05:00|BusinessNZ Manufacturing Index": {
       "releasedAt": "2026-11-12T21:30:00.000Z",
@@ -21,35 +21,6 @@
           "minutes": 45,
           "spikePct": -0.006,
           "faded": false
-        },
-        "XAU/USD": {
-          "baseClose": 3878.89990234375,
-          "lastClose": 3881.699951171875,
-          "movePct": 0.072,
-          "dir": "long",
-          "minutes": 29,
-          "spikePct": -0.028,
-          "faded": false
-        },
-        "NAS100": {
-          "baseClose": 28434.25,
-          "lastClose": 28401.5,
-          "movePct": -0.115,
-          "dir": "short",
-          "minutes": 29,
-          "spikePct": 0.019,
-          "faded": false,
-          "via": "NQ=F"
-        },
-        "US500": {
-          "baseClose": 7623.5,
-          "lastClose": 7621.75,
-          "movePct": -0.023,
-          "dir": null,
-          "minutes": 29,
-          "spikePct": 0.007,
-          "faded": false,
-          "via": "ES=F"
         }
       }
     },
@@ -147,32 +118,22 @@
           "faded": false
         },
         "BTC/USD": {
-          "baseClose": 71297.9609375,
-          "lastClose": 71261.609375,
-          "movePct": -0.051,
+          "baseClose": 71296.71875,
+          "lastClose": 71261.4296875,
+          "movePct": -0.049,
           "dir": "short",
           "minutes": 45,
-          "spikePct": -0.059,
+          "spikePct": -0.057,
           "faded": false
         },
         "ETH/USD": {
-          "baseClose": 2014.8399658203125,
+          "baseClose": 2014.8499755859375,
           "lastClose": 2013.75,
-          "movePct": -0.054,
+          "movePct": -0.055,
           "dir": "short",
           "minutes": 45,
           "spikePct": -0.036,
           "faded": false
-        },
-        "NAS100": {
-          "baseClose": 28493.75,
-          "lastClose": 28590,
-          "movePct": 0.338,
-          "dir": "long",
-          "minutes": 45,
-          "spikePct": 0.095,
-          "faded": false,
-          "via": "NQ=F"
         },
         "US500": {
           "baseClose": 7633,
