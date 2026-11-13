@@ -83,7 +83,7 @@ def default_sl_tp(symbol: str, action: str, price: float) -> tuple[float, float,
     digits = 2 if "XAU" in sym or "BTC" in sym or "ETH" in sym or sym == "US500" else (3 if "JPY" in sym else 5)
 
     if "XAU" in sym:
-        dist = 20.0  # $20 gold stop
+        dist = 8.5  # $8.50 gold stop (85 pips = $8.50 risiko pada 0.01 lot, aman di bawah batas 1% akun $1000)
     elif sym == "US500":
         dist = 25.0  # 25 points S&P stop
     elif "BTC" in sym:
@@ -326,6 +326,28 @@ class MT5FileBridge:
             sl = sl or calc_sl
             tp1 = tp1 or calc_tp1
             tp2 = tp2 or calc_tp2
+
+        # Kalibrasi proteksi risiko Gold (XAUUSD) untuk akun ~$1000:
+        # SniperBridge EA memiliki batas risiko 1.0% ($10.50 pada saldo $1050).
+        # Pada XAUUSD (1 lot = 100 oz), lot minimum 0.01 memiliki risiko $1 per kenaikan/penurunan $1.
+        # Jika jarak SL > $9.00, EA akan menolak karena melebihi $10.50. Sesuaikan jarak SL agar pas.
+        sym_up = symbol.upper()
+        if "XAU" in sym_up and price > 0 and sl > 0:
+            current_dist = abs(price - sl)
+            max_allowed_dist = 8.5
+            if current_dist > max_allowed_dist:
+                log(f"⚡ Menyesuaikan jarak SL Gold dari ${current_dist:.2f} ke ${max_allowed_dist:.2f} agar pas dengan batas risiko 1% akun ($1050).")
+                if action == "BUY":
+                    sl = round(price - max_allowed_dist, 2)
+                    tp2 = round(price + max_allowed_dist * 2.0, 2)
+                else:
+                    sl = round(price + max_allowed_dist, 2)
+                    tp2 = round(price - max_allowed_dist * 2.0, 2)
+            risk_usd = 10.0
+        elif "BTC" in sym_up or "ETH" in sym_up:
+            risk_usd = max(risk_usd, 35.0)
+        elif risk_usd <= 0:
+            risk_usd = 10.0
 
         cmd = {
             "cmd": action,
