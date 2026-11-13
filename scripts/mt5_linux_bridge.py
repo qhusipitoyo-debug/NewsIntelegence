@@ -239,6 +239,47 @@ class MT5FileBridge:
         tmp_out.replace(BROKER_OUT)
         return True
 
+    def read_bars(self) -> dict[str, list[dict[str, Any]]]:
+        if not self.bars_file.exists():
+            return {}
+        try:
+            with open(self.bars_file, "r", encoding="utf-8", errors="replace") as f:
+                content = f.read().strip()
+            if not content:
+                return {}
+            out = {}
+            for line in content.splitlines():
+                line = line.strip()
+                if not line or not line.startswith("end=1;"):
+                    continue
+                parts = {}
+                for part in line.split(";"):
+                    if "=" in part:
+                        k, v = part.split("=", 1)
+                        parts[k] = v
+                sym = parts.get("sym")
+                bars_str = parts.get("bars", "")
+                if sym and bars_str:
+                    bar_list = []
+                    for b in bars_str.split("|"):
+                        items = b.split(",")
+                        if len(items) >= 5:
+                            try:
+                                bar_list.append({
+                                    "t": int(items[0]),
+                                    "o": float(items[1]),
+                                    "h": float(items[2]),
+                                    "l": float(items[3]),
+                                    "c": float(items[4])
+                                })
+                            except ValueError:
+                                pass
+                    out[sym] = bar_list
+            return out
+        except Exception as e:
+            log(f"Error reading sniper_bars.txt: {e}")
+            return {}
+
     def send_command(self, cmd_dict: dict[str, Any], timeout_sec: float = 6.0) -> dict[str, Any]:
         st = self.read_status()
         if st:
@@ -579,6 +620,11 @@ class BridgeHTTPHandler(BaseHTTPRequestHandler):
             res = self.bridge.ping() if self.bridge else {"ok": False}
             self._send_cors(200)
             self.wfile.write(json.dumps(res).encode("utf-8"))
+            return
+        elif path in ("/bars", "/api/bars"):
+            bars_data = self.bridge.read_bars() if self.bridge else {}
+            self._send_cors(200)
+            self.wfile.write(json.dumps({"ok": True, "symbols": bars_data, "count": len(bars_data)}).encode("utf-8"))
             return
 
         # Serve static web dashboard files (index.html, data/*.json, scripts, etc.)
