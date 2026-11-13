@@ -255,8 +255,14 @@ test('End-to-end watch boards and HTML render cleanly on real data/* fixtures', 
   const now = Date.parse('2026-11-11T05:38:00Z');
   vm.runInContext(`
     MARKETS.generatedAt = new Date(${now}).toISOString();
-    INDEX_CHANGE = { NAS100: -1.2, US500: -0.85 };
+    INDEX_CHANGE = { US500: -0.85 };
     CRYPTO_CHANGE = { 'BTC/USD': -2.8, 'ETH/USD': -3.4 };
+    if (MARKETS.pairs && MARKETS.pairs['BTC/USD'] && MARKETS.pairs['BTC/USD'].bars && MARKETS.pairs['BTC/USD'].bars.length) {
+      CRYPTO_RATES['BTC/USD'] = MARKETS.pairs['BTC/USD'].bars.slice(-1)[0].c;
+    }
+    if (MARKETS.pairs && MARKETS.pairs['ETH/USD'] && MARKETS.pairs['ETH/USD'].bars && MARKETS.pairs['ETH/USD'].bars.length) {
+      CRYPTO_RATES['ETH/USD'] = MARKETS.pairs['ETH/USD'].bars.slice(-1)[0].c;
+    }
     SENTIMENT = { score: 24, rating: 'Extreme Fear', source: 'CNN Fear & Greed' };
     SENTIMENT_CRYPTO = { score: 28, rating: 'Fear', source: 'Alternative.me' };
     if (FOREX_QUOTES['USD/JPY']) FOREX_QUOTES['USD/JPY'].changePct = 0.35;

@@ -21,10 +21,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import mimetypes
 import os
 import sys
+import threading
 import time
 from datetime import datetime, timedelta, timezone
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from pathlib import Path
 from typing import Any
 
@@ -499,10 +502,130 @@ def print_status_banner(bridge: MT5FileBridge) -> None:
     print("=" * 65)
 
 
-def run_daemon(bridge: MT5FileBridge, auto_trade: bool = False, interval: float = 2.0) -> None:
-    mode_str = "DAEMON + AUTO-TRADER" if auto_trade else "DAEMON (Quote Sync)"
+class BridgeHTTPHandler(BaseHTTPRequestHandler):
+    bridge: MT5FileBridge | None = None
+    auto_trader: AutoTrader | None = None
+    repo_dir: Path = BASE_DIR
+
+    def log_message(self, format, *args):
+        # Silence routine access logs to keep terminal clean
+        return
+
+    def _send_cors(self, code=200, content_type="application/json"):
+        self.send_response(code)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With")
+        self.send_header("Access-Control-Allow-Private-Network", "true")
+        self.send_header("Content-Type", content_type)
+        self.end_headers()
+
+    def do_OPTIONS(self):
+        self._send_cors(204)
+
+    def do_GET(self):
+        path = self.path.split("?")[0]
+        if path in ("/status", "/api/status"):
+            st = self.bridge.read_status() if self.bridge else None
+            if not st:
+                self._send_cors(200)
+                self.wfile.write(b'{"ok": false, "connected": false, "reason": "MT5 EA sniper_status.txt belum terhubung"}')
+                return
+
+            self._send_cors(200)
+            payload = {
+                "ok": True,
+                "connected": True,
+                "broker": st.get("company", "FBS"),
+                "server": st.get("server", "FBS-Demo"),
+                "login": st.get("login", ""),
+                "tradeMode": st.get("trade_mode", "demo"),
+                "balance": float(st.get("balance", 0)),
+                "equity": float(st.get("equity", 0)),
+                "marginFree": float(st.get("margin_free", 0)),
+                "tradeAllowed": st.get("trade_allowed") == "1",
+                "tradeExpert": st.get("trade_expert") == "1",
+                "quotes": st.get("quotes", {}),
+                "openCount": int(st.get("open_count", 0)),
+                "ts": time.time()
+            }
+            self.wfile.write(json.dumps(payload).encode("utf-8"))
+            return
+        elif path in ("/ping", "/api/ping"):
+            res = self.bridge.ping() if self.bridge else {"ok": False}
+            self._send_cors(200)
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+            return
+
+        # Serve static web dashboard files (index.html, data/*.json, scripts, etc.)
+        clean_path = path.lstrip("/")
+        if not clean_path:
+            clean_path = "index.html"
+        target_file = (self.repo_dir / clean_path).resolve()
+        try:
+            if target_file.is_file() and str(target_file).startswith(str(self.repo_dir)):
+                ctype, _ = mimetypes.guess_type(str(target_file))
+                ctype = ctype or "application/octet-stream"
+                with open(target_file, "rb") as f:
+                    content = f.read()
+                self._send_cors(200, content_type=ctype)
+                self.wfile.write(content)
+                return
+        except Exception:
+            pass
+
+        self._send_cors(404, content_type="text/plain")
+        self.wfile.write(b"Not Found")
+
+    def do_POST(self):
+        path = self.path.split("?")[0]
+        content_len = int(self.headers.get("Content-Length", 0))
+        post_data = self.rfile.read(content_len).decode("utf-8") if content_len > 0 else "{}"
+        try:
+            body = json.loads(post_data)
+        except Exception:
+            body = {}
+
+        if path in ("/order", "/api/order"):
+            action = body.get("action", "BUY").upper()
+            sym = body.get("symbol", "").upper().replace("/", "")
+            vol = float(body.get("volume", 0.01))
+            price = float(body.get("price", 0.0))
+            sl = float(body.get("sl", 0.0))
+            tp = float(body.get("tp", 0.0))
+            risk_usd = float(body.get("riskUsd", 5.0))
+            log(f"📥 Permintaan Order dari Web: {action} {sym} vol={vol} price={price} sl={sl} tp={tp}")
+            res = self.bridge.order(action, sym, volume=vol, price=price, sl=sl, tp2=tp, risk_usd=risk_usd) if self.bridge else {"ok": False, "reason": "Bridge offline"}
+            self._send_cors(200 if res.get("ok") else 400)
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+        elif path in ("/closeall", "/api/closeall"):
+            log("📥 Permintaan Close All dari Web")
+            res = self.bridge.close_all() if self.bridge else {"ok": False, "reason": "Bridge offline"}
+            self._send_cors(200)
+            self.wfile.write(json.dumps(res).encode("utf-8"))
+        else:
+            self._send_cors(404)
+            self.wfile.write(b'{"error": "not found"}')
+
+
+def start_http_server(bridge: MT5FileBridge, port: int = 8765) -> HTTPServer | None:
+    try:
+        BridgeHTTPHandler.bridge = bridge
+        server = HTTPServer(("127.0.0.1", port), BridgeHTTPHandler)
+        t = threading.Thread(target=server.serve_forever, daemon=True)
+        t.start()
+        log(f"🌐 HTTP Bridge API aktif di http://127.0.0.1:{port} (Siap menerima sinyal dari web!)")
+        return server
+    except Exception as e:
+        log(f"⚠️ Gagal memulai HTTP server pada port {port}: {e}")
+        return None
+
+
+def run_daemon(bridge: MT5FileBridge, auto_trade: bool = False, interval: float = 2.0, port: int = 8765) -> None:
+    mode_str = "DAEMON + AUTO-TRADER" if auto_trade else "DAEMON (Quote Sync + Web API)"
     log(f"🚀 Memulai MT5 Linux Bridge dalam mode: {mode_str}...")
     print_status_banner(bridge)
+    start_http_server(bridge, port=port)
     auto = AutoTrader(bridge) if auto_trade else None
     last_export = 0.0
     last_auto_scan = 0.0
@@ -605,12 +728,12 @@ def main() -> None:
             print("❌ Gagal mengekspor quote. Pastikan status file tersedia.")
         return
 
-    if args.daemon or args.auto:
-        run_daemon(bridge, auto_trade=args.auto)
+    if args.status:
+        print_status_banner(bridge)
         return
 
-    # Default action: print status
-    print_status_banner(bridge)
+    # Default action: Jalankan daemon sync + HTTP server untuk Web bridge
+    run_daemon(bridge, auto_trade=args.auto)
 
 
 if __name__ == "__main__":

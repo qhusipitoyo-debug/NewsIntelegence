@@ -166,6 +166,19 @@
     .hist-badge.loss { background: rgba(255,100,125,.18); color: var(--red); }
     .hist-badge.open { background: rgba(93,183,232,.16); color: var(--blue); }
     @media(max-width:760px){ .tech-board { grid-template-columns: 1fr; } .tech-grid,.macro-body { grid-template-columns: 1fr; } }
+
+    /* MT5 Linux Bridge UI */
+    .mt5-pill { display: flex; align-items: center; gap: 8px; padding: 7px 13px; border-radius: 999px; background: rgba(5,17,25,.58); border: 1px solid var(--line); cursor: pointer; transition: all .2s; font-size: 12px; font-weight: 700; user-select: none; }
+    .mt5-pill:hover { background: rgba(14,35,50,.85); border-color: rgba(39,213,224,.4); transform: translateY(-1px); }
+    .dot-mt5 { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); display: inline-block; transition: background .3s; }
+    .dot-mt5.online { background: var(--green); box-shadow: 0 0 0 5px rgba(24,209,154,.15); animation: pulse 1.8s infinite; }
+    .btn-mt5-exec { background: linear-gradient(135deg, #18d19a, #0fa377); color: #031510; font: 800 11px "DM Sans",sans-serif; padding: 4px 9px; border-radius: 7px; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 3px 10px rgba(24,209,154,.25); transition: all .15s; margin-left: 6px; }
+    .btn-mt5-exec:hover { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(24,209,154,.45); filter: brightness(1.1); }
+    .btn-mt5-exec:active { transform: scale(.96); }
+    .mt5-modal-backdrop { position: fixed; inset: 0; background: rgba(2,7,12,.82); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 18px; }
+    .mt5-modal { background: #071520; border: 1px solid rgba(94,199,222,.28); border-radius: 22px; padding: 24px; width: 100%; max-width: 520px; box-shadow: 0 25px 70px rgba(0,0,0,.65); color: var(--ink); }
+    .mt5-toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; max-width: 380px; }
+    .mt5-toast { background: #071520; border: 1px solid rgba(94,199,222,.35); border-radius: 12px; padding: 12px 16px; color: #fff; box-shadow: 0 12px 35px rgba(0,0,0,.55); font-size: 12.5px; display: flex; align-items: center; gap: 10px; }
 </style>
 </head>
 <body><main class="shell">
@@ -178,7 +191,11 @@
       </div>
     </div>
     
-    <div style="display: flex; align-items: center; gap: 16px;">
+    <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+      <div id="mt5BridgePill" class="mt5-pill" onclick="openMt5Modal()" title="Status koneksi ke FBS-Demo MetaTrader 5 di Linux">
+        <i class="dot dot-mt5" id="mt5StatusDot"></i>
+        <span id="mt5StatusText">MT5: Offline</span>
+      </div>
       <div id="xauusd-price-widget" style="background: rgba(0,0,0,0.2); border: 1px solid var(--line); padding: 10px 14px; border-radius: 12px; min-width: 140px;"></div>
       <div class="live"><i class="dot"></i><span id="liveText">SYNCING DATA</span></div>
     </div>
@@ -1557,7 +1574,11 @@ function goldBoardHtml(price, state) {
     const lv = (cls, title, o) => {
         const tp1 = o && o.tp1 ? `<span>TP1 ${f(o.tp1)}</span>` : '';
         const pb = o && o.pullback ? `<span>Retest ${f(o.pullback)}</span>` : '';
-        return `<div class="mb-level ${cls}"><b>${title}</b><span>Entry ${f(o.entry)}</span><span>SL ${f(o.sl)}</span>${tp1}<span>TP ${f(o.tp)}</span>${pb}</div>`;
+        const act = cls === 'buy' ? 'BUY' : cls === 'sell' ? 'SELL' : '';
+        const btn = (act && o && Number.isFinite(o.entry) && Number.isFinite(o.sl) && Number.isFinite(o.tp))
+            ? `<button type="button" class="btn-mt5-exec" onclick="sendOrderToMt5('XAUUSD','${act}',${o.entry},${o.sl},${o.tp})">⚡ MT5</button>`
+            : '';
+        return `<div class="mb-level ${cls}"><b>${title}</b><span>Entry ${f(o.entry)}</span><span>SL ${f(o.sl)}</span>${tp1}<span>TP ${f(o.tp)}</span>${pb}${btn}</div>`;
     };
     const lockNote = st.locked && st.lockedAt ? ` • entry terkunci ${fmtTime(new Date(st.lockedAt))}` : '';
     const warn = st.stopped
@@ -1731,7 +1752,10 @@ function cryptoBoardHtml(rates, change, state) {
             levels = `<div class="idx-note">⏳ Level entry ditahan sampai konfirmasi 15 menit.</div>`;
         } else if (dir !== 'wait' && it.levels) {
             const tp1Span = it.levels.tp1 ? `<span>TP1 $${fmt(it.levels.tp1)}</span>` : '';
-            levels = `<div class="levels idx-levels"><span>Entry ${fmt(it.levels.entry)}</span><span>SL ${fmt(it.levels.sl)}</span>${tp1Span}<span>TP ${fmt(it.levels.tp)}</span><span>R:R 1:${it.levels.rr || 2}</span></div>`;
+            const act = dir === 'buy' ? 'BUY' : 'SELL';
+            const sym = String(pair).replace('/', '');
+            const btn = `<button type="button" class="btn-mt5-exec" onclick="sendOrderToMt5('${sym}','${act}',${it.levels.entry},${it.levels.sl},${it.levels.tp})">⚡ MT5</button>`;
+            levels = `<div class="levels idx-levels"><span>Entry ${fmt(it.levels.entry)}</span><span>SL ${fmt(it.levels.sl)}</span>${tp1Span}<span>TP ${fmt(it.levels.tp)}</span><span>R:R 1:${it.levels.rr || 2}</span>${btn}</div>`;
         } else {
             const info = atrInfo(pair, rate);
             const buffer = Math.max(slPct / 2, info ? info.atrPct * 1.5 : 0);
@@ -1929,7 +1953,10 @@ function forexBoardHtml(state) {
         } else if ((dir === 'buy' || dir === 'sell') && it.levels) {
             const tp1Span = it.levels.tp1 ? `<span>TP1 ${fmt(it.levels.tp1, dec)}</span>` : '';
             const pbSpan = it.levels.pullback ? `<span>Retest ${fmt(it.levels.pullback, dec)}</span>` : '';
-            levels = `<div class="fx-levels"><span>Entry ${fmt(it.levels.entry, dec)}</span><span>SL ${fmt(it.levels.sl, dec)}</span>${tp1Span}<span>TP ${fmt(it.levels.tp, dec)}</span>${pbSpan}<span>R:R 1:2</span></div>`;
+            const act = dir === 'buy' ? 'BUY' : 'SELL';
+            const sym = String(it.pair || '').replace('/', '');
+            const btn = `<button type="button" class="btn-mt5-exec" onclick="sendOrderToMt5('${sym}','${act}',${it.levels.entry},${it.levels.sl},${it.levels.tp})">⚡ MT5</button>`;
+            levels = `<div class="fx-levels"><span>Entry ${fmt(it.levels.entry, dec)}</span><span>SL ${fmt(it.levels.sl, dec)}</span>${tp1Span}<span>TP ${fmt(it.levels.tp, dec)}</span>${pbSpan}<span>R:R 1:2</span>${btn}</div>`;
         } else {
             const buffer = isJpyStyle ? 0.15 : 0.0015;
             const buyRef = broker ? Number(broker.ask) : rate + buffer;
@@ -2102,7 +2129,9 @@ function indicesBoardHtml(state) {
             levels = `<div class="idx-note">⏳ Level entry ditahan sampai konfirmasi 15 menit.</div>`;
         } else if ((dir === 'buy' || dir === 'sell') && it.levels) {
             const tp1Span = it.levels.tp1 ? `<span>TP1 ${fmt(it.levels.tp1)}</span>` : '';
-            levels = `<div class="idx-levels"><span>Entry ${fmt(it.levels.entry)}</span><span>SL ${fmt(it.levels.sl)}</span>${tp1Span}<span>TP ${fmt(it.levels.tp)}</span><span>R:R 1:2</span></div>`;
+            const act = dir === 'buy' ? 'BUY' : 'SELL';
+            const btn = `<button type="button" class="btn-mt5-exec" onclick="sendOrderToMt5('${it.symbol}','${act}',${it.levels.entry},${it.levels.sl},${it.levels.tp})">⚡ MT5</button>`;
+            levels = `<div class="idx-levels"><span>Entry ${fmt(it.levels.entry)}</span><span>SL ${fmt(it.levels.sl)}</span>${tp1Span}<span>TP ${fmt(it.levels.tp)}</span><span>R:R 1:2</span>${btn}</div>`;
         } else {
             const info = atrInfo(it.symbol, price);
             const buffer = Math.max(it.slPct / 2, info ? info.atrPct * 1.5 : 0);
@@ -3869,7 +3898,7 @@ function tpSl(a, e) {
             const tp1Text = d.levels.tp1 ? `<span><b>TP1</b> ${f(d.levels.tp1)}</span>` : '';
             const pbText = d.levels.pullback ? `<span><b>Retest</b> ${f(d.levels.pullback)}</span>` : '';
             html += `<div style="display:flex; gap:14px; flex-wrap:wrap; background:rgba(43,157,181,.10); border:1px dashed rgba(114,212,228,.35); border-radius:14px; padding:12px 14px;">`;
-            html += `<span style="color:#72d4e4; font-weight:bold; width:100%;">XAU/USD (Gold) — ${actionOf(d.dir)}${move}</span>`;
+            html += `<span style="color:#72d4e4; font-weight:bold; width:100%; display:flex; justify-content:space-between; align-items:center;"><span>XAU/USD (Gold) — ${actionOf(d.dir)}${move}</span><button type="button" class="btn-mt5-exec" onclick="sendOrderToMt5('XAUUSD','${actionOf(d.dir)}',${d.levels.entry},${d.levels.sl},${d.levels.tp})">⚡ Kirim ke MT5</button></span>`;
             html += `<span><b>Entry</b> ${f(d.levels.entry)}</span><span><b>SL</b> ${f(d.levels.sl)}</span>${tp1Text}<span><b>TP</b> ${f(d.levels.tp)}</span>${pbText}<span><b>R:R</b> 1:${d.levels.rr || 2}.0</span>`;
             html += `<span style="width:100%;color:var(--muted);font-size:11px;">${esc(noteOf(d, phase === 'post' ? `valid s/d ${postValidUntil}` : ''))}</span>`;
             html += `</div>`;
@@ -3954,7 +3983,9 @@ function tpSl(a, e) {
                 const extra = phase === 'post' ? `valid s/d ${postValidUntil}` : '';
                 const tp1Val = lv.tp1 ? `<div class="val" style="color:var(--green)">TP1 (1:1): ${Number(lv.tp1).toFixed(ldec)}</div>` : '';
                 const pbVal = lv.pullback ? `<div class="val" style="color:var(--muted); font-size:10px;">Retest: ${Number(lv.pullback).toFixed(ldec)}</div>` : '';
-                html += `<div class="forex-card ${cls}"><div>${pair} <b>${actionOf(d.dir)}</b>${basisNote}</div><div class="val">Entry: ${Number(lv.entry).toFixed(ldec)}</div><div class="val" style="color:var(--red)">SL: ${Number(lv.sl).toFixed(ldec)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: ${Number(lv.tp).toFixed(ldec)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
+                const normPair = String(pair).replace('/', '');
+                const btnExec = `<button type="button" class="btn-mt5-exec" style="margin-top:6px;width:100%;justify-content:center;" onclick="sendOrderToMt5('${normPair}','${actionOf(d.dir)}',${lv.entry},${lv.sl},${lv.tp})">⚡ MT5</button>`;
+                html += `<div class="forex-card ${cls}"><div>${pair} <b>${actionOf(d.dir)}</b>${basisNote}</div><div class="val">Entry: ${Number(lv.entry).toFixed(ldec)}</div><div class="val" style="color:var(--red)">SL: ${Number(lv.sl).toFixed(ldec)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: ${Number(lv.tp).toFixed(ldec)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div>${btnExec}</div>`;
                 return;
             }
 
@@ -4001,7 +4032,9 @@ function tpSl(a, e) {
                 const extra = phase === 'post' ? `valid s/d ${postValidUntil}` : '';
                 const tp1Val = d.levels.tp1 ? `<div class="val" style="color:var(--green)">TP1 (1:1): $${fmt(d.levels.tp1)}</div>` : '';
                 const pbVal = d.levels.pullback ? `<div class="val" style="color:var(--muted); font-size:10px;">Retest: $${fmt(d.levels.pullback)}</div>` : '';
-                html += `<div class="forex-card ${d.dir}" style="border-left-color: ${bColor};"><div>${pair} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: $${fmt(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: $${fmt(d.levels.sl)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: $${fmt(d.levels.tp)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
+                const normPair = String(pair).replace('/', '');
+                const btnExec = `<button type="button" class="btn-mt5-exec" style="margin-top:6px;width:100%;justify-content:center;" onclick="sendOrderToMt5('${normPair}','${actionOf(d.dir)}',${d.levels.entry},${d.levels.sl},${d.levels.tp})">⚡ MT5</button>`;
+                html += `<div class="forex-card ${d.dir}" style="border-left-color: ${bColor};"><div>${pair} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: $${fmt(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: $${fmt(d.levels.sl)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: $${fmt(d.levels.tp)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div>${btnExec}</div>`;
                 return;
             }
 
@@ -4039,7 +4072,8 @@ function tpSl(a, e) {
                 const extra = phase === 'post' ? `valid s/d ${postValidUntil}` : '';
                 const tp1Val = d.levels.tp1 ? `<div class="val" style="color:var(--green)">TP1 (1:1): ${fmtIdx(d.levels.tp1)}</div>` : '';
                 const pbVal = d.levels.pullback ? `<div class="val" style="color:var(--muted); font-size:10px;">Retest: ${fmtIdx(d.levels.pullback)}</div>` : '';
-                html += `<div class="forex-card ${cls}" style="border-left-color:${d.dir === 'long' ? 'var(--green)' : 'var(--red)'};"><div>${esc(cfg.symbol)} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: ${fmtIdx(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: ${fmtIdx(d.levels.sl)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: ${fmtIdx(d.levels.tp)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div></div>`;
+                const btnExec = `<button type="button" class="btn-mt5-exec" style="margin-top:6px;width:100%;justify-content:center;" onclick="sendOrderToMt5('${cfg.symbol}','${actionOf(d.dir)}',${d.levels.entry},${d.levels.sl},${d.levels.tp})">⚡ MT5</button>`;
+                html += `<div class="forex-card ${cls}" style="border-left-color:${d.dir === 'long' ? 'var(--green)' : 'var(--red)'};"><div>${esc(cfg.symbol)} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: ${fmtIdx(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: ${fmtIdx(d.levels.sl)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: ${fmtIdx(d.levels.tp)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div>${btnExec}</div>`;
                 return;
             }
 
@@ -4295,7 +4329,320 @@ setInterval(load, 60000);
 setInterval(loadReaction, 300000);
 // Bar 1 menit (ATR) juga produk workflow; refresh bersamaan dengan reaction.
 setInterval(loadMarkets, 300000);
+
+/* ==========================================================================
+   MT5 LINUX BRIDGE CLIENT (FBS DEMO / BOTTLES)
+   ========================================================================== */
+const MT5_BRIDGE_CFG = {
+    url: 'http://127.0.0.1:8765',
+    oneClick: typeof localStorage !== 'undefined' && localStorage.getItem('mt5_one_click') === 'true',
+    autoTrade: typeof localStorage !== 'undefined' && localStorage.getItem('mt5_auto_trade') === 'true',
+    minConfidence: 75,
+    executedMap: new Set()
+};
+
+let mt5StatusState = {
+    connected: false,
+    lastCheck: 0,
+    broker: '',
+    server: '',
+    login: '',
+    balance: 0,
+    equity: 0,
+    marginFree: 0,
+    tradeAllowed: false,
+    openCount: 0
+};
+
+async function checkMt5Bridge() {
+    try {
+        const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timeout = ctrl ? setTimeout(() => ctrl.abort(), 2500) : null;
+        const res = await fetch(`${MT5_BRIDGE_CFG.url}/api/status`, {
+            cache: 'no-store',
+            signal: ctrl ? ctrl.signal : undefined
+        });
+        if (timeout) clearTimeout(timeout);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        if (data && data.ok && data.connected) {
+            mt5StatusState = {
+                connected: true,
+                lastCheck: Date.now(),
+                broker: data.broker || 'FBS',
+                server: data.server || 'FBS-Demo',
+                login: data.login || '',
+                balance: Number(data.balance) || 0,
+                equity: Number(data.equity) || 0,
+                marginFree: Number(data.marginFree) || 0,
+                tradeAllowed: Boolean(data.tradeAllowed),
+                openCount: Number(data.openCount) || 0
+            };
+            updateMt5UI(true);
+            return;
+        }
+    } catch (e) {
+        // Bridge offline or not running
+    }
+    mt5StatusState.connected = false;
+    updateMt5UI(false);
+}
+
+function updateMt5UI(online) {
+    const dot = typeof document !== 'undefined' && document.getElementById('mt5StatusDot');
+    const text = typeof document !== 'undefined' && document.getElementById('mt5StatusText');
+    const pill = typeof document !== 'undefined' && document.getElementById('mt5BridgePill');
+    if (!dot || !text) return;
+
+    if (online) {
+        dot.className = 'dot dot-mt5 online';
+        text.textContent = `MT5: ${mt5StatusState.server} ($${mt5StatusState.equity.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`;
+        if (pill) {
+            const tip = `MT5 Terhubung: ${mt5StatusState.broker} (${mt5StatusState.login}) · Saldo: $${mt5StatusState.equity.toFixed(2)}`;
+            if (typeof pill.setAttribute === 'function') pill.setAttribute('title', tip);
+            pill.title = tip;
+        }
+    } else {
+        dot.className = 'dot dot-mt5';
+        text.textContent = 'MT5: Offline';
+        if (pill) {
+            const tip = 'MT5 Bridge Offline · Klik untuk panduan menghubungkan';
+            if (typeof pill.setAttribute === 'function') pill.setAttribute('title', tip);
+            pill.title = tip;
+        }
+    }
+
+    if (typeof renderMt5Modal === 'function') renderMt5Modal();
+}
+
+function showMt5Toast(message, type = 'info') {
+    if (typeof document === 'undefined') return;
+    const container = document.getElementById('mt5ToastContainer');
+    if (!container) return;
+    const toast = document.createElement('div');
+    toast.className = 'mt5-toast';
+    const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+    const border = type === 'success' ? '#18d19a' : type === 'error' ? '#ff647d' : '#27d5e0';
+    toast.style.borderColor = border;
+    toast.innerHTML = `<span>${icon}</span><div>${message}</div>`;
+    container.appendChild(toast);
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 350);
+    }, 4500);
+}
+
+async function sendOrderToMt5(symbol, action, price, sl, tp, volume = 0.01) {
+    if (!mt5StatusState.connected) {
+        showMt5Toast('⚠️ MT5 Bridge Offline. Jalankan ./run_linux_bridge.sh di terminal Linux Anda.', 'error');
+        openMt5Modal();
+        return;
+    }
+
+    const normSym = String(symbol || '').replace('/', '').toUpperCase();
+    const act = String(action || '').toUpperCase();
+    const p = Number(price) || 0;
+    const s = Number(sl) || 0;
+    const t = Number(tp) || 0;
+    const vol = Number(volume) || 0.01;
+
+    if (!MT5_BRIDGE_CFG.oneClick && typeof confirm === 'function') {
+        const confirmMsg = `Konfirmasi Kirim Order ke MT5 (${mt5StatusState.server}):\n\n` +
+            `• Pasangan: ${normSym}\n` +
+            `• Arah    : ${act}\n` +
+            `• Volume  : ${vol} Lot\n` +
+            `• Entry   : ${p.toFixed(p > 100 ? 2 : 5)}\n` +
+            `• SL      : ${s.toFixed(s > 100 ? 2 : 5)}\n` +
+            `• TP      : ${t.toFixed(t > 100 ? 2 : 5)}\n\n` +
+            `Lanjutkan eksekusi ke akun demo FBS?`;
+        if (!confirm(confirmMsg)) return;
+    }
+
+    showMt5Toast(`Mengirim order ${act} ${normSym} ke MT5 FBS Demo...`, 'info');
+
+    try {
+        const res = await fetch(`${MT5_BRIDGE_CFG.url}/api/order`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: act,
+                symbol: normSym,
+                volume: vol,
+                price: p,
+                sl: s,
+                tp: t,
+                riskUsd: 5.0
+            })
+        });
+        const data = await res.json();
+        if (data && data.ok) {
+            showMt5Toast(`🎉 Sukses! Order ${act} ${normSym} terpasang di MT5 (Ticket #${data.ticket || 'OK'})!`, 'success');
+            checkMt5Bridge();
+        } else {
+            showMt5Toast(`❌ Order ditolak MT5: ${(data && data.reason) || 'Unknown error'}`, 'error');
+        }
+    } catch (err) {
+        showMt5Toast(`❌ Gagal berkomunikasi dengan MT5 bridge: ${err.message}`, 'error');
+    }
+}
+
+async function closeAllMt5Positions() {
+    if (typeof confirm === 'function' && !confirm('Yakin ingin menutup SEMUA posisi terbuka di MT5 sekarang?')) return;
+    try {
+        const res = await fetch(`${MT5_BRIDGE_CFG.url}/api/closeall`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data && data.ok) {
+            showMt5Toast('✅ Perintah Close All terkirim ke MT5.', 'success');
+            checkMt5Bridge();
+        } else {
+            showMt5Toast(`❌ Gagal Close All: ${(data && data.reason) || 'Error'}`, 'error');
+        }
+    } catch (e) {
+        showMt5Toast(`❌ Error: ${e.message}`, 'error');
+    }
+}
+
+async function testOrderMt5(symbol = 'EURUSD') {
+    showMt5Toast(`Mengirim demo test order 0.01 lot pada ${symbol}...`, 'info');
+    try {
+        const res = await fetch(`${MT5_BRIDGE_CFG.url}/api/order`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'BUY',
+                symbol: symbol,
+                volume: 0.01,
+                price: 0,
+                sl: 0,
+                tp: 0
+            })
+        });
+        const data = await res.json();
+        if (data && data.ok) {
+            showMt5Toast(`🎉 Test order berhasil! Ticket #${data.ticket}. Periksa tab Trade di MT5.`, 'success');
+            checkMt5Bridge();
+        } else {
+            showMt5Toast(`❌ Test order gagal: ${(data && data.reason) || 'Error'}`, 'error');
+        }
+    } catch (e) {
+        showMt5Toast(`❌ Error: ${e.message}`, 'error');
+    }
+}
+
+function openMt5Modal() {
+    if (typeof document === 'undefined') return;
+    const m = document.getElementById('mt5Modal');
+    if (m) {
+        m.classList.remove('hidden');
+        renderMt5Modal();
+        checkMt5Bridge();
+    }
+}
+
+function closeMt5Modal() {
+    if (typeof document === 'undefined') return;
+    const m = document.getElementById('mt5Modal');
+    if (m) m.classList.add('hidden');
+}
+
+function toggleMt5OneClick(checked) {
+    MT5_BRIDGE_CFG.oneClick = Boolean(checked);
+    if (typeof localStorage !== 'undefined') localStorage.setItem('mt5_one_click', String(MT5_BRIDGE_CFG.oneClick));
+    renderMt5Modal();
+}
+
+function toggleMt5AutoTrade(checked) {
+    MT5_BRIDGE_CFG.autoTrade = Boolean(checked);
+    if (typeof localStorage !== 'undefined') localStorage.setItem('mt5_auto_trade', String(MT5_BRIDGE_CFG.autoTrade));
+    renderMt5Modal();
+}
+
+function renderMt5Modal() {
+    if (typeof document === 'undefined') return;
+    const body = document.getElementById('mt5ModalBody');
+    if (!body) return;
+
+    if (mt5StatusState.connected) {
+        body.innerHTML = `
+            <div style="background:rgba(24,209,154,0.1); border:1px solid rgba(24,209,154,0.3); border-radius:12px; padding:14px; margin-bottom:16px;">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="color:var(--green); font-weight:800; font-size:14px;">🟢 BRIDGE TERHUBUNG</span>
+                    <span style="background:rgba(24,209,154,0.2); color:var(--green); font-size:11px; padding:3px 8px; border-radius:6px; font-weight:700;">DEMO FBS</span>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; font-size:13px;">
+                    <div>Broker: <b>${esc(mt5StatusState.broker)}</b></div>
+                    <div>Server: <b>${esc(mt5StatusState.server)}</b></div>
+                    <div>Login: <b>${esc(mt5StatusState.login)}</b></div>
+                    <div>Algo Trading: <b>${mt5StatusState.tradeAllowed ? '✅ Diizinkan' : '⚠️ Nonaktif'}</b></div>
+                    <div>Balance: <b style="color:var(--ink);">$${mt5StatusState.balance.toFixed(2)}</b></div>
+                    <div>Equity: <b style="color:var(--green);">$${mt5StatusState.equity.toFixed(2)}</b></div>
+                </div>
+            </div>
+
+            <div style="background:rgba(5,17,25,0.6); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:16px;">
+                <div style="font-weight:700; margin-bottom:10px; font-size:13px; color:var(--aqua);">⚙️ Pengaturan Eksekusi:</div>
+                <label style="display:flex; align-items:center; gap:8px; font-size:13px; margin-bottom:8px; cursor:pointer;">
+                    <input type="checkbox" ${MT5_BRIDGE_CFG.oneClick ? 'checked' : ''} onchange="toggleMt5OneClick(this.checked)">
+                    <span><b>1-Click Execution:</b> Langsung eksekusi tanpa pop-up konfirmasi</span>
+                </label>
+                <label style="display:flex; align-items:center; gap:8px; font-size:13px; cursor:pointer;">
+                    <input type="checkbox" ${MT5_BRIDGE_CFG.autoTrade ? 'checked' : ''} onchange="toggleMt5AutoTrade(this.checked)">
+                    <span><b>Auto-Trade Sinyal Kuat:</b> Eksekusi otomatis jika Confidence ≥ 75%</span>
+                </label>
+            </div>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button type="button" onclick="testOrderMt5('EURUSD')" class="btn-mt5-exec" style="padding:8px 14px; font-size:12px;">🧪 Tes Order EURUSD (0.01 lot)</button>
+                <button type="button" onclick="testOrderMt5('XAUUSD')" class="btn-mt5-exec" style="padding:8px 14px; font-size:12px; background:linear-gradient(135deg, #27d5e0, #1793a3); color:#031510;">🧪 Tes Order Gold (0.01 lot)</button>
+                <button type="button" onclick="closeAllMt5Positions()" style="background:rgba(255,100,125,0.15); border:1px solid rgba(255,100,125,0.4); color:var(--red); padding:8px 14px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer;">❌ Close All Positions</button>
+            </div>
+        `;
+    } else {
+        body.innerHTML = `
+            <div style="background:rgba(242,184,75,0.1); border:1px solid rgba(242,184,75,0.3); border-radius:12px; padding:16px; margin-bottom:16px;">
+                <div style="color:var(--amber); font-weight:800; font-size:14px; margin-bottom:8px;">⚪ MT5 Bridge Belum Terhubung</div>
+                <p style="font-size:13px; color:var(--muted); margin:0 0 10px 0;">
+                    Bridge Python lokal belum aktif di Linux. Untuk mengaktifkan koneksi ke MetaTrader 5:
+                </p>
+                <ol style="font-size:12px; color:var(--ink); padding-left:18px; margin:0 0 10px 0; line-height:1.6;">
+                    <li>Buka aplikasi <b>Bottles</b> di Linux, pastikan bottle <b>MT5</b> sedang berjalan.</li>
+                    <li>Buka terminal Linux Anda dan jalankan perintah:
+                        <pre style="background:rgba(0,0,0,0.4); padding:8px 12px; border-radius:8px; font-size:12px; margin:6px 0; color:var(--aqua);">./run_linux_bridge.sh</pre>
+                    </li>
+                    <li>Atau buka langsung dashboard melalui server bridge lokal:
+                        <a href="http://127.0.0.1:8765/" target="_blank" style="color:var(--blue); font-weight:bold; display:block; margin-top:4px;">http://127.0.0.1:8765/</a>
+                    </li>
+                </ol>
+                <div style="display:flex; gap:10px; margin-top:12px;">
+                    <button type="button" onclick="checkMt5Bridge()" class="chip active" style="font-size:12px; padding:6px 14px;">🔄 Cek Ulang Koneksi</button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Inisialisasi pengecekan MT5 bridge
+checkMt5Bridge();
+setInterval(checkMt5Bridge, 3500);
 </script>
+  <!-- MT5 Modal & Toast Container -->
+  <div id="mt5Modal" class="mt5-modal-backdrop hidden" onclick="if(event.target===this)closeMt5Modal()">
+    <div class="mt5-modal">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+        <h3 style="margin:0; font:800 18px Manrope; display:flex; align-items:center; gap:8px;">
+          <span style="color:var(--aqua)">⚡</span> MetaTrader 5 Linux Bridge
+        </h3>
+        <button type="button" onclick="closeMt5Modal()" style="background:none; border:none; color:var(--muted); font-size:22px; cursor:pointer; line-height:1;">&times;</button>
+      </div>
+      <div id="mt5ModalBody"></div>
+    </div>
+  </div>
+  <div id="mt5ToastContainer" class="mt5-toast-container"></div>
   <script src="scripts/xauusd-price-widget.js?v=202610192017"></script>
 </body>
 </html>
