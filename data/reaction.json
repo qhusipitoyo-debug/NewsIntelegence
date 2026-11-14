@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-14T01:54:20.314Z",
+  "generatedAt": "2026-11-14T02:07:52.607Z",
   "events": {
     "2026-11-13T16:00:00-05:00|FOMC Financial Stability Report": {
       "releasedAt": "2026-11-13T21:00:00.000Z",
@@ -86,21 +86,21 @@
           "faded": false
         },
         "XAU/USD": {
-          "baseClose": 3881.699951171875,
+          "baseClose": 3881.800048828125,
           "lastClose": 3879.699951171875,
-          "movePct": -0.052,
+          "movePct": -0.054,
           "dir": "short",
           "minutes": 45,
-          "spikePct": -0.067,
+          "spikePct": -0.07,
           "faded": false
         },
         "US500": {
-          "baseClose": 7585,
+          "baseClose": 7584.75,
           "lastClose": 7553,
-          "movePct": -0.422,
+          "movePct": -0.419,
           "dir": "short",
           "minutes": 45,
-          "spikePct": -0.481,
+          "spikePct": -0.478,
           "faded": false,
           "via": "ES=F"
         }
