@@ -6705,6 +6705,60 @@
     "Actual": ""
   },
   {
+    "Date": "2026-12-15T10:00:00.000Z",
+    "Event": "ZEW Economic Sentiment Index",
+    "Country": "EUR",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T10:00:00.000Z",
+    "Event": "Industrial Production MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T11:00:00.000Z",
+    "Event": "Foreign Exchange Reserves",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T11:00:00.000Z",
+    "Event": "Reserve Assets",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T13:15:00.000Z",
+    "Event": "Housing Starts",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T13:15:00.000Z",
+    "Event": "ADP Employment Change Weekly",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
     "Date": "2026-12-15T13:30:00.000Z",
     "Event": "Job Vacancies",
     "Country": "CAD",
@@ -6720,6 +6774,60 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "160.25",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T13:30:00.000Z",
+    "Event": "NY Empire State Manufacturing Index",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T13:30:00.000Z",
+    "Event": "PPI Ex Food Energy and Trade Services MoM",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T13:30:00.000Z",
+    "Event": "Core PPI YoY",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T13:30:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "0.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T13:30:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "6.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T13:30:00.000Z",
+    "Event": "PPI Machinery Manufacturing",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "200.8",
     "Actual": ""
   },
   {
