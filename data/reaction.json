@@ -1,38 +1,6 @@
 {
-  "generatedAt": "2026-11-13T22:52:23.859Z",
+  "generatedAt": "2026-11-14T00:58:28.520Z",
   "events": {
-    "2026-11-13T12:00:00-05:00|FOMC Member Daly Speaks": {
-      "releasedAt": "2026-11-13T17:00:00.000Z",
-      "pairs": {
-        "AUD/USD": {
-          "baseClose": 0.6777363419532776,
-          "lastClose": 0.6780580282211304,
-          "movePct": 0.047,
-          "dir": "long",
-          "minutes": 45,
-          "spikePct": 0.02,
-          "faded": false
-        },
-        "NZD/USD": {
-          "baseClose": 0.5526694059371948,
-          "lastClose": 0.5526999831199646,
-          "movePct": 0.006,
-          "dir": null,
-          "minutes": 45,
-          "spikePct": 0.028,
-          "faded": false
-        },
-        "US500": {
-          "baseClose": 7521.52978515625,
-          "lastClose": 7539.0400390625,
-          "movePct": 0.233,
-          "dir": "long",
-          "minutes": 45,
-          "spikePct": 0.095,
-          "faded": false
-        }
-      }
-    },
     "2026-11-13T16:00:00-05:00|FOMC Financial Stability Report": {
       "releasedAt": "2026-11-13T21:00:00.000Z",
       "pairs": {
@@ -153,6 +121,29 @@
           "spikePct": -0.478,
           "faded": false,
           "via": "ES=F"
+        }
+      }
+    },
+    "2026-11-13T19:00:00-05:00|FOMC Member Jefferson Speaks": {
+      "releasedAt": "2026-11-14T00:00:00.000Z",
+      "pairs": {
+        "BTC/USD": {
+          "baseClose": 68223.0078125,
+          "lastClose": 68246.5625,
+          "movePct": 0.035,
+          "dir": "long",
+          "minutes": 45,
+          "spikePct": 0.187,
+          "faded": false
+        },
+        "ETH/USD": {
+          "baseClose": 1927.3499755859375,
+          "lastClose": 1928.81005859375,
+          "movePct": 0.076,
+          "dir": "long",
+          "minutes": 45,
+          "spikePct": 0.296,
+          "faded": false
         }
       }
     }
