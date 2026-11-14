@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-11-14T00:58:28.520Z",
+  "generatedAt": "2026-11-14T01:54:20.314Z",
   "source": "CoinGecko",
   "pairs": {
-    "BTC/USD": 68230,
-    "ETH/USD": 1929.16
+    "BTC/USD": 68257,
+    "ETH/USD": 1927.5
   },
   "changePct": {
-    "BTC/USD": -4.03,
-    "ETH/USD": -4.09
+    "BTC/USD": -3.68,
+    "ETH/USD": -4.07
   }
 }

@@ -1,5 +1,10 @@
 import fs from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
+import dns from 'node:dns';
+
+try {
+  dns.setDefaultResultOrder('ipv4first');
+} catch {}
 
 const PRE_NEWS_FILE = 'data/prenews.json';
 const PRE_NEWS_HOLD_MS = 7 * 24 * 60 * 60 * 1000;
@@ -443,13 +448,129 @@ export async function fetchTradingViewActuals(fromMs, toMs, { fetchImpl = fetch,
   return collected;
 }
 
-async function backfillActuals(events) {
-  const stamps = events.map(e => Date.parse(e && e.Date)).filter(Number.isFinite);
-  if (!stamps.length) return events;
+export async function fetchTradingViewCalendar(fromMs, toMs, { fetchImpl = fetch, timeoutMs = 15000 } = {}) {
+  const collected = [];
+  const chunkMs = 7 * 24 * 60 * 60 * 1000;
+  for (let start = fromMs; start < toMs; start += chunkMs) {
+    const end = Math.min(start + chunkMs, toMs);
+    const url = `${TV_CALENDAR_URL}?from=${isoZ(start)}&to=${isoZ(end)}&lang=en`;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const response = await fetchImpl(url, { headers: TV_HEADERS, signal: AbortSignal.timeout(timeoutMs) });
+        if (!response || !response.ok) {
+          console.error(`TradingView calendar HTTP ${response ? response.status : 'no-response'} (${isoZ(start).slice(0, 10)})`);
+          break;
+        }
+        const payload = await response.json();
+        const rows = payload && Array.isArray(payload.result) ? payload.result : [];
+        collected.push(...rows);
+        break;
+      } catch (error) {
+        if (attempt === 2) {
+          console.error(`TradingView calendar chunk gagal (${isoZ(start).slice(0, 10)}):`, error && error.message || error);
+        } else {
+          await new Promise(r => setTimeout(r, 1000));
+        }
+      }
+    }
+  }
+  return collected;
+}
+
+export function parseTradingViewEvents(tvRows) {
+  const keywords = /fed|fomc|interest rate|inflation|cpi|pce|ppi|adp|payroll|employment|unemployment|jobless|gdp|pmi|ism|retail sales|consumer confidence|jolts|durable goods|powell|treasury|oil|crude|energy|gas|opec|eia|rig|inventories|distillate|gasoline|home sales|housing|building permits|industrial production|manufacturing|trade balance|ecb|boj|boe|rba|boc|rbnz/i;
+  const allowedCurrencies = new Set(['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'NZD', 'CAD']);
+
+  function trimNumber(v) {
+    return Number(v).toFixed(2).replace(/\.?0+$/, '');
+  }
+
+  function formatTvVal(val, unit, title) {
+    if (val === null || val === undefined || val === '') return '';
+    const num = Number(val);
+    if (!Number.isFinite(num)) return String(val).trim();
+    if (unit === '%' || (!unit && /inflation|cpi|pce|ppi|rate|yield|growth|mom|yoy|qoq/i.test(title) && Math.abs(num) <= 100)) {
+      return trimNumber(num) + '%';
+    }
+    if (unit === 'K' || (!unit && /claims|jobless|payroll|nonfarm|\badp\b/i.test(title) && Math.abs(num) < 10000 && Math.abs(num) > 0)) {
+      return trimNumber(num) + 'K';
+    }
+    if (unit === 'M') return trimNumber(num) + 'M';
+    if (unit === 'B') return trimNumber(num) + 'B';
+    if (Math.abs(num) >= 1e9) return trimNumber(num / 1e9) + 'B';
+    if (Math.abs(num) >= 1e6) return trimNumber(num / 1e6) + 'M';
+    if (Math.abs(num) >= 1e3 && unit !== '%') return trimNumber(num / 1e3) + 'K';
+    return trimNumber(num);
+  }
+
+  const events = [];
+  const seen = new Set();
+  for (const r of tvRows || []) {
+    const cur = String(r && r.currency || '').toUpperCase();
+    if (!allowedCurrencies.has(cur)) continue;
+    const title = String(r && r.title || '').trim();
+    if (!title) continue;
+    const imp = Number(r.importance);
+    if (imp < 0 && !keywords.test(title)) continue;
+    const rank = imp === 1 ? 3 : (imp === 0 ? 2 : 1);
+    const date = r.date;
+    if (!date || isNaN(Date.parse(date))) continue;
+
+    const dedupeKey = `${date}|${cur}|${title.toLowerCase()}`;
+    if (seen.has(dedupeKey)) continue;
+    seen.add(dedupeKey);
+
+    events.push({
+      Date: date,
+      Event: title,
+      Country: cur,
+      Importance: rank,
+      Forecast: formatTvVal(r.forecast ?? r.forecastRaw, r.unit, title),
+      Previous: formatTvVal(r.previous ?? r.previousRaw, r.unit, title),
+      Actual: formatTvVal(r.actual ?? r.actualRaw, r.unit, title)
+    });
+  }
+  return events;
+}
+
+export function areEventsMatching(a, b) {
+  if (!a || !b) return false;
+  const aCur = String(a.Country || '').toUpperCase();
+  const bCur = String(b.Country || '').toUpperCase();
+  if (aCur !== bCur) return false;
+
+  const aMs = minuteOf(a.Date);
+  const bMs = minuteOf(b.Date);
+  if (aMs === null || bMs === null) return false;
+  if (Math.abs(aMs - bMs) > TV_TIME_TOLERANCE_MS) return false;
+
+  const aTitle = String(a.Event || '').toLowerCase();
+  const bTitle = String(b.Event || '').toLowerCase();
+  if (aTitle === bTitle) return true;
+
+  // Qualifier checks: seri berbeda di menit yang sama (Core vs Headline, Final vs Flash, dll)
+  if (/\bcore\b/i.test(aTitle) !== /\bcore\b/i.test(bTitle)) return false;
+  if (/\btrimmed\b/i.test(aTitle) !== /\btrimmed\b/i.test(bTitle)) return false;
+  if (/\bmedian\b/i.test(aTitle) !== /\bmedian\b/i.test(bTitle)) return false;
+  if (/\bfinal\b/i.test(aTitle) !== /\bfinal\b/i.test(bTitle)) return false;
+  if (/\b(flash|prelim|preliminary)\b/i.test(aTitle) !== /\b(flash|prelim|preliminary)\b/i.test(bTitle)) return false;
+
+  const aTokens = titleTokens(a.Event);
+  const bTokens = new Set(titleTokens(b.Event));
+  return overlapScore(aTokens, bTokens) >= 0.6;
+}
+
+async function backfillActuals(events, now = Date.now()) {
+  const pastStamps = events
+    .map(e => Date.parse(e && e.Date))
+    .filter(t => Number.isFinite(t) && t <= now + 5 * 60 * 1000);
+  if (!pastStamps.length) return events;
   const dayMs = 24 * 60 * 60 * 1000;
   try {
-    const tvEvents = await fetchTradingViewActuals(Math.min(...stamps) - dayMs, Math.max(...stamps) + dayMs);
-    const { events: merged, stats } = mergeActuals(events, tvEvents);
+    const fromMs = Math.min(...pastStamps) - dayMs;
+    const toMs = Math.min(now + 60 * 1000, Math.max(...pastStamps) + 5 * 60 * 1000);
+    const tvEvents = await fetchTradingViewActuals(fromMs, toMs);
+    const { events: merged, stats } = mergeActuals(events, tvEvents, now);
     console.log(`Backfill Actual TradingView: ${stats.tvTotal} event dibaca, ${stats.tvUsable} punya Actual, ${stats.matched} cocok, ${stats.filled} terisi, ${stats.rejected} ditolak (skala), ${stats.ambiguous} ambigu.`);
     return merged;
   } catch (error) {
@@ -458,27 +579,35 @@ async function backfillActuals(events) {
   }
 }
 
-// 1. AMBIL DATA KALENDER (ForexFactory)
+// 1. AMBIL DATA KALENDER (ForexFactory + TradingView realtime minggu depan & bulan depan)
 async function fetchCalendar() {
-  const urls = [
+  const now = Date.now();
+  const existing = await readCalendar();
+
+  // Pertahankan berita 30 hari ke belakang agar regresi & analisis historis tidak hilang
+  const pastHoldMs = 30 * 24 * 60 * 60 * 1000;
+  const baseEvents = existing.filter(e => {
+    const t = Date.parse(e && e.Date);
+    return Number.isFinite(t) && t >= now - pastHoldMs;
+  });
+
+  // A. Ambil dari ForexFactory (thisweek & nextweek jika tersedia)
+  const ffUrls = [
     'https://nfs.faireconomy.media/ff_calendar_thisweek.json',
     'https://nfs.faireconomy.media/ff_calendar_nextweek.json'
   ];
-  
-  const batches = await Promise.all(urls.map(async u => {
+  const rank = { Low: 1, Medium: 2, High: 3 };
+  const keywords = /fed|fomc|interest rate|inflation|cpi|pce|ppi|adp|payroll|employment|unemployment|jobless|gdp|pmi|ism|retail sales|consumer confidence|jolts|durable goods|powell|treasury|oil|crude|energy|gas|opec|eia|rig|inventories|distillate|gasoline|home sales|housing|building permits|industrial production|manufacturing|trade balance|ecb|boj|boe|rba|boc|rbnz/i;
+  const allowedCountries = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'NZD', 'CAD'];
+
+  const ffBatches = await Promise.all(ffUrls.map(async u => {
     try {
-      const r = await fetch(u, { headers: { 'user-agent': 'Mozilla/5.0' } });
+      const r = await fetch(u, { headers: { 'user-agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(10000) });
       return r.ok ? await r.json() : [];
     } catch { return []; }
   }));
 
-  const rank = { Low: 1, Medium: 2, High: 3 };
-  
-  // FILTER KANADA, PERUMAHAN, INDUSTRI, BANK SENTRAL & MINYAK/ENERGI
-  const keywords = /fed|fomc|interest rate|inflation|cpi|pce|ppi|adp|payroll|employment|unemployment|jobless|gdp|pmi|ism|retail sales|consumer confidence|jolts|durable goods|powell|treasury|oil|crude|energy|gas|opec|eia|rig|inventories|distillate|gasoline|home sales|housing|building permits|industrial production|manufacturing|trade balance|ecb|boj|boe|rba|boc|rbnz/i;
-  const allowedCountries = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'NZD', 'CAD'];
-
-  const events = batches.flat()
+  const ffEvents = ffBatches.flat()
     .filter(e => allowedCountries.includes(String(e.country || '').toUpperCase()) && (e.impact === 'High' || e.impact === 'Medium' || keywords.test(e.title || '')))
     .map(e => ({
       Date: e.date,
@@ -490,16 +619,71 @@ async function fetchCalendar() {
       Actual: e.actual || ''
     }));
 
-  if (!events.length) {
-    console.error('ForexFactory mengembalikan 0 berita; calendar.json lama dipertahankan.');
-    return readCalendar();
+  // B. Ambil dari TradingView untuk minggu depan & bulan depan (35 hari ke depan)
+  let tvEvents = [];
+  try {
+    const tvFrom = now - 24 * 60 * 60 * 1000;
+    const tvTo = now + 35 * 24 * 60 * 60 * 1000;
+    const tvRows = await fetchTradingViewCalendar(tvFrom, tvTo);
+    tvEvents = parseTradingViewEvents(tvRows);
+  } catch (err) {
+    console.error('TradingView future calendar dilewati:', err && err.message || err);
   }
-  const merged = await backfillActuals(events);
-  const payload = JSON.stringify(merged, null, 2);
+
+  // C. Gabungkan data secara cerdas (ForexFactory + TradingView + Riwayat)
+  const merged = [...baseEvents];
+
+  // 1. Masukkan / perbarui dari ForexFactory
+  for (const fe of ffEvents) {
+    const idx = merged.findIndex(m => areEventsMatching(fe, m));
+    if (idx >= 0) {
+      const existingEv = merged[idx];
+      merged[idx] = {
+        ...existingEv,
+        Event: fe.Event,
+        Importance: fe.Importance,
+        Forecast: fe.Forecast || existingEv.Forecast || '',
+        Previous: fe.Previous || existingEv.Previous || '',
+        Actual: existingEv.Actual || fe.Actual || ''
+      };
+    } else {
+      merged.push(fe);
+    }
+  }
+
+  // 2. Masukkan berita masa depan dari TradingView untuk minggu depan & bulan depan
+  let tvAdded = 0;
+  for (const te of tvEvents) {
+    const idx = merged.findIndex(m => areEventsMatching(te, m));
+    if (idx >= 0) {
+      const existingEv = merged[idx];
+      if (!existingEv.Forecast && te.Forecast) existingEv.Forecast = te.Forecast;
+      if (!existingEv.Previous && te.Previous) existingEv.Previous = te.Previous;
+      if (!existingEv.Actual && te.Actual && Date.parse(te.Date) <= now) existingEv.Actual = te.Actual;
+    } else {
+      merged.push(te);
+      tvAdded++;
+    }
+  }
+
+  if (!merged.length) {
+    console.error('Semua sumber kalender kosong; calendar.json lama dipertahankan.');
+    return existing;
+  }
+
+  // Urutkan berdasarkan tanggal rilis
+  merged.sort((a, b) => new Date(a.Date) - new Date(b.Date));
+
+  // D. Isi Actual yang belum terisi untuk event masa lalu
+  const finalized = await backfillActuals(merged, now);
+
+  const payload = JSON.stringify(finalized, null, 2);
   const previous = await fs.readFile('data/calendar.json', 'utf8').catch(() => '');
-  if (payload !== previous) await fs.writeFile('data/calendar.json', payload);
-  console.log('Berhasil menyimpan calendar.json dengan', merged.length, 'berita.');
-  return merged;
+  if (payload !== previous) {
+    await fs.writeFile('data/calendar.json', payload);
+  }
+  console.log(`Berhasil menyimpan calendar.json dengan ${finalized.length} berita (${tvAdded} berita baru dari TradingView untuk minggu & bulan depan).`);
+  return finalized;
 }
 
 // 2. AMBIL HARGA EMAS (Gold API)

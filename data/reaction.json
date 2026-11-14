@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-14T00:58:28.520Z",
+  "generatedAt": "2026-11-14T01:54:20.314Z",
   "events": {
     "2026-11-13T16:00:00-05:00|FOMC Financial Stability Report": {
       "releasedAt": "2026-11-13T21:00:00.000Z",
@@ -86,39 +86,21 @@
           "faded": false
         },
         "XAU/USD": {
-          "baseClose": 3881.800048828125,
+          "baseClose": 3881.699951171875,
           "lastClose": 3879.699951171875,
-          "movePct": -0.054,
+          "movePct": -0.052,
           "dir": "short",
           "minutes": 45,
-          "spikePct": -0.07,
-          "faded": false
-        },
-        "BTC/USD": {
-          "baseClose": 68837.2890625,
-          "lastClose": 68077.3203125,
-          "movePct": -1.104,
-          "dir": "short",
-          "minutes": 45,
-          "spikePct": -0.485,
-          "faded": false
-        },
-        "ETH/USD": {
-          "baseClose": 1946.27001953125,
-          "lastClose": 1920.199951171875,
-          "movePct": -1.339,
-          "dir": "short",
-          "minutes": 45,
-          "spikePct": -0.55,
+          "spikePct": -0.067,
           "faded": false
         },
         "US500": {
-          "baseClose": 7584.75,
+          "baseClose": 7585,
           "lastClose": 7553,
-          "movePct": -0.419,
+          "movePct": -0.422,
           "dir": "short",
           "minutes": 45,
-          "spikePct": -0.478,
+          "spikePct": -0.481,
           "faded": false,
           "via": "ES=F"
         }

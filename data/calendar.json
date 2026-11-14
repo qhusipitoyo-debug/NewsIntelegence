@@ -95,7 +95,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "16.8K",
+    "Previous": "19.5K",
     "Actual": "19.75K"
   },
   {
@@ -163,7 +163,7 @@
   },
   {
     "Date": "2026-11-10T18:30:00-05:00",
-    "Event": "FOMC Member Bowman Speaks",
+    "Event": "FOMC Member Paulson Speaks",
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
@@ -253,11 +253,11 @@
   },
   {
     "Date": "2026-11-12T02:00:00-05:00",
-    "Event": "Industrial Production m/m",
+    "Event": "Manufacturing Production m/m",
     "Country": "GBP",
     "Importance": 1,
-    "Forecast": "-0.4%",
-    "Previous": "0.8%",
+    "Forecast": "-0.5%",
+    "Previous": "1.2%",
     "Actual": "0.3%"
   },
   {
@@ -267,7 +267,7 @@
     "Importance": 1,
     "Forecast": "-0.5%",
     "Previous": "1.2%",
-    "Actual": ""
+    "Actual": "0.3%"
   },
   {
     "Date": "2026-11-12T04:00:00-05:00",
@@ -396,6 +396,33 @@
     "Actual": ""
   },
   {
+    "Date": "2026-11-13T06:00:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.7%",
+    "Actual": "0.4%"
+  },
+  {
+    "Date": "2026-11-13T06:00:00.000Z",
+    "Event": "Consumer Price Index",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "102.63",
+    "Actual": "103.08"
+  },
+  {
+    "Date": "2026-11-13T07:00:00.000Z",
+    "Event": "Wholesale Prices MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.9%",
+    "Actual": "0.4%"
+  },
+  {
     "Date": "2026-11-13T02:45:00-05:00",
     "Event": "French Final CPI m/m",
     "Country": "EUR",
@@ -405,21 +432,129 @@
     "Actual": "0.4%"
   },
   {
+    "Date": "2026-11-13T07:45:00.000Z",
+    "Event": "Consumer Price Index Final",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "103.07",
+    "Actual": "103.46"
+  },
+  {
+    "Date": "2026-11-13T07:45:00.000Z",
+    "Event": "Inflation Rate YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "3.4%",
+    "Previous": "3.1%",
+    "Actual": "3.4%"
+  },
+  {
+    "Date": "2026-11-13T07:45:00.000Z",
+    "Event": "Harmonised Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "0.4%",
+    "Previous": "-0.3%",
+    "Actual": "0.4%"
+  },
+  {
+    "Date": "2026-11-13T07:45:00.000Z",
+    "Event": "France-Inflation Final-Inflation Ex-Tobacco Idx",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "103.07",
+    "Actual": "103.46"
+  },
+  {
+    "Date": "2026-11-13T08:00:00.000Z",
+    "Event": "GDP Growth Rate YoY Prel",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "1%",
+    "Previous": "0.7%",
+    "Actual": "0.3%"
+  },
+  {
+    "Date": "2026-11-13T08:00:00.000Z",
+    "Event": "Core Inflation Rate YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "3.1%",
+    "Actual": "3.1%"
+  },
+  {
+    "Date": "2026-11-13T08:00:00.000Z",
+    "Event": "CPI Final",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "104.98",
+    "Actual": "105.65"
+  },
+  {
+    "Date": "2026-11-13T08:00:00.000Z",
+    "Event": "Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "0.6%",
+    "Previous": "0.3%",
+    "Actual": "0.6%"
+  },
+  {
+    "Date": "2026-11-13T08:00:00.000Z",
+    "Event": "Harmonised Inflation Rate YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "4.9%",
+    "Previous": "5%",
+    "Actual": "4.9%"
+  },
+  {
+    "Date": "2026-11-13T08:00:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "0%",
+    "Previous": "0.2%",
+    "Actual": "0%"
+  },
+  {
+    "Date": "2026-11-13T08:00:00.000Z",
+    "Event": "CPI",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "103.8",
+    "Actual": "103.8"
+  },
+  {
+    "Date": "2026-11-13T08:00:00.000Z",
+    "Event": "Core Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "0.2%",
+    "Previous": "0.1%",
+    "Actual": "0.3%"
+  },
+  {
     "Date": "2026-11-13T04:00:00-05:00",
     "Event": "Italian Trade Balance",
     "Country": "EUR",
     "Importance": 1,
     "Forecast": "2.84B",
     "Previous": "1.77B",
-    "Actual": ""
+    "Actual": "-0.78"
   },
   {
     "Date": "2026-11-13T05:00:00-05:00",
-    "Event": "Flash Employment Change q/q",
+    "Event": "Flash GDP q/q",
     "Country": "EUR",
     "Importance": 1,
-    "Forecast": "0.2%",
-    "Previous": "0.1%",
+    "Forecast": "0.4%",
+    "Previous": "0.4%",
     "Actual": ""
   },
   {
@@ -438,7 +573,34 @@
     "Importance": 1,
     "Forecast": "-4.5B",
     "Previous": "-6.8B",
-    "Actual": ""
+    "Actual": "-10.3"
+  },
+  {
+    "Date": "2026-11-13T10:00:00.000Z",
+    "Event": "Employed Persons Flash",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "176.58K",
+    "Actual": "176.55K"
+  },
+  {
+    "Date": "2026-11-13T10:00:00.000Z",
+    "Event": "Employment Change QoQ Prel",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "0.1%",
+    "Previous": "0.1%",
+    "Actual": "0%"
+  },
+  {
+    "Date": "2026-11-13T10:00:00.000Z",
+    "Event": "GDP Growth Rate QoQ 2nd Est",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "0.4%",
+    "Previous": "0.4%",
+    "Actual": "0.4%"
   },
   {
     "Date": "2026-11-13T08:30:00-05:00",
@@ -468,6 +630,78 @@
     "Actual": "0.3%"
   },
   {
+    "Date": "2026-11-13T13:30:00.000Z",
+    "Event": "PPI Ex Food Energy and Trade Services MoM",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.5%",
+    "Actual": "0.5%"
+  },
+  {
+    "Date": "2026-11-13T13:30:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "6.6%",
+    "Previous": "6.3%",
+    "Actual": "6.5%"
+  },
+  {
+    "Date": "2026-11-13T13:30:00.000Z",
+    "Event": "PPI Machinery Manufacturing",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "200.26",
+    "Actual": "200.8"
+  },
+  {
+    "Date": "2026-11-13T13:30:00.000Z",
+    "Event": "Manufacturing Sales MoM Final",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "0.1%",
+    "Previous": "1.8%",
+    "Actual": "0%"
+  },
+  {
+    "Date": "2026-11-13T13:30:00.000Z",
+    "Event": "United States-ExportSales-Soybn Oil Exp Sls Nxt Yr Net *",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0",
+    "Actual": "0"
+  },
+  {
+    "Date": "2026-11-13T13:30:00.000Z",
+    "Event": "USDA Soybean Oil Net Export Sales",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.5",
+    "Actual": "1.7"
+  },
+  {
+    "Date": "2026-11-13T13:30:00.000Z",
+    "Event": "USDA Pork Gross Export Sales",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "39.5",
+    "Actual": "41.5"
+  },
+  {
+    "Date": "2026-11-13T13:30:00.000Z",
+    "Event": "PPI",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "159.78",
+    "Actual": "160.25"
+  },
+  {
     "Date": "2026-11-13T09:10:00-05:00",
     "Event": "FOMC Member Collins Speaks",
     "Country": "USD",
@@ -495,6 +729,15 @@
     "Actual": ""
   },
   {
+    "Date": "2026-11-13T15:30:00.000Z",
+    "Event": "EIA Natural Gas Stocks Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "77",
+    "Actual": "61"
+  },
+  {
     "Date": "2026-11-13T10:50:00-05:00",
     "Event": "FOMC Member Bowman Speaks",
     "Country": "USD",
@@ -513,6 +756,15 @@
     "Actual": ""
   },
   {
+    "Date": "2026-11-13T19:00:00.000Z",
+    "Event": "Baker Hughes Gas Rig Count",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "131",
+    "Actual": "127"
+  },
+  {
     "Date": "2026-11-13T16:00:00-05:00",
     "Event": "FOMC Financial Stability Report",
     "Country": "USD",
@@ -528,6 +780,5847 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-15T23:50:00.000Z",
+    "Event": "GDP Price Index YoY Prel",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-15T23:50:00.000Z",
+    "Event": "GDP Capital Expenditure QoQ Prel",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "1.5%",
+    "Previous": "-1.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-15T23:50:00.000Z",
+    "Event": "GDP Growth Annualized Prel",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "0.3%",
+    "Previous": "1.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T00:01:00.000Z",
+    "Event": "Rightmove House Price Index MoM",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T04:30:00.000Z",
+    "Event": "Industrial Production MoM Final",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-2.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T06:00:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "6.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T10:00:00.000Z",
+    "Event": "Industrial Production MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "0.3%",
+    "Previous": "-0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T10:00:00.000Z",
+    "Event": "Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T10:00:00.000Z",
+    "Event": "Consumer Price Index",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "105.5",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T11:00:00.000Z",
+    "Event": "Foreign Exchange Reserves",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "19.11K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T11:00:00.000Z",
+    "Event": "Reserve Assets",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.81K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T13:30:00.000Z",
+    "Event": "NY Empire State Manufacturing Index",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "18",
+    "Previous": "25.5",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T13:30:00.000Z",
+    "Event": "CPI Common YoY",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "3.2%",
+    "Previous": "2.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T13:30:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "0.4%",
+    "Previous": "0.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T13:30:00.000Z",
+    "Event": "Consumer Price Index",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "170",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T13:30:00.000Z",
+    "Event": "Core Inflation Rate MoM s.a",
+    "Country": "CAD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "0.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T13:30:00.000Z",
+    "Event": "CPI Median YoY",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "2%",
+    "Previous": "1.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T13:30:00.000Z",
+    "Event": "CPI Trimmed-Mean YoY",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "1.9%",
+    "Previous": "1.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T13:30:00.000Z",
+    "Event": "Inflation Rate YoY s.a",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "3.03%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T17:00:00.000Z",
+    "Event": "NOPA Soybean Oil Stocks",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "1.09",
+    "Previous": "1.05",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T02:00:00.000Z",
+    "Event": "Business Inflation Expectations",
+    "Country": "NZD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.34%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T02:00:00.000Z",
+    "Event": "RBNZ Inflation Expectations 1 Year",
+    "Country": "NZD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "2.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T02:00:00.000Z",
+    "Event": "RBNZ Monetary Conditions Current",
+    "Country": "NZD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-63.16%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T04:30:00.000Z",
+    "Event": "Tertiary Industry Index YoY NSA",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-4.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T07:00:00.000Z",
+    "Event": "Private Sector Pay Growth (3Mo/Yr)",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T07:00:00.000Z",
+    "Event": "Average Earnings incl. Bonus (3Mo/Yr)",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "3.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T07:00:00.000Z",
+    "Event": "Average Earnings Excluding Bonus",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "3.6%",
+    "Previous": "3.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T07:00:00.000Z",
+    "Event": "Employment Change",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "102",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T07:00:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "GBP",
+    "Importance": 3,
+    "Forecast": "4.7%",
+    "Previous": "4.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T07:00:00.000Z",
+    "Event": "HMRC Payrolls Change",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "13K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T09:00:00.000Z",
+    "Event": "Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "5.4%",
+    "Previous": "0.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T09:00:00.000Z",
+    "Event": "Harmonised Inflation Rate YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "5.6%",
+    "Previous": "4.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T09:00:00.000Z",
+    "Event": "Inflation Rate ex Tobacco MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "4.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T09:30:00.000Z",
+    "Event": "Labour Productivity QoQ",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T09:30:00.000Z",
+    "Event": "Labour Costs",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T10:00:00.000Z",
+    "Event": "ZEW Economic Sentiment Index",
+    "Country": "EUR",
+    "Importance": 3,
+    "Forecast": "29",
+    "Previous": "28.1",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T13:15:00.000Z",
+    "Event": "Housing Starts",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "238",
+    "Previous": "248.9",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T13:15:00.000Z",
+    "Event": "ADP Employment Change Weekly",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "19.75K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T13:30:00.000Z",
+    "Event": "United States-Imports/Exports-Export Prices YY",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "11.63%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T13:30:00.000Z",
+    "Event": "Export Prices MoM",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "0.3%",
+    "Previous": "2.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T13:30:00.000Z",
+    "Event": "Retail Sales Control Group",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "0.4%",
+    "Previous": "0.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T13:30:00.000Z",
+    "Event": "Retail Sales Ex Autos MoM",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "0.4%",
+    "Previous": "0.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T13:30:00.000Z",
+    "Event": "Retail Sales YoY",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "6.29%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T14:15:00.000Z",
+    "Event": "Manufacturing Production MoM",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "0.2%",
+    "Previous": "0.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T14:15:00.000Z",
+    "Event": "Industrial Production YoY",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.25%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T15:00:00.000Z",
+    "Event": "Business Inventories MoM",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "0.5%",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T15:00:00.000Z",
+    "Event": "Retail Inventories Ex Autos MoM",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T15:00:00.000Z",
+    "Event": "NAHB Housing Market Index",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "29",
+    "Previous": "29",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T18:00:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "5.2%",
+    "Previous": "5.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T21:30:00.000Z",
+    "Event": "API Crude Oil Stock Change",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "8.97",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T21:30:00.000Z",
+    "Event": "API Distillate Stocks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.51",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T21:30:00.000Z",
+    "Event": "API Heating Oil",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.43",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T21:30:00.000Z",
+    "Event": "API Crude Imports",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.24",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T23:50:00.000Z",
+    "Event": "Exports YoY",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "20%",
+    "Previous": "16.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-17T23:50:00.000Z",
+    "Event": "Balance of Trade",
+    "Country": "JPY",
+    "Importance": 3,
+    "Forecast": "-956",
+    "Previous": "-556.5",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T00:00:00.000Z",
+    "Event": "Composite Leading Index MoM",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-0.06%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T06:00:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T06:00:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "4.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T07:00:00.000Z",
+    "Event": "Consumer Price Index",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "144.1",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T07:00:00.000Z",
+    "Event": "Services Inflation YoY",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "3.7%",
+    "Previous": "3.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T07:00:00.000Z",
+    "Event": "Core Inflation Rate MoM",
+    "Country": "GBP",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T07:00:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "0.5%",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T07:00:00.000Z",
+    "Event": "RPIX MoM",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T07:00:00.000Z",
+    "Event": "RPIX YoY",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "3.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T07:00:00.000Z",
+    "Event": "PPI Core Output MoM",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T07:00:00.000Z",
+    "Event": "PPI Input YoY",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "8.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T07:00:00.000Z",
+    "Event": "PPI Output MoM",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T08:00:00.000Z",
+    "Event": "Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.19%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T08:00:00.000Z",
+    "Event": "Austria-CPI-CPI NSA*",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "103.9",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T08:00:00.000Z",
+    "Event": "Harmonised Inflation Rate YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "3.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T08:00:00.000Z",
+    "Event": "Harmonised Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "0%",
+    "Previous": "0.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T10:00:00.000Z",
+    "Event": "Core Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "0.3%",
+    "Previous": "0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T10:00:00.000Z",
+    "Event": "HICP Excluding Tobacco",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "104.29",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T10:00:00.000Z",
+    "Event": "Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "0.4%",
+    "Previous": "0.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T10:00:00.000Z",
+    "Event": "HICP ex Food & Energy MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T10:00:00.000Z",
+    "Event": "HICP ex Food & Energy YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "2.2%",
+    "Previous": "2.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T10:00:00.000Z",
+    "Event": "Euro Zone-Inflation-HICP Ex-Tobacco Revised*",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T12:00:00.000Z",
+    "Event": "MBA 5/1 ARM Contract Rate",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "6.28%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T12:00:00.000Z",
+    "Event": "MBA 15-Year Mortgage Contract Rate",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "6.64%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T13:30:00.000Z",
+    "Event": "Housing Starts",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "1.27",
+    "Previous": "1.22",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T13:30:00.000Z",
+    "Event": "Building Permits Prel",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "1.38",
+    "Previous": "1.4",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T13:30:00.000Z",
+    "Event": "New Housing Price Index MoM",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T13:30:00.000Z",
+    "Event": "House Price Index YoY",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-2.04%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T15:00:00.000Z",
+    "Event": "Pending Home Sales Index",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "-2%",
+    "Previous": "66",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T15:30:00.000Z",
+    "Event": "EIA Ethanol Production",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.13K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T15:30:00.000Z",
+    "Event": "EIA Cushing Crude Oil Stocks Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.11",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T15:30:00.000Z",
+    "Event": "EIA Refinery Crude Runs Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.32",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T15:30:00.000Z",
+    "Event": "EIA Distillate Fuel Production Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-0.06",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T15:30:00.000Z",
+    "Event": "EIA Distillate Stocks Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "4.07",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T15:30:00.000Z",
+    "Event": "United States-EIA OIL STOCKS-EIA Weekly Rfg Stocks*",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T15:30:00.000Z",
+    "Event": "EIA Product Imports Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-0.25",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T15:30:00.000Z",
+    "Event": "EIA Refinery Utilization Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T18:00:00.000Z",
+    "Event": "20-Year Bond Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T18:00:00.000Z",
+    "Event": "20-Year Bond Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T18:00:00.000Z",
+    "Event": "20-Year Bond Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T21:00:00.000Z",
+    "Event": "Net Long-term TIC Flows",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "279.2",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T21:45:00.000Z",
+    "Event": "PPI Input QoQ",
+    "Country": "NZD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T21:45:00.000Z",
+    "Event": "Balance of Trade",
+    "Country": "NZD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-1.97",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T23:50:00.000Z",
+    "Event": "Machinery Orders MoM",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "-0.5%",
+    "Previous": "5.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T23:50:00.000Z",
+    "Event": "Bond Investment by Foreigners",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.37K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-18T23:50:00.000Z",
+    "Event": "Foreign Stock Investment",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-643.9",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T00:30:00.000Z",
+    "Event": "Foreign Currency Liquidity",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "118.77",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T00:30:00.000Z",
+    "Event": "Employment Change",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-39.3",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T00:30:00.000Z",
+    "Event": "Full Time Employment Chg",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "34.4",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T00:30:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "4.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T05:30:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T10:00:00.000Z",
+    "Event": "GDP Growth Rate YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T10:00:00.000Z",
+    "Event": "Construction Output MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T11:00:00.000Z",
+    "Event": "CBI Industrial Trends Orders",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-32",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T13:30:00.000Z",
+    "Event": "Philly Fed Business Conditions",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "33",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T13:30:00.000Z",
+    "Event": "Philly Fed CAPEX Index",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "34.9",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T13:30:00.000Z",
+    "Event": "Philadelphia Fed Manufacturing Index",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "18",
+    "Previous": "20.9",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T13:30:00.000Z",
+    "Event": "Philly Fed New Orders",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "4.3",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T13:30:00.000Z",
+    "Event": "Philly Fed Prices Paid",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "43.2",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T13:30:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T13:30:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "14.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T13:30:00.000Z",
+    "Event": "Commodity Prices YoY",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "27%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T13:30:00.000Z",
+    "Event": "United States-ExportSales-Soybn Oil Exp Sls Nxt Yr Net *",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T13:30:00.000Z",
+    "Event": "USDA Soybean Oil Net Export Sales",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.7",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T13:30:00.000Z",
+    "Event": "USDA Pork Gross Export Sales",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "41.5",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T13:30:00.000Z",
+    "Event": "Jobless Claims 4-week Average",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "195.25K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T13:30:00.000Z",
+    "Event": "Initial Jobless Claims",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "196K",
+    "Previous": "200K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T15:30:00.000Z",
+    "Event": "EIA Natural Gas Stocks Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "61",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T16:00:00.000Z",
+    "Event": "Kansas Fed Composite Index",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "11",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T18:00:00.000Z",
+    "Event": "10-Year TIPS Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T18:00:00.000Z",
+    "Event": "10-Year TIPS Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T18:00:00.000Z",
+    "Event": "10-Year TIPS Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T21:30:00.000Z",
+    "Event": "Fed Balance Sheet",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "6.76",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T23:30:00.000Z",
+    "Event": "CPI Index ex All Food and Energy",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "102.8",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T23:30:00.000Z",
+    "Event": "Core Inflation Rate YoY",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "2.3%",
+    "Previous": "2.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T23:30:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-19T23:30:00.000Z",
+    "Event": "CPI Index",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "102.2",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T00:01:00.000Z",
+    "Event": "Consumer Confidence Index",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-24",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T00:01:00.000Z",
+    "Event": "Consumer Confidence",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "61.6",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T05:30:00.000Z",
+    "Event": "Consumer Confidence",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-34",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T07:00:00.000Z",
+    "Event": "Retail Sales MoM",
+    "Country": "GBP",
+    "Importance": 3,
+    "Forecast": "-0.1%",
+    "Previous": "-0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T07:00:00.000Z",
+    "Event": "Retail Sales ex Fuel YoY",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T07:00:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "0.9%",
+    "Previous": "1.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T07:00:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "7.2%",
+    "Previous": "6.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T07:45:00.000Z",
+    "Event": "Business Confidence",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "102",
+    "Previous": "105",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T10:00:00.000Z",
+    "Event": "Consumer Confidence",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-13",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T13:30:00.000Z",
+    "Event": "Retail Sales MoM",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "0.7%",
+    "Previous": "1.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T15:00:00.000Z",
+    "Event": "Michigan Inflation Expectations Final",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "4.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T15:00:00.000Z",
+    "Event": "Michigan Consumer Sentiment Final",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "52",
+    "Previous": "48",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T15:00:00.000Z",
+    "Event": "Consumer Confidence Flash",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "-17.9",
+    "Previous": "-17.9",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T19:00:00.000Z",
+    "Event": "Baker Hughes Gas Rig Count",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "127",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-22T21:45:00.000Z",
+    "Event": "Retail Sales QoQ",
+    "Country": "NZD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-22T22:00:00.000Z",
+    "Event": "S&P Global Composite PMI Flash",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-22T22:00:00.000Z",
+    "Event": "S&P Global Manufacturing PMI Flash",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-22T22:00:00.000Z",
+    "Event": "S&P Global Services PMI Flash",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T06:00:00.000Z",
+    "Event": "Retail Sales MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-5.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T08:00:00.000Z",
+    "Event": "Hotel Overnight Stays",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "40.16M",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T08:15:00.000Z",
+    "Event": "S&P Global Composite PMI Flash",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T08:15:00.000Z",
+    "Event": "S&P Global Manufacturing PMI Flash",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T08:15:00.000Z",
+    "Event": "S&P Global Services PMI Flash",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T08:30:00.000Z",
+    "Event": "S&P Global Composite PMI Flash",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T08:30:00.000Z",
+    "Event": "S&P Global Manufacturing PMI Flash",
+    "Country": "EUR",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T08:30:00.000Z",
+    "Event": "S&P Global Services PMI Flash",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T09:00:00.000Z",
+    "Event": "S&P Global Composite PMI Flash",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T09:00:00.000Z",
+    "Event": "S&P Global Manufacturing PMI Flash",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T09:00:00.000Z",
+    "Event": "S&P Global Services PMI Flash",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T09:30:00.000Z",
+    "Event": "S&P Global Composite PMI Flash",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T09:30:00.000Z",
+    "Event": "S&P Global Manufacturing PMI Flash",
+    "Country": "GBP",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T09:30:00.000Z",
+    "Event": "S&P Global Services PMI Flash",
+    "Country": "GBP",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T11:00:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T11:00:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "3.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T11:00:00.000Z",
+    "Event": "Retail Sales MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T13:30:00.000Z",
+    "Event": "Chicago Fed National Activity Index",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.07",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T14:45:00.000Z",
+    "Event": "S&P Global Services PMI Flash",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T14:45:00.000Z",
+    "Event": "S&P Global Composite PMI Flash",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T14:45:00.000Z",
+    "Event": "S&P Global Manufacturing PMI Flash",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T18:00:00.000Z",
+    "Event": "2-Year Note Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T18:00:00.000Z",
+    "Event": "2-Year Note Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-23T18:00:00.000Z",
+    "Event": "2-Year Note Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T00:30:00.000Z",
+    "Event": "S&P Global Services PMI Flash",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T00:30:00.000Z",
+    "Event": "S&P Global Composite PMI Flash",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T00:30:00.000Z",
+    "Event": "S&P Global Manufacturing PMI Flash",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T05:00:00.000Z",
+    "Event": "New Car Registrations MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "20.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T05:00:00.000Z",
+    "Event": "New Car Registrations MoM",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "272%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T05:00:00.000Z",
+    "Event": "Chain Store Sales YoY",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T06:00:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "10.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T09:00:00.000Z",
+    "Event": "Ifo Business Climate",
+    "Country": "EUR",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "90.2",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T11:00:00.000Z",
+    "Event": "CBI Distributive Trades",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-10",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T13:15:00.000Z",
+    "Event": "ADP Employment Change Weekly",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T14:00:00.000Z",
+    "Event": "S&P/Case-Shiller 20-City Home Price MoM s.a",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T14:00:00.000Z",
+    "Event": "S&P/Case-Shiller Home Price YoY",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "2.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T15:00:00.000Z",
+    "Event": "CB Consumer Confidence",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "91.7",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T15:00:00.000Z",
+    "Event": "Richmond Fed Manufacturing Shipments Index",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T15:00:00.000Z",
+    "Event": "Richmond Fed Composite Index",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-2",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T15:00:00.000Z",
+    "Event": "Richmond Fed Services Revenues Index",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T16:30:00.000Z",
+    "Event": "2-Year FRN Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T16:30:00.000Z",
+    "Event": "2-Year FRN Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T16:30:00.000Z",
+    "Event": "2-Year FRN Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T16:30:00.000Z",
+    "Event": "52-Week Bill Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T16:30:00.000Z",
+    "Event": "52-Week Bill Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T16:30:00.000Z",
+    "Event": "52-Week Bill Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T18:00:00.000Z",
+    "Event": "5-Year Note Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T18:00:00.000Z",
+    "Event": "5-Year Note Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T18:00:00.000Z",
+    "Event": "5-Year Note Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T21:30:00.000Z",
+    "Event": "API Crude Oil Stock Change",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T21:30:00.000Z",
+    "Event": "API Distillate Stocks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T21:30:00.000Z",
+    "Event": "API Heating Oil",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T21:30:00.000Z",
+    "Event": "API Crude Imports",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-24T23:50:00.000Z",
+    "Event": "Services PPI YoY",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "3.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T00:30:00.000Z",
+    "Event": "Construction Work Done QoQ",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-2.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T00:30:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T00:30:00.000Z",
+    "Event": "CPI",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "104.34",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T00:30:00.000Z",
+    "Event": "RBA Trimmed Mean CPI MoM",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T00:30:00.000Z",
+    "Event": "RBA Weighted Median CPI MoM",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T06:00:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "9.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T07:00:00.000Z",
+    "Event": "GDP Growth Rate YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T07:45:00.000Z",
+    "Event": "Consumer Confidence",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "80",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T12:00:00.000Z",
+    "Event": "MBA 5/1 ARM Contract Rate",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T12:00:00.000Z",
+    "Event": "MBA 15-Year Mortgage Contract Rate",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T13:00:00.000Z",
+    "Event": "Building Permits Final",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.4",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T13:30:00.000Z",
+    "Event": "Personal Spending MoM",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T13:30:00.000Z",
+    "Event": "PCE Services Prices ex Energy & Housing MoM",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T13:30:00.000Z",
+    "Event": "Core PCE Price Index YoY",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "3.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T13:30:00.000Z",
+    "Event": "PCE Price Index MoM",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T13:30:00.000Z",
+    "Event": "Core PCE Prices QoQ 2nd Est",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "3.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T13:30:00.000Z",
+    "Event": "GDP Price Index QoQ 2nd Est",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "6.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T13:30:00.000Z",
+    "Event": "PCE Prices ex Food, Energy & Housing QoQ 2nd Est",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "3.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T13:30:00.000Z",
+    "Event": "Durable Goods Orders ex Defense MoM",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T13:30:00.000Z",
+    "Event": "Corporate Profits QoQ Prel",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "8.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T15:00:00.000Z",
+    "Event": "Dallas Fed Trimmed Mean PCE",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T15:00:00.000Z",
+    "Event": "New Home Sales",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.68",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T15:30:00.000Z",
+    "Event": "EIA Ethanol Production",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T15:30:00.000Z",
+    "Event": "EIA Cushing Crude Oil Stocks Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T15:30:00.000Z",
+    "Event": "EIA Refinery Crude Runs Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T15:30:00.000Z",
+    "Event": "EIA Distillate Fuel Production Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T15:30:00.000Z",
+    "Event": "EIA Distillate Stocks Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T15:30:00.000Z",
+    "Event": "United States-EIA OIL STOCKS-EIA Weekly Rfg Stocks*",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T15:30:00.000Z",
+    "Event": "EIA Product Imports Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T15:30:00.000Z",
+    "Event": "EIA Refinery Utilization Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T17:00:00.000Z",
+    "Event": "EIA Natural Gas Stocks Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T18:00:00.000Z",
+    "Event": "7-Year Note Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T18:00:00.000Z",
+    "Event": "7-Year Note Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T18:00:00.000Z",
+    "Event": "7-Year Note Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-26T05:00:00.000Z",
+    "Event": "Leading Economic Index Final",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.4",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-26T07:00:00.000Z",
+    "Event": "GfK Consumer Confidence",
+    "Country": "EUR",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "-30.8",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-26T07:45:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-26T07:45:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "6.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-26T09:00:00.000Z",
+    "Event": "UniCredit Bank Manufacturing PMI",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-26T09:00:00.000Z",
+    "Event": "M3 Money Supply Annual Growth",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "3.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-26T23:30:00.000Z",
+    "Event": "Tokyo CPI ex All Food and Energy MoM",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-26T23:30:00.000Z",
+    "Event": "Tokyo Core CPI YoY",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-26T23:30:00.000Z",
+    "Event": "Tokyo CPI YoY",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-26T23:50:00.000Z",
+    "Event": "Bond Investment by Foreigners",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-26T23:50:00.000Z",
+    "Event": "Foreign Stock Investment",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T06:00:00.000Z",
+    "Event": "Consumer Confidence",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-9.7",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T06:00:00.000Z",
+    "Event": "GDP YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T06:00:00.000Z",
+    "Event": "Broad Money",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "31.98K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T06:00:00.000Z",
+    "Event": "GDP Growth Rate QoQ Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T06:00:00.000Z",
+    "Event": "GDP Growth Rate YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T07:00:00.000Z",
+    "Event": "Industrial Production MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T07:45:00.000Z",
+    "Event": "GDP Growth Rate QoQ Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T07:45:00.000Z",
+    "Event": "France-Consumer spending-Consumer Spending MM*",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T07:45:00.000Z",
+    "Event": "Non Farm Payrolls QoQ Revised",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-0.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T07:45:00.000Z",
+    "Event": "Inflation Rate MoM Prel",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T08:00:00.000Z",
+    "Event": "Inflation Rate YoY Prel",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "4.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T08:00:00.000Z",
+    "Event": "CPI Flash",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "105.65",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T08:00:00.000Z",
+    "Event": "Retail Sales YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-1.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T08:55:00.000Z",
+    "Event": "Unemployed Persons NSA",
+    "Country": "EUR",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "2.96",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T08:55:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "6.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T08:55:00.000Z",
+    "Event": "Unemployment Change",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "4",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T09:30:00.000Z",
+    "Event": "Consumer Confidence",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-23.1",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T10:00:00.000Z",
+    "Event": "Money Supply M3",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "214.66K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T10:00:00.000Z",
+    "Event": "Business Confidence Index",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.09",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T10:00:00.000Z",
+    "Event": "Consumer Inflation Expectations",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "33.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T10:00:00.000Z",
+    "Event": "Consumer Confidence Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-17.9",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T10:00:00.000Z",
+    "Event": "Economic Sentiment",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "96.9",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T10:00:00.000Z",
+    "Event": "Selling Price Expectations",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "24.8",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T10:30:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.91%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T10:30:00.000Z",
+    "Event": "Harmonised Inflation Rate YoY Prel",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "5.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T11:00:00.000Z",
+    "Event": "Retail Sales MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T13:30:00.000Z",
+    "Event": "Current Account",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "8.84",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T13:30:00.000Z",
+    "Event": "Retail Inventories Ex Autos MoM Adv",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T13:30:00.000Z",
+    "Event": "Wholesale Inventories MoM Adv",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T13:30:00.000Z",
+    "Event": "Goods Trade Balance Adv",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-134.9",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T13:30:00.000Z",
+    "Event": "United States-ExportSales-Soybn Oil Exp Sls Nxt Yr Net *",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T13:30:00.000Z",
+    "Event": "USDA Soybean Oil Net Export Sales",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T13:30:00.000Z",
+    "Event": "USDA Pork Gross Export Sales",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T13:30:00.000Z",
+    "Event": "Jobless Claims 4-week Average",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T13:30:00.000Z",
+    "Event": "Initial Jobless Claims",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T16:00:00.000Z",
+    "Event": "Budget Balance Year-to-Date",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-5.36",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T19:00:00.000Z",
+    "Event": "Baker Hughes Gas Rig Count",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-27T21:30:00.000Z",
+    "Event": "Fed Balance Sheet",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "6.76",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-29T23:50:00.000Z",
+    "Event": "Industrial Production Forecast 1 Month Ahead",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "5.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-29T23:50:00.000Z",
+    "Event": "Large Retailers Sales YoY",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "2.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-29T23:50:00.000Z",
+    "Event": "Retail Sales YoY",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "2.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-29T23:50:00.000Z",
+    "Event": "Industrial Production MoM Prel",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "2.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T00:00:00.000Z",
+    "Event": "ANZ Business Confidence",
+    "Country": "NZD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "52.5",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T00:30:00.000Z",
+    "Event": "Business Inventories QoQ",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T00:30:00.000Z",
+    "Event": "Company Gross Profits QoQ",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T02:00:00.000Z",
+    "Event": "Money Supply M3",
+    "Country": "NZD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "459.8",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T05:00:00.000Z",
+    "Event": "Housing Starts YoY",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-2.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T06:00:00.000Z",
+    "Event": "GDP Growth Rate YoY Revised",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T07:00:00.000Z",
+    "Event": "Retail Sales MoM Real",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T07:00:00.000Z",
+    "Event": "Nationwide Housing Prices YoY",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T08:00:00.000Z",
+    "Event": "GDP Growth Rate QoQ Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-0.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T08:00:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T08:00:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T09:00:00.000Z",
+    "Event": "Saxony CPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T09:00:00.000Z",
+    "Event": "Hesse CPI MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-0.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T09:00:00.000Z",
+    "Event": "Lower Saxony CPI MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-0.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T09:00:00.000Z",
+    "Event": "North Rhine Westphalia CPI Yoy",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T09:00:00.000Z",
+    "Event": "Baden Wuerttemberg CPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T09:00:00.000Z",
+    "Event": "Business Confidence",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "91.9",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T09:00:00.000Z",
+    "Event": "Consumer Confidence",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "90.3",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T09:30:00.000Z",
+    "Event": "BoE Consumer Credit",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.91",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T09:30:00.000Z",
+    "Event": "Money Supply M4",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "3.31K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T09:30:00.000Z",
+    "Event": "Mortgage Approvals",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "53.44",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T09:30:00.000Z",
+    "Event": "Mortgage Lending",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "3.87",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T09:30:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-0.03%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T09:30:00.000Z",
+    "Event": "CPI",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "104.1",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T10:00:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "20.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T10:00:00.000Z",
+    "Event": "Retail Sales YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "6.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T10:00:00.000Z",
+    "Event": "Harmonised Index of Consumer Prices Prel",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "105.5",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T10:00:00.000Z",
+    "Event": "Inflation Rate MoM Prel",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T10:00:00.000Z",
+    "Event": "GDP Growth Rate QoQ Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T11:00:00.000Z",
+    "Event": "GDP Growth Rate YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T11:00:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T11:00:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "13.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T11:00:00.000Z",
+    "Event": "Inflation Rate MoM Prel",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T11:00:00.000Z",
+    "Event": "GDP Growth Rate YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T11:00:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "5.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T13:00:00.000Z",
+    "Event": "Inflation Rate MoM Prel",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T13:00:00.000Z",
+    "Event": "HICP Prel",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "103.8",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T13:30:00.000Z",
+    "Event": "Monthly GDP MoM",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T13:30:00.000Z",
+    "Event": "GDP Growth Rate Annualized",
+    "Country": "CAD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "3.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T13:30:00.000Z",
+    "Event": "GDP Implicit Price QoQ",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T13:30:00.000Z",
+    "Event": "GDP YoY",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.13%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T14:45:00.000Z",
+    "Event": "Chicago PMI",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "55.3",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T15:30:00.000Z",
+    "Event": "Dallas Fed Manufacturing Index",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "13.4",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T22:00:00.000Z",
+    "Event": "S&P Global Manufacturing PMI Final",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T23:30:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "2.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-30T23:50:00.000Z",
+    "Event": "Capital Spending YoY",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T00:00:00.000Z",
+    "Event": "New Zealand-Budget balance-Budget Cash Balance*",
+    "Country": "NZD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T00:30:00.000Z",
+    "Event": "S&P Global Manufacturing PMI Final",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T00:30:00.000Z",
+    "Event": "Net Exports Contribution to GDP",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T00:30:00.000Z",
+    "Event": "Australia-Building permits-Building Approvals",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "5.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T00:30:00.000Z",
+    "Event": "Building Approvals YoY",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "15.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T01:01:00.000Z",
+    "Event": "AIB Manufacturing PMI",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T05:30:00.000Z",
+    "Event": "Retail Sales YoY",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "3.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T06:00:00.000Z",
+    "Event": "NEVI Manufacturing PMI",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T07:00:00.000Z",
+    "Event": "GDP Growth Rate YoY 2nd Est",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "4.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T08:00:00.000Z",
+    "Event": "Harmonised Inflation Rate MoM Prel",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T08:15:00.000Z",
+    "Event": "S&P Global Manufacturing PMI",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T08:45:00.000Z",
+    "Event": "S&P Global Manufacturing PMI",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T08:50:00.000Z",
+    "Event": "S&P Global Manufacturing PMI Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T09:00:00.000Z",
+    "Event": "GDP Growth Rate QoQ Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T09:00:00.000Z",
+    "Event": "S&P Global Manufacturing PMI",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T09:00:00.000Z",
+    "Event": "S&P Global Manufacturing PMI Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T09:00:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "7.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T09:30:00.000Z",
+    "Event": "S&P Global Manufacturing PMI Final",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T10:00:00.000Z",
+    "Event": "CPI Flash",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T10:00:00.000Z",
+    "Event": "Core Inflation Rate YoY Flash",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "2.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T10:00:00.000Z",
+    "Event": "Inflation Rate YoY Flash",
+    "Country": "EUR",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T10:00:00.000Z",
+    "Event": "HICP ex Food & Energy YoY Flash",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T10:00:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "7.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T11:00:00.000Z",
+    "Event": "New Car Registrations MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T14:30:00.000Z",
+    "Event": "S&P Global Manufacturing PMI",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T14:45:00.000Z",
+    "Event": "S&P Global Manufacturing PMI Final",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T15:00:00.000Z",
+    "Event": "ISM Manufacturing Employment",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "52.4",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T15:00:00.000Z",
+    "Event": "ISM Manufacturing New Orders",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "55.5",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T15:00:00.000Z",
+    "Event": "JOLTs Job Openings",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "7.52",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T15:00:00.000Z",
+    "Event": "Truck Sales",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "13.09",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T15:00:00.000Z",
+    "Event": "Car Sales",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "2.45",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T15:30:00.000Z",
+    "Event": "Dallas Fed Services Revenues Index",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "4.4",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T21:30:00.000Z",
+    "Event": "API Crude Oil Stock Change",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T21:30:00.000Z",
+    "Event": "API Distillate Stocks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T21:30:00.000Z",
+    "Event": "API Heating Oil",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T21:30:00.000Z",
+    "Event": "API Crude Imports",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T21:45:00.000Z",
+    "Event": "Building Permits MoM",
+    "Country": "NZD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-7.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-01T22:00:00.000Z",
+    "Event": "Ai Group Manufacturing Index",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-20.1",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T00:30:00.000Z",
+    "Event": "GDP Capital Expenditure QoQ",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-0.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T00:30:00.000Z",
+    "Event": "GDP Final Consumption QoQ",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T00:30:00.000Z",
+    "Event": "GDP Chain Price Index QoQ",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-0.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T00:30:00.000Z",
+    "Event": "GDP Growth Rate QoQ",
+    "Country": "AUD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T05:00:00.000Z",
+    "Event": "Consumer Confidence",
+    "Country": "JPY",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "35",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T08:00:00.000Z",
+    "Event": "Tourist Arrivals",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "14.6K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T09:00:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "6.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T10:00:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "6.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T11:00:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "4.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T12:00:00.000Z",
+    "Event": "MBA 5/1 ARM Contract Rate",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T12:00:00.000Z",
+    "Event": "MBA 15-Year Mortgage Contract Rate",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T13:15:00.000Z",
+    "Event": "ADP Employment Change",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "86K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T15:30:00.000Z",
+    "Event": "EIA Ethanol Production",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T15:30:00.000Z",
+    "Event": "EIA Cushing Crude Oil Stocks Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T15:30:00.000Z",
+    "Event": "EIA Refinery Crude Runs Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T15:30:00.000Z",
+    "Event": "EIA Distillate Fuel Production Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T15:30:00.000Z",
+    "Event": "EIA Distillate Stocks Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T15:30:00.000Z",
+    "Event": "United States-EIA OIL STOCKS-EIA Weekly Rfg Stocks*",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T15:30:00.000Z",
+    "Event": "EIA Product Imports Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T15:30:00.000Z",
+    "Event": "EIA Refinery Utilization Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T22:00:00.000Z",
+    "Event": "S&P Global Composite PMI Final",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T22:00:00.000Z",
+    "Event": "S&P Global Services PMI Final",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T23:50:00.000Z",
+    "Event": "Bond Investment by Foreigners",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-02T23:50:00.000Z",
+    "Event": "Foreign Stock Investment",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T00:30:00.000Z",
+    "Event": "S&P Global Composite PMI Final",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T00:30:00.000Z",
+    "Event": "S&P Global Services PMI Final",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T00:30:00.000Z",
+    "Event": "Balance of Trade",
+    "Country": "AUD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "2.83",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T01:01:00.000Z",
+    "Event": "AIB Services PMI",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T08:15:00.000Z",
+    "Event": "S&P Global Services PMI",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T08:45:00.000Z",
+    "Event": "S&P Global Services PMI",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T08:45:00.000Z",
+    "Event": "S&P Global Composite PMI",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T08:50:00.000Z",
+    "Event": "S&P Global Composite PMI Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T08:50:00.000Z",
+    "Event": "S&P Global Services PMI Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T09:00:00.000Z",
+    "Event": "S&P Global Composite PMI Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T09:00:00.000Z",
+    "Event": "S&P Global Services PMI Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T09:30:00.000Z",
+    "Event": "S&P Global Composite PMI Final",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T09:30:00.000Z",
+    "Event": "S&P Global Services PMI Final",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T09:30:00.000Z",
+    "Event": "Foreign Exchange Reserves",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "220.03K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T10:00:00.000Z",
+    "Event": "Unemployment Rate Quarterly",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "7.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T10:00:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T10:00:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "11.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T13:15:00.000Z",
+    "Event": "Foreign Exchange Reserves",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "126.16K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T13:30:00.000Z",
+    "Event": "United States-ExportSales-Soybn Oil Exp Sls Nxt Yr Net *",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T13:30:00.000Z",
+    "Event": "USDA Soybean Oil Net Export Sales",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T13:30:00.000Z",
+    "Event": "USDA Pork Gross Export Sales",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T13:30:00.000Z",
+    "Event": "Jobless Claims 4-week Average",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T13:30:00.000Z",
+    "Event": "Initial Jobless Claims",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T14:45:00.000Z",
+    "Event": "S&P Global Services PMI Final",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T14:45:00.000Z",
+    "Event": "S&P Global Composite PMI Final",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T15:00:00.000Z",
+    "Event": "ISM Services New Orders",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "55.9",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T15:00:00.000Z",
+    "Event": "ISM Services Employment",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "51.4",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T15:00:00.000Z",
+    "Event": "ISM Services Business Activity",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "53.8",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T15:00:00.000Z",
+    "Event": "Durable Goods Orders ex Defense MoM Final",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T15:00:00.000Z",
+    "Event": "Durable Goods Orders",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T15:00:00.000Z",
+    "Event": "Factory Orders MoM",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T15:30:00.000Z",
+    "Event": "EIA Natural Gas Stocks Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T21:30:00.000Z",
+    "Event": "Fed Balance Sheet",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "6.76",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T06:00:00.000Z",
+    "Event": "Industrial Production MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.3%",
+    "Actual": "0.3%"
+  },
+  {
+    "Date": "2026-12-04T07:45:00.000Z",
+    "Event": "Balance of Trade",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-7.31",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T07:45:00.000Z",
+    "Event": "Industrial Production MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T08:00:00.000Z",
+    "Event": "GDP Growth Rate YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T08:00:00.000Z",
+    "Event": "Industrial Production YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T08:30:00.000Z",
+    "Event": "S&P Global Construction PMI",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T09:00:00.000Z",
+    "Event": "Car Registrations",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "152.73K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T09:30:00.000Z",
+    "Event": "S&P Global All-Sector PMI",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T09:30:00.000Z",
+    "Event": "S&P Global Construction PMI",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T10:00:00.000Z",
+    "Event": "Current Account to GDP",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-7.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T10:00:00.000Z",
+    "Event": "Retail Sales MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-0.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T11:00:00.000Z",
+    "Event": "Industrial Production MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T11:00:00.000Z",
+    "Event": "GDP Growth Rate QoQ",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "10.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T13:30:00.000Z",
+    "Event": "Average Hourly Earnings MoM",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T13:30:00.000Z",
+    "Event": "Government Payrolls",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "6K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T13:30:00.000Z",
+    "Event": "Participation Rate",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "61.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T13:30:00.000Z",
+    "Event": "Manufacturing Payrolls",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "19K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T13:30:00.000Z",
+    "Event": "Non Farm Payrolls",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "165K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T13:30:00.000Z",
+    "Event": "U6 Unemployment Rate",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "7.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T13:30:00.000Z",
+    "Event": "Employment Change",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-4.7",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T13:30:00.000Z",
+    "Event": "Full Time Employment Chg",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-18.1",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T13:30:00.000Z",
+    "Event": "Participation Rate",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "64.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T13:30:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "CAD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "6.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T15:00:00.000Z",
+    "Event": "Michigan Inflation Expectations Prel",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "4.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T15:00:00.000Z",
+    "Event": "Michigan Consumer Sentiment Prel",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "51",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T15:00:00.000Z",
+    "Event": "Ivey PMI",
+    "Country": "CAD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "56.4",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-04T19:00:00.000Z",
+    "Event": "Baker Hughes Gas Rig Count",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T02:00:00.000Z",
+    "Event": "Foreign Exchange Reserves",
+    "Country": "NZD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "53.11",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T05:00:00.000Z",
+    "Event": "Coincident Index Prel",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.7",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T05:00:00.000Z",
+    "Event": "Leading Economic Index Prel",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-1.6",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T06:00:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T06:00:00.000Z",
+    "Event": "Consumer Price Index",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "331.15",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T07:00:00.000Z",
+    "Event": "Factory Orders Consumer Goods",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "123.3",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T07:00:00.000Z",
+    "Event": "Manufacturing Output at Current Prices YoY",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "7.25%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T07:00:00.000Z",
+    "Event": "House Price Index MoM",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-0.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T07:00:00.000Z",
+    "Event": "Lloyds House Price Index YoY",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-1.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T09:30:00.000Z",
+    "Event": "Sentix Investor Confidence",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "2.4",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T10:00:00.000Z",
+    "Event": "GDP Growth Rate YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T10:00:00.000Z",
+    "Event": "GDP Growth Rate QoQ 3rd Est",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T10:00:00.000Z",
+    "Event": "Employed Persons Final",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "176.54K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T10:00:00.000Z",
+    "Event": "Employment Change QoQ Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T10:00:00.000Z",
+    "Event": "Employment Change YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T11:00:00.000Z",
+    "Event": "Leading Index MoM",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.02%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T15:00:00.000Z",
+    "Event": "Employment Trends Index",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "108.36",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T16:00:00.000Z",
+    "Event": "United States-NY Fed Consumer Expectation-NY Fed Inflation Expectation 1yr *",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "3.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T18:00:00.000Z",
+    "Event": "3-Year Note Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T18:00:00.000Z",
+    "Event": "3-Year Note Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T18:00:00.000Z",
+    "Event": "3-Year Note Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T21:45:00.000Z",
+    "Event": "Manufacturing Sales QoQ",
+    "Country": "NZD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T23:30:00.000Z",
+    "Event": "Household Spending MoM",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-2.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T23:50:00.000Z",
+    "Event": "GDP Price Index YoY Final",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T23:50:00.000Z",
+    "Event": "GDP Capital Expenditure QoQ Revised",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-0.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T23:50:00.000Z",
+    "Event": "GDP Growth Annualized Final",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T23:50:00.000Z",
+    "Event": "GDP Private Consumption QoQ Revised",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T23:50:00.000Z",
+    "Event": "GDP Growth Rate QoQ Final",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T23:50:00.000Z",
+    "Event": "GDP External Demand QoQ Final",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T23:50:00.000Z",
+    "Event": "Current Account s.a",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.82K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-07T23:50:00.000Z",
+    "Event": "Balance of Trade s.a",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-701.94",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T00:01:00.000Z",
+    "Event": "BRC Retail Sales Monitor YoY",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T00:30:00.000Z",
+    "Event": "NAB Business Conditions",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-2",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T01:01:00.000Z",
+    "Event": "Construction PMI",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T03:30:00.000Z",
+    "Event": "RBA Interest Rate Decision",
+    "Country": "AUD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "4.85%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T05:30:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T05:30:00.000Z",
+    "Event": "Consumer Price Index",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "105.13",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T05:30:00.000Z",
+    "Event": "Inflation Rate YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "3.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T07:00:00.000Z",
+    "Event": "Industrial Production MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T07:00:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T07:00:00.000Z",
+    "Event": "Consumer Price Index",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "107.1",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T07:45:00.000Z",
+    "Event": "Current Account",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-2.7",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T11:00:00.000Z",
+    "Event": "NFIB Business Optimism Index",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "97.8",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T11:00:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T11:00:00.000Z",
+    "Event": "CPI",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "104",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T13:15:00.000Z",
+    "Event": "ADP Employment Change Weekly",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T13:30:00.000Z",
+    "Event": "Unit Labour Costs QoQ Revised",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T13:30:00.000Z",
+    "Event": "Goods Trade Balance",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-135.08",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T13:30:00.000Z",
+    "Event": "Balance of Trade",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "5.35",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T13:30:00.000Z",
+    "Event": "Exports",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "321.51",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T18:00:00.000Z",
+    "Event": "10-Year Note Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T18:00:00.000Z",
+    "Event": "10-Year Note Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T18:00:00.000Z",
+    "Event": "10-Year Note Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T21:30:00.000Z",
+    "Event": "API Crude Oil Stock Change",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T21:30:00.000Z",
+    "Event": "API Distillate Stocks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T21:30:00.000Z",
+    "Event": "API Heating Oil",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T21:30:00.000Z",
+    "Event": "API Crude Imports",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T23:00:00.000Z",
+    "Event": "Reuters Tankan Non-Manufacturers Index",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "35",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T23:50:00.000Z",
+    "Event": "Broad Money",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "2.34K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-08T23:50:00.000Z",
+    "Event": "Money Supply M2",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.3K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T01:00:00.000Z",
+    "Event": "RBNZ Interest Rate Decision",
+    "Country": "NZD",
+    "Importance": 2,
+    "Forecast": "3%",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T06:00:00.000Z",
+    "Event": "Current Account to GDP",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-2.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T07:00:00.000Z",
+    "Event": "Exports MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T07:00:00.000Z",
+    "Event": "Balance of Trade",
+    "Country": "EUR",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "15.6",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T07:00:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "19.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T07:00:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "18.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T10:00:00.000Z",
+    "Event": "Inflation Rate YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "5.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T12:00:00.000Z",
+    "Event": "MBA 5/1 ARM Contract Rate",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T12:00:00.000Z",
+    "Event": "MBA 15-Year Mortgage Contract Rate",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T14:45:00.000Z",
+    "Event": "Interest Rate",
+    "Country": "CAD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T15:00:00.000Z",
+    "Event": "Existing Home Sales",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "3.75",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T15:00:00.000Z",
+    "Event": "Wholesale Inventories MoM",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T15:30:00.000Z",
+    "Event": "EIA Ethanol Production",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T15:30:00.000Z",
+    "Event": "EIA Cushing Crude Oil Stocks Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T15:30:00.000Z",
+    "Event": "EIA Refinery Crude Runs Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T15:30:00.000Z",
+    "Event": "EIA Distillate Fuel Production Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T15:30:00.000Z",
+    "Event": "EIA Distillate Stocks Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T15:30:00.000Z",
+    "Event": "United States-EIA OIL STOCKS-EIA Weekly Rfg Stocks*",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T15:30:00.000Z",
+    "Event": "EIA Product Imports Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T15:30:00.000Z",
+    "Event": "EIA Refinery Utilization Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T16:00:00.000Z",
+    "Event": "Consumer Confidence Index",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "47.22",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T19:00:00.000Z",
+    "Event": "Interest Rate",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T19:00:00.000Z",
+    "Event": "Interest Rate on Reserve Balances",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T19:00:00.000Z",
+    "Event": "Interest Rate Projection - 1st Yr",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "4.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T23:50:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T23:50:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "7.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T23:50:00.000Z",
+    "Event": "BSI Large Manufacturing QoQ",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "7.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T23:50:00.000Z",
+    "Event": "Bond Investment by Foreigners",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-09T23:50:00.000Z",
+    "Event": "Foreign Stock Investment",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T00:01:00.000Z",
+    "Event": "RICS House Price Balance",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-36",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T05:30:00.000Z",
+    "Event": "Manufacturing Production MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T06:00:00.000Z",
+    "Event": "Industrial Production YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "4.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T07:00:00.000Z",
+    "Event": "Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T07:00:00.000Z",
+    "Event": "Consumer Price Index Final",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "126.4",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T07:00:00.000Z",
+    "Event": "HICP Final",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "103.8",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T07:00:00.000Z",
+    "Event": "Harmonised Inflation Rate YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.8%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T08:00:00.000Z",
+    "Event": "Industrial Production YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T10:00:00.000Z",
+    "Event": "Industrial Production YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T11:00:00.000Z",
+    "Event": "LSEG/Ipsos Primary Consumer Sentiment Index",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "47.37",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T11:00:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T11:00:00.000Z",
+    "Event": "Consumer Price Index",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "108.4",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T11:00:00.000Z",
+    "Event": "Harmonised Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T11:00:00.000Z",
+    "Event": "Global Trade Balance",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-9.32",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T13:30:00.000Z",
+    "Event": "Core Inflation Rate MoM",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "2.8%",
+    "Previous": "0.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T13:30:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "3.9%",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T13:30:00.000Z",
+    "Event": "CPI-W",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "331.15",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T13:30:00.000Z",
+    "Event": "CPI",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "337.51",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T13:30:00.000Z",
+    "Event": "Real Average Weekly Earnings MoM",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T13:30:00.000Z",
+    "Event": "United States-ExportSales-Soybn Oil Exp Sls Nxt Yr Net *",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T13:30:00.000Z",
+    "Event": "USDA Soybean Oil Net Export Sales",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T13:30:00.000Z",
+    "Event": "USDA Pork Gross Export Sales",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T13:30:00.000Z",
+    "Event": "Jobless Claims 4-week Average",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T13:30:00.000Z",
+    "Event": "Initial Jobless Claims",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T16:00:00.000Z",
+    "Event": "Cleveland Fed CPI MoM",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T17:00:00.000Z",
+    "Event": "WASDE Poultry Production",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "55.26",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T18:00:00.000Z",
+    "Event": "30-Year Bond Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T18:00:00.000Z",
+    "Event": "30-Year Bond Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T18:00:00.000Z",
+    "Event": "30-Year Bond Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T19:00:00.000Z",
+    "Event": "Monthly Budget Statement",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-404",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T21:30:00.000Z",
+    "Event": "Business NZ PMI",
+    "Country": "NZD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "54.9",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-10T21:30:00.000Z",
+    "Event": "Fed Balance Sheet",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "6.76",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-11T07:00:00.000Z",
+    "Event": "GDP 3-Month Avg",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-11T07:00:00.000Z",
+    "Event": "GDP MoM",
+    "Country": "GBP",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-11T07:00:00.000Z",
+    "Event": "GDP YoY",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "2.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-11T07:00:00.000Z",
+    "Event": "Industrial Production MoM",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-11T07:00:00.000Z",
+    "Event": "Manufacturing Production YoY",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "4.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-11T07:00:00.000Z",
+    "Event": "Goods Trade Balance Non-EU",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-8.98",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-11T07:00:00.000Z",
+    "Event": "Services Output MoM",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-11T07:45:00.000Z",
+    "Event": "Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-11T07:45:00.000Z",
+    "Event": "Consumer Price Index Final",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "103.46",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-11T07:45:00.000Z",
+    "Event": "Harmonised Inflation Rate YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "3.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-11T07:45:00.000Z",
+    "Event": "France-Inflation Final-Inflation Ex-Tobacco Idx",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "103.46",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-11T09:00:00.000Z",
+    "Event": "Industrial Production MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-11T13:30:00.000Z",
+    "Event": "Building Permits MoM",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-4.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-11T19:00:00.000Z",
+    "Event": "Baker Hughes Gas Rig Count",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-13T23:50:00.000Z",
+    "Event": "Tankan Large Manufacturers Index",
+    "Country": "JPY",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "24",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-13T23:50:00.000Z",
+    "Event": "Tankan Large Non-Manufacturing Index",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "35",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-13T23:50:00.000Z",
+    "Event": "Tankan Small Manufacturing Outlook",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "12",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T00:01:00.000Z",
+    "Event": "Rightmove House Price Index MoM",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T04:30:00.000Z",
+    "Event": "Industrial Production MoM Final",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T06:00:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T06:00:00.000Z",
+    "Event": "Consumer Price Index",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "103.08",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T10:00:00.000Z",
+    "Event": "Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T10:00:00.000Z",
+    "Event": "Consumer Price Index",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T11:00:00.000Z",
+    "Event": "Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T11:00:00.000Z",
+    "Event": "Consumer Price Index",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "104.76",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T13:30:00.000Z",
+    "Event": "Manufacturing Sales MoM Final",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T13:30:00.000Z",
+    "Event": "CPI Common YoY",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T13:30:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T13:30:00.000Z",
+    "Event": "Consumer Price Index",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T13:30:00.000Z",
+    "Event": "Core Inflation Rate MoM s.a",
+    "Country": "CAD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T13:30:00.000Z",
+    "Event": "CPI Median YoY",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T13:30:00.000Z",
+    "Event": "CPI Trimmed-Mean YoY",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T13:30:00.000Z",
+    "Event": "Inflation Rate YoY s.a",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T21:45:00.000Z",
+    "Event": "Current Account",
+    "Country": "NZD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-1.67",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T21:45:00.000Z",
+    "Event": "Current Account to GDP",
+    "Country": "NZD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-3.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-14T23:30:00.000Z",
+    "Event": "Consumer Confidence MoM",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-2.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T13:30:00.000Z",
+    "Event": "Job Vacancies",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "510.22K",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T13:30:00.000Z",
+    "Event": "PPI",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "160.25",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T00:30:00.000Z",
+    "Event": "Part Time Employment Chg",
+    "Country": "AUD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-73.71",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T21:30:00.000Z",
+    "Event": "Fed Balance Sheet",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "6.76",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T23:30:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-18T13:30:00.000Z",
+    "Event": "Retail Sales YoY",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "5.35%",
     "Actual": ""
   }
 ]
