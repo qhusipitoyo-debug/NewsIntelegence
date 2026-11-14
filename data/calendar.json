@@ -1764,6 +1764,15 @@
     "Actual": ""
   },
   {
+    "Date": "2026-11-19T09:00:00.000Z",
+    "Event": "Current Account s.a",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "8.71",
+    "Actual": ""
+  },
+  {
     "Date": "2026-11-19T10:00:00.000Z",
     "Event": "GDP Growth Rate YoY",
     "Country": "EUR",
@@ -6567,6 +6576,132 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "-2.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T07:00:00.000Z",
+    "Event": "Private Sector Pay Growth (3Mo/Yr)",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T07:00:00.000Z",
+    "Event": "Average Earnings incl. Bonus (3Mo/Yr)",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T07:00:00.000Z",
+    "Event": "Average Earnings Excluding Bonus",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T07:00:00.000Z",
+    "Event": "Employment Change",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T07:00:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "GBP",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T07:00:00.000Z",
+    "Event": "HMRC Payrolls Change",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T07:00:00.000Z",
+    "Event": "Wholesale Prices MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T08:00:00.000Z",
+    "Event": "Core Inflation Rate YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "3.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T08:00:00.000Z",
+    "Event": "CPI Final",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "105.65",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T08:00:00.000Z",
+    "Event": "Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T08:00:00.000Z",
+    "Event": "Harmonised Inflation Rate YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "4.9%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T08:00:00.000Z",
+    "Event": "Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T08:00:00.000Z",
+    "Event": "CPI",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "103.8",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-15T08:00:00.000Z",
+    "Event": "Core Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.3%",
     "Actual": ""
   },
   {
