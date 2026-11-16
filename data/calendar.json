@@ -834,7 +834,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "1.0%",
-    "Actual": ""
+    "Actual": "-1.8%"
   },
   {
     "Date": "2026-11-16T00:01:00.000Z",
@@ -843,7 +843,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "1%",
-    "Actual": ""
+    "Actual": "-1.8%"
   },
   {
     "Date": "2026-11-16T04:30:00.000Z",
@@ -888,7 +888,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "0.9%",
-    "Actual": ""
+    "Actual": "0.7%"
   },
   {
     "Date": "2026-11-16T10:00:00.000Z",
@@ -897,7 +897,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "105.5",
-    "Actual": ""
+    "Actual": "106.2"
   },
   {
     "Date": "2026-11-16T05:00:00-05:00",
@@ -933,7 +933,7 @@
     "Importance": 1,
     "Forecast": "17.6",
     "Previous": "25.5",
-    "Actual": ""
+    "Actual": "7.8"
   },
   {
     "Date": "2026-11-16T13:30:00.000Z",
@@ -942,7 +942,7 @@
     "Importance": 2,
     "Forecast": "2.5%",
     "Previous": "2.4%",
-    "Actual": ""
+    "Actual": "2.5%"
   },
   {
     "Date": "2026-11-16T13:30:00.000Z",
@@ -951,7 +951,7 @@
     "Importance": 3,
     "Forecast": "0.3%",
     "Previous": "0.1%",
-    "Actual": ""
+    "Actual": "0.2%"
   },
   {
     "Date": "2026-11-16T13:30:00.000Z",
@@ -960,7 +960,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "170",
-    "Actual": ""
+    "Actual": "170.4"
   },
   {
     "Date": "2026-11-16T13:30:00.000Z",
@@ -969,7 +969,7 @@
     "Importance": 1,
     "Forecast": "0.2%",
     "Previous": "0.0%",
-    "Actual": ""
+    "Actual": "0.1%"
   },
   {
     "Date": "2026-11-16T13:30:00.000Z",
@@ -978,7 +978,7 @@
     "Importance": 3,
     "Forecast": "2.0%",
     "Previous": "1.9%",
-    "Actual": ""
+    "Actual": "2%"
   },
   {
     "Date": "2026-11-16T13:30:00.000Z",
@@ -987,7 +987,7 @@
     "Importance": 3,
     "Forecast": "1.9%",
     "Previous": "1.8%",
-    "Actual": ""
+    "Actual": "1.8%"
   },
   {
     "Date": "2026-11-16T13:30:00.000Z",
@@ -996,7 +996,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "3.03%",
-    "Actual": ""
+    "Actual": "0.2%"
   },
   {
     "Date": "2026-11-16T13:30:00.000Z",
@@ -1005,7 +1005,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "2.2%",
-    "Actual": ""
+    "Actual": "2%"
   },
   {
     "Date": "2026-11-16T09:05:00-05:00",
@@ -1031,8 +1031,8 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
-    "Actual": ""
+    "Previous": "79.03%",
+    "Actual": "93.85%"
   },
   {
     "Date": "2026-11-16T16:30:00.000Z",
@@ -1040,8 +1040,8 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
-    "Actual": ""
+    "Previous": "2.67",
+    "Actual": "2.76"
   },
   {
     "Date": "2026-11-16T16:30:00.000Z",
@@ -1049,8 +1049,8 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
-    "Actual": ""
+    "Previous": "87.49",
+    "Actual": "87.85"
   },
   {
     "Date": "2026-11-16T17:00:00.000Z",
@@ -1059,7 +1059,7 @@
     "Importance": 2,
     "Forecast": "1.09",
     "Previous": "1.05",
-    "Actual": ""
+    "Actual": "1.17"
   },
   {
     "Date": "2026-11-16T12:00:00-05:00",
@@ -1093,6 +1093,24 @@
     "Event": "RBA Gov Bullock Speaks",
     "Country": "AUD",
     "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T18:10:00-05:00",
+    "Event": "FOMC Member Barkin Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T18:30:00-05:00",
+    "Event": "FOMC Member Goolsbee Speaks",
+    "Country": "USD",
+    "Importance": 1,
     "Forecast": "",
     "Previous": "",
     "Actual": ""
@@ -1156,7 +1174,7 @@
     "Event": "Average Earnings incl. Bonus (3Mo/Yr)",
     "Country": "GBP",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "3.5%",
     "Previous": "3.7%",
     "Actual": ""
   },
@@ -1174,7 +1192,7 @@
     "Event": "Employment Change",
     "Country": "GBP",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "136",
     "Previous": "102",
     "Actual": ""
   },
@@ -1435,7 +1453,7 @@
     "Event": "API Crude Oil Stock Change",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "-0.5",
     "Previous": "8.97",
     "Actual": ""
   },
@@ -1444,7 +1462,7 @@
     "Event": "API Distillate Stocks",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "1.07",
     "Previous": "1.51",
     "Actual": ""
   },
@@ -1552,7 +1570,7 @@
     "Event": "Core Inflation Rate MoM",
     "Country": "GBP",
     "Importance": 3,
-    "Forecast": "",
+    "Forecast": "0.3%",
     "Previous": "0.2%",
     "Actual": ""
   },
@@ -1597,7 +1615,7 @@
     "Event": "PPI Input YoY",
     "Country": "GBP",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "0.7%",
     "Previous": "8.3%",
     "Actual": ""
   },
@@ -1849,7 +1867,7 @@
     "Event": "EIA Cushing Crude Oil Stocks Change",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "-0.5",
     "Previous": "0.11",
     "Actual": ""
   },
@@ -1876,7 +1894,7 @@
     "Event": "EIA Distillate Stocks Change",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "1.07",
     "Previous": "4.07",
     "Actual": ""
   },
@@ -1903,7 +1921,7 @@
     "Event": "EIA Refinery Utilization Change",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "0.2%",
     "Previous": "0.7%",
     "Actual": ""
   },
@@ -2268,6 +2286,15 @@
     "Actual": ""
   },
   {
+    "Date": "2026-11-19T09:25:00-05:00",
+    "Event": "FOMC Member Jefferson Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
     "Date": "2026-11-19T15:30:00.000Z",
     "Event": "EIA Natural Gas Stocks Change",
     "Country": "USD",
@@ -2282,7 +2309,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "61B",
     "Actual": ""
   },
   {
@@ -2470,7 +2497,7 @@
     "Event": "Retail Sales ex Fuel YoY",
     "Country": "GBP",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "1.8%",
     "Previous": "0.8%",
     "Actual": ""
   },
@@ -3010,7 +3037,7 @@
     "Event": "CB Consumer Confidence",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "92",
     "Previous": "91.7",
     "Actual": ""
   },
@@ -3289,7 +3316,7 @@
     "Event": "Core PCE Price Index YoY",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "3.2%",
     "Previous": "3.1%",
     "Actual": ""
   },
@@ -3298,7 +3325,7 @@
     "Event": "PCE Price Index MoM",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "0.3%",
     "Previous": "0.5%",
     "Actual": ""
   },
@@ -3316,7 +3343,7 @@
     "Event": "GDP Price Index QoQ 2nd Est",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "3.4%",
     "Previous": "6.4%",
     "Actual": ""
   },
@@ -3334,7 +3361,7 @@
     "Event": "Durable Goods Orders ex Defense MoM",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "0%",
     "Previous": "2.2%",
     "Actual": ""
   },
@@ -3361,7 +3388,7 @@
     "Event": "New Home Sales",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "0.67",
     "Previous": "0.68",
     "Actual": ""
   },
@@ -6854,7 +6881,7 @@
     "Country": "GBP",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-1.8%",
     "Actual": ""
   },
   {
@@ -6890,7 +6917,7 @@
     "Country": "EUR",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.7%",
     "Actual": ""
   },
   {
@@ -6899,7 +6926,7 @@
     "Country": "EUR",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "106.2",
     "Actual": ""
   },
   {
@@ -6935,7 +6962,7 @@
     "Country": "CAD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "2.5%",
     "Actual": ""
   },
   {
@@ -6944,7 +6971,7 @@
     "Country": "CAD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.2%",
     "Actual": ""
   },
   {
@@ -6953,7 +6980,7 @@
     "Country": "CAD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "170.4",
     "Actual": ""
   },
   {
@@ -6962,7 +6989,7 @@
     "Country": "CAD",
     "Importance": 3,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.1%",
     "Actual": ""
   },
   {
@@ -6971,7 +6998,7 @@
     "Country": "CAD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "2%",
     "Actual": ""
   },
   {
@@ -6980,7 +7007,7 @@
     "Country": "CAD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "1.8%",
     "Actual": ""
   },
   {
@@ -6989,7 +7016,7 @@
     "Country": "CAD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "3.09%",
     "Actual": ""
   },
   {
@@ -7250,7 +7277,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "7.8",
     "Actual": ""
   },
   {
@@ -7304,7 +7331,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "1.17",
     "Actual": ""
   },
   {
@@ -8086,6 +8113,249 @@
     "Event": "Consumer Confidence",
     "Country": "EUR",
     "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T12:00:00.000Z",
+    "Event": "Interest Rate",
+    "Country": "GBP",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T12:00:00.000Z",
+    "Event": "BoE MPC Vote Cut",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "0",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:15:00.000Z",
+    "Event": "Deposit Facility Rate",
+    "Country": "EUR",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:15:00.000Z",
+    "Event": "ECB Interest Rate Decision",
+    "Country": "EUR",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "United States-Imports/Exports-Export Prices YY *",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "Export Prices MoM",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "Housing Starts",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "Building Permits Prel",
+    "Country": "USD",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "CAD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "Commodity Prices YoY",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "Philly Fed Business Conditions",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "Philly Fed CAPEX Index",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "Philadelphia Fed Manufacturing Index",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "Philly Fed New Orders",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "Philly Fed Prices Paid",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "United States-ExportSales-Soybn Oil Exp Sls Nxt Yr Net *",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "USDA Soybean Oil Net Export Sales",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "USDA Pork Gross Export Sales",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "Jobless Claims 4-week Average",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "Initial Jobless Claims",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T15:00:00.000Z",
+    "Event": "Pending Home Sales Index",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T15:30:00.000Z",
+    "Event": "EIA Natural Gas Stocks Change",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T16:00:00.000Z",
+    "Event": "Kansas Fed Composite Index",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
     "Forecast": "",
     "Previous": "",
     "Actual": ""
