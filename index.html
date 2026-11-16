@@ -410,8 +410,9 @@ window.applyLiveXauPrice = function (price) {
     const p = Number(price);
     if (!Number.isFinite(p) || p <= 0) return;
     recordLiveTick('XAU/USD', p);
-    if (LIVE_PRICE === p) return;
-    LIVE_PRICE = p;
+    const anchored = anchorAssetPrice('XAU/USD', p);
+    if (LIVE_PRICE === anchored) return;
+    LIVE_PRICE = anchored;
     if (events.length) scheduleRender();
 };
 
@@ -1342,6 +1343,18 @@ function anchorQuotesToBroker(quotes, now = Date.now()) {
     return out;
 }
 
+// Harga aset tunggal (emas / crypto) dianchor ke mid broker FBS bila quote segar,
+// agar harga tampilan tidak jauh dari eksekusi FBS. Quote basi → campuran 50/50
+// dengan harga eksternal agar tidak lonjak saat bridge tidak mengirim update.
+function anchorAssetPrice(asset, rawPrice) {
+    const p = Number(rawPrice);
+    if (!Number.isFinite(p) || p <= 0) return p;
+    const bq = brokerQuoteFor(asset);
+    if (!bq || !Number.isFinite(bq.mid) || bq.mid <= 0) return p;
+    const anchored = bq.stale ? bq.mid * 0.5 + p * 0.5 : bq.mid;
+    return Number(anchored.toFixed(7));
+}
+
 function applyForexPayload(j, fallbackSource, live) {
     if (!j || typeof j !== 'object') return false;
     const now = Date.now();
@@ -1545,7 +1558,19 @@ function applyBrokerPayload(j) {
     const quotes = j.quotes && typeof j.quotes === 'object' ? j.quotes : {};
     if (!Object.keys(quotes).length) return false;
     FOREX_BROKER = j;
+    // Re-anchor harga emas & crypto ke mid broker baru jika data sudah tersedia,
+    // agar semua instrumen selaras dengan eksekusi FBS.
+    if (Number.isFinite(LIVE_PRICE) && LIVE_PRICE > 0) {
+        LIVE_PRICE = anchorAssetPrice('XAU/USD', LIVE_PRICE);
+    }
+    if (Object.keys(CRYPTO_RATES).length) {
+        for (const pair of Object.keys(CRYPTO_RATES)) {
+            CRYPTO_RATES[pair] = anchorAssetPrice(pair, CRYPTO_RATES[pair]);
+        }
+    }
     renderForexBoard();
+    if (typeof renderGoldBoard === 'function') renderGoldBoard();
+    if (typeof renderCryptoBoard === 'function') renderCryptoBoard();
     return true;
 }
 
@@ -2459,7 +2484,10 @@ async function loadCrypto() {
     const apply = (btc, eth, btcChg, ethChg) => {
         const b = Number(btc), e = Number(eth);
         if (!Number.isFinite(b) || !Number.isFinite(e) || b <= 0 || e <= 0) return false;
-        CRYPTO_RATES = { 'BTC/USD': b, 'ETH/USD': e };
+        CRYPTO_RATES = {
+            'BTC/USD': anchorAssetPrice('BTC/USD', b),
+            'ETH/USD': anchorAssetPrice('ETH/USD', e)
+        };
         recordLiveTick('BTC/USD', b);
         recordLiveTick('ETH/USD', e);
         const chg = {};
