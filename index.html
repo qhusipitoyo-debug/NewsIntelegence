@@ -1310,16 +1310,52 @@ function renderSignalHistory(now = Date.now()) {
     el.innerHTML = signalHistoryHtml(SIGNAL_HISTORY_CACHE.data);
 }
 
+// Tarik harga tiap pair ke arah harga broker FBS (mid bid/ask dari
+// data/forex-broker.json, yang dikirim bridge MT5 lokal) agar selisih harga dan
+// spread tampilan tidak terlalu jauh dari eksekusi nyata di akun FBS.
+// - Broker segar: harga tampilan = mid broker FBS (persis sejalan dengan FBS).
+// - Broker basi: campuran 50/50 dengan harga konsensus/OANDA supaya tidak
+//   tertutup di harga lama saat bridge tidak mengirim update.
+// Pair yang tidak ada di daftar broker (contoh GBP/JPY, EUR/JPY) tetap pakai
+// harga konsensus biasa.
+function anchorQuotesToBroker(quotes, now = Date.now()) {
+    if (!quotes || typeof quotes !== 'object') return quotes;
+    const out = { ...quotes };
+    for (const [pair, q] of Object.entries(out)) {
+        if (!q || typeof q !== 'object') continue;
+        const bq = brokerQuoteFor(pair, now);
+        if (!bq || !Number.isFinite(bq.mid) || bq.mid <= 0) continue;
+        const price = Number(q.price);
+        const anchored = Number.isFinite(price) && price > 0
+            ? (bq.stale ? bq.mid * 0.5 + price * 0.5 : bq.mid)
+            : bq.mid;
+        out[pair] = {
+            ...q,
+            price: Number(anchored.toFixed(7)),
+            source: q.source
+                ? q.source + ' (dianchor ke FBS broker ' + (bq.stale ? 'basi' : 'segara') + ')'
+                : 'FBS broker mid',
+            brokerAnchored: true,
+            brokerStale: !!bq.stale
+        };
+    }
+    return out;
+}
+
 function applyForexPayload(j, fallbackSource, live) {
     if (!j || typeof j !== 'object') return false;
+    const now = Date.now();
     const quotes = j.quotes && typeof j.quotes === 'object' ? j.quotes : {};
     const rates = j.rates && typeof j.rates === 'object' ? j.rates : {};
     if (!Object.keys(quotes).length && !Object.keys(rates).length) return false;
-    FOREX_TICK = forexTicks(quotes);
-    FOREX_QUOTES = quotes;
-    FOREX_RATES = rates;
+    // Harga pair dianchor ke broker FBS agar selisih harga/spread tampilan tidak
+    // terlalu jauh dari eksekusi di akun FBS.
+    const anchored = anchorQuotesToBroker(quotes, now);
+    FOREX_TICK = forexTicks(anchored);
+    FOREX_QUOTES = anchored;
+    FOREX_RATES = forexRatesFromQuotes(anchored);
     FOREX_LIVE = Boolean(live);
-    for (const [pair, q] of Object.entries(quotes)) {
+    for (const [pair, q] of Object.entries(anchored)) {
         if (q && Number(q.price) > 0) recordLiveTick(pair, q.price);
     }
     FOREX_META = {
@@ -1954,7 +1990,7 @@ function forexSourceText(meta) {
     const mode = meta.live
         ? 'LIVE — scanner TradingView ditarik ulang tiap 20 detik'
         : 'SNAPSHOT 15 MENIT — scanner live sedang tidak terjangkau';
-    return `${mode}${when}. Harga acuan ${meta.source}${refs.length ? ' | cross-check ' + refs.join(', ') : ''}. Quote broker MT5 tampil per pair bila bridge lokal aktif.`;
+    return `${mode}${when}. Harga acuan ${meta.source}${refs.length ? ' | cross-check ' + refs.join(', ') : ''}. Harga pair dianchor ke mid broker FBS bila tersedia agar selisih harga/spread dengan eksekusi FBS minimal; quote broker per pair ditampilkan bila bridge aktif.`;
 }
 
 function forexBoardState(now = Date.now()) {
@@ -5104,7 +5140,7 @@ document.querySelector('.filters').addEventListener('click', ev => {
     renderNow();
 });
 
-$('#refresh').onclick = () => { load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadLiveBarsFallback(true); loadTradeStats(); renderTradeStats(); loadSentiment(); };
+$('#refresh').onclick = () => { load(); loadBrokerForex(); loadForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadLiveBarsFallback(true); loadTradeStats(); renderTradeStats(); loadSentiment(); };
 renderGoldBoard();
 renderCryptoBoard();
 renderForexBoard();
@@ -5114,7 +5150,7 @@ if (typeof renderMacroBoard === 'function') renderMacroBoard();
 if (typeof renderMacroImpact === 'function') renderMacroImpact();
 if (typeof renderSignalHistory === 'function') renderSignalHistory();
 loadSentiment();
-load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadTradeStats(); renderTradeStats();
+load(); loadBrokerForex(); loadForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadTradeStats(); renderTradeStats();
 setInterval(() => { loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); }, 60000);
 // Sentimen Fear & Greed jarang berubah; cukup ditarik ulang tiap 10 menit.
 setInterval(loadSentiment, 600000);
