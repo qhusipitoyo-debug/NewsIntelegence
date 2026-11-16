@@ -349,6 +349,14 @@ const REACTION_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 // setiap tick. Level yang bergerak-gerak membuat order tidak pernah cocok dengan
 // harga yang dilihat saat entry.
 const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
+// Lock untuk sinyal Watch (tanpa rilis) & sinyal pra-rilis dari mesin kalibrasi.
+// Disimpan terpisah supaya order Watch juga terkunci sampai skor melemah, bukan
+// menggambar Entry/SL/TP baru di setiap tick dari harga live.
+const WATCH_LOCK_PREFIX = 'feriha:watch:v1:';
+const WATCH_LOCK_TTL_MS = 4 * 60 * 60 * 1000;
+// Skor minimum untuk MENAHAN sinyal Watch yang sudah aktif (hysteresis): cukup
+// kuat untuk tetap aktif, tetapi re-entry butuh konfluensi penuh (>= 1.25).
+const WATCH_HOLD_SCORE = 0.55;
 function recordLiveTick(asset, price, now = Date.now()) {
     const p = Number(price);
     if (!asset || !Number.isFinite(p) || p <= 0) return;
@@ -384,6 +392,44 @@ function dateEventKey(e) {
 
 function eventKey(e) {
     return 'feriha:prenews:' + dateEventKey(e);
+}
+
+// Kunci sintetis yang STABIL untuk sinyal Watch tanpa rilis. Memakai tanggal hari
+// ini, bukan timestamp sekarang, supaya Entry/SL/TP yang dikunci bisa ditemukan
+// lagi di render berikutnya (sebelumnya Date=now membuat kunci berubah tiap tick
+// dan sinyal tidak pernah benar-benar terkunci).
+function syntheticWatchEvent(asset, now = Date.now()) {
+    const d = new Date(now);
+    d.setUTCHours(0, 0, 0, 0);
+    return { Date: d.toISOString(), Event: String(asset).toUpperCase() + ' Market Watch', Country: 'USD', Importance: 2 };
+}
+
+function watchLockKey(event, kind, asset) {
+    const key = event && event.Date && event.Event
+        ? dateEventKey(event)
+        : 'WATCH|' + String(kind || '').toUpperCase() + '|' + String(asset || '').toUpperCase();
+    return WATCH_LOCK_PREFIX + key + '|' + String(asset || '').toUpperCase();
+}
+
+function readWatchHold(key) {
+    try {
+        const raw = localStorage.getItem(key);
+        if (!raw) return null;
+        const j = JSON.parse(raw);
+        if (!j || (j.dir !== 'long' && j.dir !== 'short')) return null;
+        const at = Date.parse(j.at || '');
+        if (!Number.isFinite(at)) return null;
+        if (Date.now() - at > WATCH_LOCK_TTL_MS) return null;
+        return { dir: j.dir, at };
+    } catch { return null; }
+}
+
+function writeWatchHold(key, dir) {
+    try { localStorage.setItem(key, JSON.stringify({ dir, at: new Date().toISOString() })); } catch {}
+}
+
+function clearWatchHold(key) {
+    try { localStorage.removeItem(key); } catch {}
 }
 
 function normalizeSnapshot(raw) {
@@ -1453,7 +1499,7 @@ function goldBoardState(now = Date.now()) {
         if (typeof calibratedWatchSignal === 'function' && typeof resolveSignalLevels === 'function') {
             const watch = calibratedWatchSignal({ kind: 'gold', asset: 'XAU/USD', event: null, now, price });
             if (watch.dir) {
-                const refEvent = { Date: new Date(now).toISOString(), Event: 'Gold Market Watch', Importance: 2 };
+                const refEvent = syntheticWatchEvent('XAU/USD', now);
                 const lvl = resolveSignalLevels(refEvent, 'XAU/USD', 'gold', { ...watch, phase: 'watch' }, now);
                 if (lvl && lvl.levels) {
                     return {
@@ -1677,7 +1723,7 @@ function cryptoBoardState(now = Date.now()) {
             it.spike = watch.spike || spike;
             it.modeLabel = watch.modeLabel || '';
             if (watch.dir && typeof resolveSignalLevels === 'function') {
-                const refEvent = pick ? pick.e : { Date: new Date(now).toISOString(), Event: 'Crypto Market Watch', Importance: 2 };
+                const refEvent = pick ? pick.e : syntheticWatchEvent(it.pair, now);
                 const wPhase = watch.basis === 'pre-calibrated' ? 'pre' : 'watch';
                 const lvl = resolveSignalLevels(refEvent, it.pair, 'crypto', { ...watch, phase: wPhase }, now);
                 it.dir = (lvl && lvl.dir) || watch.dir;
@@ -1869,7 +1915,7 @@ function forexBoardState(now = Date.now()) {
             spike = watch.spike || spike;
             modeLabel = watch.modeLabel || '';
             if (watch.dir && typeof resolveSignalLevels === 'function') {
-                const refEvent = next ? next.e : { Date: new Date(now).toISOString(), Event: 'Forex Market Watch', Importance: 2 };
+                const refEvent = next ? next.e : syntheticWatchEvent(pair, now);
                 const wPhase = watch.basis === 'pre-calibrated' ? 'pre' : 'watch';
                 const lvl = resolveSignalLevels(refEvent, pair, 'forex', { ...watch, phase: wPhase }, now);
                 dir = (lvl && lvl.dir) || watch.dir;
@@ -2072,7 +2118,7 @@ function indicesBoardState(now = Date.now()) {
             it.spike = watch.spike || spike;
             it.modeLabel = watch.modeLabel || '';
             if (watch.dir && typeof resolveSignalLevels === 'function') {
-                const refEvent = pick ? pick.e : { Date: new Date(now).toISOString(), Event: 'Index Market Watch', Importance: 2 };
+                const refEvent = pick ? pick.e : syntheticWatchEvent(it.symbol, now);
                 const wPhase = watch.basis === 'pre-calibrated' ? 'pre' : 'watch';
                 const lvl = resolveSignalLevels(refEvent, it.symbol, 'index', { ...watch, phase: wPhase }, now);
                 it.dir = (lvl && lvl.dir) || watch.dir;
@@ -3281,18 +3327,18 @@ function applyMarketContext(sig, kind, asset) {
         const sigIsBuy = sig.dir === 'long';
         const sigIsSell = sig.dir === 'short';
 
-        if (sigIsBuy && isBearTrend && (tech.dir === 'sell' || (tech.price && tech.price < tech.emaFast))) {
+        if (sigIsBuy && isBearTrend && tech.dir === 'sell' && tech.price < tech.emaFast) {
             if (sig.basis !== 'reaction' || (sig.reaction && sig.reaction.faded)) {
                 return {
                     ...sig, dir: null, blocked: true, basis: 'conflict-trend', ctx, conf: null,
-                    note: `Sinyal BUY dibatalkan: Melawan tren bearish teknikal (${tech.trendText}, harga < EMA20). Hindari counter-trend; gunakan Straddle/Breakout OCO.${ctxNote}`
+                    note: `Sinyal BUY dibatalkan: Melawan tren bearish teknikal (${tech.trendText}). Hindari counter-trend; gunakan Straddle/Breakout OCO.${ctxNote}`
                 };
             }
-        } else if (sigIsSell && isBullTrend && (tech.dir === 'buy' || (tech.price && tech.price > tech.emaFast))) {
+        } else if (sigIsSell && isBullTrend && tech.dir === 'buy' && tech.price > tech.emaFast) {
             if (sig.basis !== 'reaction' || (sig.reaction && sig.reaction.faded)) {
                 return {
                     ...sig, dir: null, blocked: true, basis: 'conflict-trend', ctx, conf: null,
-                    note: `Sinyal SELL dibatalkan: Melawan tren bullish teknikal (${tech.trendText}, harga > EMA20). Hindari counter-trend; gunakan Straddle/Breakout OCO.${ctxNote}`
+                    note: `Sinyal SELL dibatalkan: Melawan tren bullish teknikal (${tech.trendText}). Hindari counter-trend; gunakan Straddle/Breakout OCO.${ctxNote}`
                 };
             }
         } else if ((sigIsBuy && isBullTrend) || (sigIsSell && isBearTrend)) {
@@ -3488,7 +3534,11 @@ function calibratedWatchSignal({
         spikeScore * sign >= 0.40
     ].filter(Boolean).length;
 
+    const wKey = watchLockKey(event, kind, asset);
+
     if (candidateDir && spike.state === 'SPIKE_FADED' && spike.fadedDir === candidateDir) {
+        // Spike yang berbalik membatalkan konfluensi yang sedang berjalan — hapus tahanannya.
+        clearWatchHold(wKey);
         return {
             dir: null, phase: event ? newsPhase(event, now) : 'watch', basis: 'spike-fade',
             modeLabel: 'FAKEOUT', spike, netScore, factors,
@@ -3497,6 +3547,34 @@ function calibratedWatchSignal({
     }
 
     const active = Boolean(candidateDir && Math.abs(netScore) >= 1.25 && (aligned >= 2 || Math.abs(netScore) >= 1.8));
+    const holdPrev = active ? null : readWatchHold(wKey);
+    if (!active && holdPrev) {
+        const heldSign = holdPrev.dir === 'long' ? 1 : -1;
+        const heldScore = netScore * heldSign;
+        const heldFakeout = spike.state === 'SPIKE_FADED' && spike.fadedDir === holdPrev.dir;
+        if (heldScore >= WATCH_HOLD_SCORE && !heldFakeout) {
+            // Hysteresis: sinyal Watch yang sudah aktif tetap aktif sampai skor
+            // melemah di bawah batas tahan — bukan toggle setiap kali skor
+            // melintasi ambang 1.25.
+            const heldConf = Math.round(clampNum(52 + Math.abs(netScore) * 9 + 2 * 3, 52, 88));
+            const heldPre = Boolean(mappedPre && holdPrev.dir === mappedPre);
+            return {
+                dir: holdPrev.dir,
+                phase: event ? newsPhase(event, now) : 'watch',
+                basis: heldPre ? 'pre-calibrated' : 'watch-calibrated',
+                basisHeld: true,
+                modeLabel: heldPre ? 'PRE-NEWS' : 'WATCH',
+                conf: heldConf,
+                netScore,
+                aligned,
+                spike,
+                movePct: spike.state !== 'NONE' ? spike.move5mPct : (Number.isFinite(chg) ? chg : null),
+                factors,
+                note: `Sinyal tertahan (konfluensi belum melemah, skor ${netScore >= 0 ? '+' : ''}${netScore.toFixed(2)}): ${factors.join(' · ')}`
+            };
+        }
+        clearWatchHold(wKey);
+    }
     if (!active) {
         return {
             dir: null, phase: event ? newsPhase(event, now) : 'watch', basis: 'neutral',
@@ -3505,6 +3583,7 @@ function calibratedWatchSignal({
         };
     }
 
+    writeWatchHold(wKey, candidateDir);
     const conf = Math.round(clampNum(52 + Math.abs(netScore) * 9 + aligned * 3, 52, 88));
     const isPre = Boolean(mappedPre);
     return {
@@ -4125,16 +4204,42 @@ function missedFromLevels(levels, dir, price) {
     return beyond > risk * 0.8;
 }
 
+function lockFreshEnough(lock, phase, e, now) {
+    const age = now - Date.parse((lock && lock.at) || NaN);
+    if (!Number.isFinite(age) || age < 0 || age > 24 * 60 * 60 * 1000) return false;
+    if (phase === 'watch') return age <= WATCH_LOCK_TTL_MS;
+    const rel = Date.parse(e && e.Date);
+    if (phase === 'post') return Number.isFinite(rel) ? now <= rel + POST_NEWS_HOLD_MS : age <= POST_NEWS_HOLD_MS;
+    // Pra-rilis: lock hanya berlaku sampai rilis + settle. Setelahnya skenario
+    // pasca-rilis (dengan basis rilis eksplisit) yang mengambil alih.
+    if (phase === 'pre') return Number.isFinite(rel) ? now <= rel + NEWS_SETTLE_MS : age <= MOMENTUM_WINDOW_MS;
+    return age <= POST_NEWS_HOLD_MS;
+}
+
+// Peringkat fase untuk aturan replace: rilis adalah skenario baru yang lebih
+// kuat dari sinyal Watch/kalibrasi. Watch tidak boleh menimpa lock rilis.
+const SIGNAL_PHASE_RANK = { watch: 0, pre: 1, post: 2 };
+const RILIS_BASIS = new Set(['actual', 'reaction', 'momentum', 'forecast']);
+
+function lockShouldReplace(lock, signal) {
+    if (!lock) return true;
+    if (lock.basis === 'actual' && signal.basis === 'reaction') return true;
+    if (lock.phase === signal.phase) return false;
+    const up = (SIGNAL_PHASE_RANK[signal.phase] ?? 0) > (SIGNAL_PHASE_RANK[lock.phase] ?? 0);
+    return up && RILIS_BASIS.has(signal.basis);
+}
+
 function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
     const price = assetPrice(kind, asset);
     if (!signal || !price) return { ...signal, price: price || null, levels: null, locked: false };
 
     // Arah bisa hilang setelah jendela momentum/Actual lewat, tetapi sinyal yang
-    // sudah dikonfirmasi tetap berlaku sampai POST_NEWS_HOLD_MS habis. Tanpa ini
+    // sudah dikonfirmasi tetap berlaku sampai batas validitasnya habis. Tanpa ini
     // level bisa hilang-timbul dan entry yang sudah terpasang jadi tidak cocok.
     if (!signal.dir) {
         const held = readSignalLock(e, asset);
-        if (held && held.phase === 'post' && signal.phase === 'post') {
+        if (held && held.phase === signal.phase && (signal.phase === 'post' || signal.phase === 'watch')
+            && lockFreshEnough(held, held.phase, e, now)) {
             const levels = levelsFromLock(held, kind);
             const isBuy = held.dir === 'long';
             const stopped = isBuy ? price <= levels.sl : price >= levels.sl;
@@ -4153,19 +4258,23 @@ function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
                 tpReached,
                 tp1Reached,
                 carried: true,
-                note: 'Sinyal pasca-rilis yang sudah terkonfirmasi tetap aktif sampai batas validitas.'
+                note: held.phase === 'post'
+                    ? 'Sinyal pasca-rilis yang sudah terkonfirmasi tetap aktif sampai batas validitas.'
+                    : 'Sinyal Watch yang sudah aktif tetap berlaku — belum melemah, tidak digambar ulang.'
             };
         }
         return { ...signal, price, levels: null, locked: false };
     }
 
     let lock = readSignalLock(e, asset);
-    // Hanya sinyal pasca-rilis yang dikunci. Bias pra-rilis adalah entry pasar
-    // yang harus mengikuti harga terakhir sampai rilis, bukan order pending.
-    const canLock = signal.phase === 'post';
-    // Fase pra -> pasca rilis adalah skenario baru. Actual -> reaksi juga boleh
-    // diganti karena reaksi harga lebih baru dan lebih dapat dipercaya.
-    const replace = lock && (lock.phase !== signal.phase || (lock.basis === 'actual' && signal.basis === 'reaction'));
+    if (lock && !lockFreshEnough(lock, lock.phase, e, now)) lock = null;
+    // Sinyal yang sudah dikunci: pasca-rilis (konfirmasi 15 menit), pra-rilis
+    // (entry pasar valid sampai rilis) dan Watch tanpa rilis. Hanya direction
+    // yang dikunci; untuk watch/pre level ikut terkunci supaya order tidak bergeser.
+    const canLock = signal.phase === 'post' || signal.phase === 'pre' || signal.phase === 'watch';
+    const replace = lock
+        ? lockShouldReplace(lock, signal)
+        : false;
     let conflict = false;
     let levels = null;
 

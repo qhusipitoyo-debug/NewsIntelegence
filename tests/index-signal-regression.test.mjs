@@ -95,6 +95,9 @@ const execEntriesFn = extractFunction('execEntries');
 const spreadConst = source.match(/const DEFAULT_SPREAD_PCT = .*?;\n/)[0];
 const computeSignalLevelsFn = extractFunction('computeSignalLevels');
 const levelsFromLockFn = extractFunction('levelsFromLock');
+const lockFreshEnoughFn = extractFunction('lockFreshEnough');
+const lockShouldReplaceFn = extractFunction('lockShouldReplace');
+const watchConsts = `const WATCH_LOCK_TTL_MS = 4 * 60 * 60 * 1000;\nconst SIGNAL_PHASE_RANK = { watch: 0, pre: 1, post: 2 };\nconst RILIS_BASIS = new Set(['actual', 'reaction', 'momentum', 'forecast']);`;
 const missedFromLevelsFn = extractFunction('missedFromLevels');
 const resolveSignalLevelsFn = extractFunction('resolveSignalLevels');
 const signalCardDataFn = extractFunction('signalCardData');
@@ -176,6 +179,9 @@ function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, inde
     function brokerQuoteFor() { return null; }
     ${computeSignalLevelsFn}
     ${levelsFromLockFn}
+    ${watchConsts}
+    ${lockFreshEnoughFn}
+    ${lockShouldReplaceFn}
     ${missedFromLevelsFn}
     ${resolveSignalLevelsFn}
     ${signalCardDataFn}
@@ -652,6 +658,9 @@ function buildCryptoState(evts, now, rates, change, reaction = null) {
     function brokerQuoteFor() { return null; }
     ${computeSignalLevelsFn}
     ${levelsFromLockFn}
+    ${watchConsts}
+    ${lockFreshEnoughFn}
+    ${lockShouldReplaceFn}
     ${missedFromLevelsFn}
     ${resolveSignalLevelsFn}
     ${signalCardDataFn}
@@ -911,6 +920,9 @@ function buildIndicesState(evts, idxRates, now, analyzeBody = "() => ({ dir: 'wa
     function brokerQuoteFor() { return null; }
     ${computeSignalLevelsFn}
     ${levelsFromLockFn}
+    ${watchConsts}
+    ${lockFreshEnoughFn}
+    ${lockShouldReplaceFn}
     ${missedFromLevelsFn}
     ${resolveSignalLevelsFn}
     ${signalCardDataFn}
@@ -971,6 +983,7 @@ assert.ok(goldStart < calendarStart, 'gold board must render before the calendar
 const goldBoardFn = extractFunction('goldBoardHtml');
 const goldBoardHtml = new Function(`
   const esc = s => String(s ?? '');
+  function fmtTime() { return '02:00 WITA'; }
   function watchFactorsHtml() { return ''; }
   function spikeBadgeHtml() { return ''; }
   ${goldBoardFn}
@@ -1082,6 +1095,9 @@ function buildGoldState(evts, price, now, analyzeBody = "() => ({ dir: 'wait' })
     function brokerQuoteFor() { return null; }
     ${computeSignalLevelsFn}
     ${levelsFromLockFn}
+    ${watchConsts}
+    ${lockFreshEnoughFn}
+    ${lockShouldReplaceFn}
     ${missedFromLevelsFn}
     ${resolveSignalLevelsFn}
     ${signalCardDataFn}
@@ -1322,6 +1338,7 @@ function buildEngine(price, { reaction = null, preNews = {}, indexRates = {}, st
     const MOMENTUM_WINDOW_MS = 90 * 60 * 1000;
     const REACTION_MAX_AGE_MS = 45 * 60 * 1000;
     const NEWS_SETTLE_MS = 15 * 60 * 1000;
+    const POST_NEWS_HOLD_MS = 6 * 60 * 60 * 1000;
     const REACTION = ${JSON.stringify(reaction)};
     const PRE_NEWS = ${JSON.stringify(preNews)};
     let LIVE_PRICE = ${JSON.stringify(price)};
@@ -1381,6 +1398,9 @@ function buildEngine(price, { reaction = null, preNews = {}, indexRates = {}, st
     function brokerQuoteFor() { return null; }
     ${computeSignalLevelsFn}
     ${levelsFromLockFn}
+    ${watchConsts}
+    ${lockFreshEnoughFn}
+    ${lockShouldReplaceFn}
     ${missedFromLevelsFn}
     ${resolveSignalLevelsFn}
     ${signalCardDataFn}
