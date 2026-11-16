@@ -3431,7 +3431,7 @@ function macroImpactHtml(items, now = Date.now()) {
         const sub = `${it.price && it.price > 0 ? Number(it.price).toFixed(dec) : '—'}${chgTxt}`;
         return `<div class="tech-card ${dir}">
             <div class="head"><span>${esc(it.label)}</span><span class="tech-dir">${badgeTxt}${conf}${score}</span></div>
-            <div class="sub">${esc(catLine)}<br>${esc(sub)}</div>
+            <div class="sub">${catLine}<br>${esc(sub)}</div>
             ${spikeHtml}
             <div class="tech-tags">${tags}</div>
         </div>`;
