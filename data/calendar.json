@@ -789,7 +789,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "2.6%",
-    "Actual": ""
+    "Actual": "2.4%"
   },
   {
     "Date": "2026-11-15T23:50:00.000Z",
@@ -798,7 +798,7 @@
     "Importance": 1,
     "Forecast": "1.5%",
     "Previous": "-1.2%",
-    "Actual": ""
+    "Actual": "1.6%"
   },
   {
     "Date": "2026-11-15T23:50:00.000Z",
@@ -807,7 +807,7 @@
     "Importance": 2,
     "Forecast": "0.3%",
     "Previous": "1.1%",
-    "Actual": ""
+    "Actual": "-0.1%"
   },
   {
     "Date": "2026-11-15T18:50:00-05:00",
@@ -816,7 +816,7 @@
     "Importance": 1,
     "Forecast": "2.6%",
     "Previous": "2.6%",
-    "Actual": ""
+    "Actual": "2.4%"
   },
   {
     "Date": "2026-11-15T18:50:00-05:00",
@@ -1066,6 +1066,15 @@
     "Event": "Fed Chairman Warsh Speaks",
     "Country": "USD",
     "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-16T14:15:00-05:00",
+    "Event": "FOMC Member Hammack Speaks",
+    "Country": "USD",
+    "Importance": 1,
     "Forecast": "",
     "Previous": "",
     "Actual": ""
@@ -1614,7 +1623,7 @@
     "Date": "2026-11-18T02:30:00-05:00",
     "Event": "BOE Gov Bailey Speaks",
     "Country": "GBP",
-    "Importance": 3,
+    "Importance": 2,
     "Forecast": "",
     "Previous": "",
     "Actual": ""
@@ -2514,7 +2523,7 @@
     "Date": "2026-11-20T08:25:00-05:00",
     "Event": "FOMC Member Waller Speaks",
     "Country": "USD",
-    "Importance": 2,
+    "Importance": 1,
     "Forecast": "",
     "Previous": "",
     "Actual": ""
@@ -7902,12 +7911,57 @@
     "Actual": ""
   },
   {
+    "Date": "2026-12-16T23:50:00.000Z",
+    "Event": "Bond Investment by Foreigners",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-16T23:50:00.000Z",
+    "Event": "Foreign Stock Investment",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
     "Date": "2026-12-17T00:30:00.000Z",
     "Event": "Part Time Employment Chg",
     "Country": "AUD",
     "Importance": 1,
     "Forecast": "",
     "Previous": "-73.71",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T00:30:00.000Z",
+    "Event": "Foreign Currency Liquidity",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T00:30:00.000Z",
+    "Event": "Employment Change",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T00:30:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "AUD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
     "Actual": ""
   },
   {
