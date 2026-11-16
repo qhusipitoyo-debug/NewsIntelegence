@@ -165,6 +165,7 @@
     .hist-badge.win { background: rgba(24,209,154,.18); color: var(--green); }
     .hist-badge.loss { background: rgba(255,100,125,.18); color: var(--red); }
     .hist-badge.open { background: rgba(93,183,232,.16); color: var(--blue); }
+    .impact-summary { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 14px; border-radius: 12px; background: rgba(4,15,23,.5); border: 1px solid var(--line); }
     @media(max-width:760px){ .tech-board { grid-template-columns: 1fr; } .tech-grid,.macro-body { grid-template-columns: 1fr; } }
 
     /* MT5 Linux Bridge UI */
@@ -241,6 +242,14 @@
       <p>Kalibrasi multi-faktor real-time: rezim kalender makro 48 jam (CPI/NFP/Rate Z-score), DXY sintetis (EUR 57.6%, JPY 13.6%, GBP 11.9%, CAD 9.1%, CHF 7.8%), CNN &amp; Crypto Fear &amp; Greed, Risk-On/Off lintas aset, serta detektor lonjakan harga (spike vs fakeout).</p>
     </div>
     <div class="macro-body" id="macroBody"></div>
+  </section>
+  <section class="tech-board glass" id="macroImpactBoard">
+    <div>
+      <div class="eyebrow">Analisa Dampak per Pair</div>
+      <h3>Pair yang Terdampak Makro/Mikro</h3>
+      <p>Bias valid per instrumen dari kalibrasi yang sama: katalis ±12 jam (kalender makro, bobot Imp ≥ 2), DXY sintetis, F&amp;G, rezim RISK-ON/OFF dan struktur mikro 1 menit. Angka dihitung ulang dari feed live — bukan opini. Arah dari Actual/Reaksi mengalahkan kalibrasi; selama 15 menit pasca-rilis kartu menahan entry.</p>
+    </div>
+    <div class="tech-grid" id="macroImpactGrid"></div>
   </section>
   <section class="tech-board glass" id="techBoard">
     <div>
@@ -3176,6 +3185,106 @@ function renderMacroBoard() {
     if (body) body.innerHTML = macroPanelHtml();
 }
 
+// ═════════════════════════════════════════════════════════════════════════════
+// ANALISA DAMPAK PER PAIR — bacaan makro/mikro terstruktur per instrumen.
+// Setiap baris dihitung dari engine yang sama (calibratedWatchSignal): katalis
+// ±12 jam (Imp ≥ 2) diprioritaskan; bila tidak ada, murni DXY/F&G/RISK/mikro.
+// ═════════════════════════════════════════════════════════════════════════════
+const MACRO_IMPACT_ASSETS = [
+    { asset: 'XAU/USD', kind: 'gold', label: 'XAU/USD (Gold)' },
+    { asset: 'BTC/USD', kind: 'crypto', label: 'BTC/USD' },
+    { asset: 'ETH/USD', kind: 'crypto', label: 'ETH/USD' },
+    { asset: 'US500', kind: 'index', label: 'S&P 500 (US500)' },
+    ...FOREX_PAIRS.map(p => ({ asset: p, kind: 'forex', label: p }))
+];
+
+function macroImpactCatalyst(kind, asset, now = Date.now()) {
+    if (kind === 'forex') {
+        const next = nextPairCatalyst(asset, now);
+        return next && (+next.e.Importance || 1) >= 2 ? next : null;
+    }
+    const { pick } = nextUsdCatalyst(now);
+    return pick ? { e: pick.e, phase: newsPhase(pick.e, now) } : null;
+}
+
+function macroImpactAnalysis(now = Date.now()) {
+    const risk = typeof riskSentimentSnapshot === 'function' ? riskSentimentSnapshot() : { regime: 'MIXED', avgPct: 0 };
+    const usd = typeof usdBias === 'function' ? usdBias() : null;
+    const fg = typeof effectiveFearGreed === 'function' ? effectiveFearGreed() : null;
+    return MACRO_IMPACT_ASSETS.map(cfg => {
+        const price = typeof assetPrice === 'function' ? assetPrice(cfg.kind, cfg.asset) : null;
+        const changePct = cfg.kind === 'crypto' ? Number(CRYPTO_CHANGE[cfg.asset])
+            : cfg.kind === 'index' ? Number(INDEX_CHANGE[cfg.asset])
+            : cfg.kind === 'forex' ? Number(FOREX_QUOTES[cfg.asset] && FOREX_QUOTES[cfg.asset].changePct)
+            : null;
+        const cat = macroImpactCatalyst(cfg.kind, cfg.asset, now);
+        let watch = null;
+        if (typeof calibratedWatchSignal === 'function' && price) {
+            watch = calibratedWatchSignal({
+                kind: cfg.kind, asset: cfg.asset, event: cat ? cat.e : null,
+                now, price, changePct: Number.isFinite(changePct) ? changePct : null
+            });
+        }
+        const spike = typeof detectPriceSpike === 'function' && typeof assetBars === 'function'
+            ? detectPriceSpike(assetBars(cfg.asset), price) : null;
+        return {
+            ...cfg, price, changePct: Number.isFinite(changePct) ? changePct : null,
+            catalyst: cat, watch, spike,
+            usd: usd ? Number(usd.changePct) : null,
+            risk, fg: fg ? fg.primaryScore : null
+        };
+    });
+}
+
+function macroImpactHtml(items, now = Date.now()) {
+    const risk = items[0] && items[0].risk ? items[0].risk : { regime: 'MIXED', avgPct: 0 };
+    const usd = items[0] && items[0].usd != null ? items[0].usd : null;
+    const fgScore = items[0] && items[0].fg != null ? items[0].fg : null;
+    const buys = items.filter(i => i.watch && i.watch.dir === 'long').length;
+    const sells = items.filter(i => i.watch && i.watch.dir === 'short').length;
+    const waits = items.length - buys - sells;
+    const usdTxt = usd == null ? 'DXY n/a' : `DXY ${usd >= 0 ? '+' : ''}${usd.toFixed(2)}%`;
+    const fgTxt = fgScore == null ? 'F&G n/a' : `F&G ${Math.round(fgScore)}`;
+    const head = `<div class="impact-summary">
+        <span class="fx-badge buy">▲ ${buys} BUY</span>
+        <span class="fx-badge sell">▼ ${sells} SELL</span>
+        <span class="fx-badge wait">■ ${waits} WAIT</span>
+        <span class="watch-factors">${esc(usdTxt)} · ${esc(fgTxt)} · ${esc(risk.regime)} (${risk.avgPct >= 0 ? '+' : ''}${Number(risk.avgPct).toFixed(2)}%)</span>
+    </div>`;
+    const cards = items.map(it => {
+        const w = it.watch;
+        const dir = w && w.dir === 'long' ? 'buy' : w && w.dir === 'short' ? 'sell' : 'wait';
+        const badgeTxt = dir === 'buy' ? 'BUY' : dir === 'sell' ? 'SELL' : (w && w.modeLabel === 'FAKEOUT' ? 'FAKEOUT' : 'WAIT');
+        const conf = w && w.conf ? `<span class="conf-pill">${w.conf}%</span>` : '';
+        const score = w && Number.isFinite(Number(w.netScore))
+            ? `<span class="conf-pill" style="background:rgba(145,174,184,.14);color:var(--muted)">skor ${w.netScore >= 0 ? '+' : ''}${Number(w.netScore).toFixed(2)}</span>` : '';
+        const spikeHtml = typeof spikeBadgeHtml === 'function' ? spikeBadgeHtml(w && w.spike ? w.spike : it.spike) : '';
+        const tags = (w && Array.isArray(w.factors) && w.factors.length
+            ? w.factors : ['Sinyal belum tersedia — menunggu harga'])
+            .slice(0, 5).map(f => `<span>${esc(f)}</span>`).join('');
+        const catLine = it.catalyst
+            ? `Katalis: ${esc(it.catalyst.e.Event)} · ${fmtTime(new Date(it.catalyst.e.Date))} <small style="color:var(--muted)">(${it.catalyst.phase === 'post' ? 'pasca-rilis' : 'pra-rilis'})</small>`
+            : 'Tanpa katalis Imp ≥ 2 dalam ±12 jam — kalibrasi murni Sentimen/Makro/Mikro';
+        const dec = it.price > 100 ? 2 : it.price > 10 ? 3 : 5;
+        const chgTxt = Number.isFinite(it.changePct) ? ` · 24h ${it.changePct >= 0 ? '+' : ''}${it.changePct.toFixed(2)}%` : '';
+        const sub = `${it.price && it.price > 0 ? Number(it.price).toFixed(dec) : '—'}${chgTxt}`;
+        return `<div class="tech-card ${dir}">
+            <div class="head"><span>${esc(it.label)}</span><span class="tech-dir">${badgeTxt}${conf}${score}</span></div>
+            <div class="sub">${esc(catLine)}<br>${esc(sub)}</div>
+            ${spikeHtml}
+            <div class="tech-tags">${tags}</div>
+        </div>`;
+    }).join('');
+    return head + cards;
+}
+
+function renderMacroImpact() {
+    const grid = $('#macroImpactGrid');
+    if (!grid) return;
+    const now = Date.now();
+    grid.innerHTML = macroImpactHtml(macroImpactAnalysis(now), now);
+}
+
 // ---------------------------------------------------------------------------
 // Unified signal engine (dipakai oleh kartu event DAN semua board)
 //
@@ -4791,6 +4900,7 @@ function render() {
     renderIndicesBoard();
     if (typeof renderTechBoard === 'function') renderTechBoard();
     if (typeof renderMacroBoard === 'function') renderMacroBoard();
+    if (typeof renderMacroImpact === 'function') renderMacroImpact();
     if (typeof renderSignalHistory === 'function') renderSignalHistory();
 
     const totalEl = $('#total-events');
@@ -4832,6 +4942,7 @@ renderForexBoard();
 renderIndicesBoard();
 if (typeof renderTechBoard === 'function') renderTechBoard();
 if (typeof renderMacroBoard === 'function') renderMacroBoard();
+if (typeof renderMacroImpact === 'function') renderMacroImpact();
 if (typeof renderSignalHistory === 'function') renderSignalHistory();
 loadSentiment();
 load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadTradeStats(); renderTradeStats();
