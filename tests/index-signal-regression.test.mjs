@@ -24,7 +24,23 @@ const numFn = extractFunction('num');
 const countryFn = extractFunction('countryCode');
 const biasFn = extractFunction('goldBias');
 const analyzeFn = extractFunction('analyze');
-const analyze = new Function(`${core}\n${numFn}\n${countryFn}\n${biasFn}\n${analyzeFn}\nreturn analyze;`)();
+const analyzeUncachedFn = extractFunction('analyzeUncached');
+// analyze() di index.html dibungkus layer cache; sediakan helper yang sama di scope test.
+const dateEventKeyFn = extractFunction('dateEventKey');
+const cacheHelpers = `
+function bucketOf(ms, size) { return Math.floor((Number(ms) || Date.now()) / size); }
+const MEMO_CACHE = new Map();
+function memoGet(key) {
+  const hit = MEMO_CACHE.get(key);
+  if (!hit) return undefined;
+  if (hit.exp && hit.exp < Date.now()) { MEMO_CACHE.delete(key); return undefined; }
+  return hit.val;
+}
+function memoSet(key, val, ttlMs = 0) {
+  MEMO_CACHE.set(key, { val, exp: ttlMs > 0 ? Date.now() + ttlMs : 0 });
+  return val;
+}`;
+const analyze = new Function(`${core}\n${numFn}\n${countryFn}\n${biasFn}\n${dateEventKeyFn}\n${cacheHelpers}\n${analyzeUncachedFn}\n${analyzeFn}\nreturn analyze;`)();
 
 const cases = [
   [{Event:'Nonfarm Payrolls', Actual:150000, Forecast:200000}, 'long'],
@@ -59,7 +75,6 @@ const normalizeSnapshotFn = extractFunction('normalizeSnapshot');
 const preNewsSnapshotFn = extractFunction('preNewsSnapshot');
 const preNewsPriceFn = extractFunction('preNewsPrice');
 const eventKeyFn = extractFunction('eventKey');
-const dateEventKeyFn = extractFunction('dateEventKey');
 const postNewsExpiryFn = extractFunction('postNewsExpiry');
 const forecastBiasFn = extractFunction('forecastBias');
 const preNewsBiasFn = extractFunction('preNewsBias');
@@ -71,6 +86,7 @@ const barBaseBeforeFn = extractFunction('barBaseBefore');
 const reactionFromBarsClientFn = extractFunction('reactionFromBarsClient');
 const preReleaseAtrPctFn = extractFunction('preReleaseAtrPct');
 const reactionForFn = extractFunction('reactionFor');
+const reactionForUncachedFn = extractFunction('reactionForUncached');
 const moveNoteFn = extractFunction('moveNote');
 const nextPairCatalystFn = extractFunction('nextPairCatalyst');
 const pairCatalystDirectionFn = extractFunction('pairCatalystDirection');
@@ -124,9 +140,14 @@ function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, inde
     const esc = s => String(s ?? '');
     const REACTION_MAX_AGE_MS = 45 * 60 * 1000;
     const REACTION = ${JSON.stringify(reaction)};
+    // Layer cache (analyze/reactionFor/barBaseBefore/preReleaseAtrPct kini dibungkus memo)
+    ${cacheHelpers}
+    let BARS_GEN = 0;
+    let SIGNALS_REV = 0;
     ${numFn}
     ${countryFn}
     ${biasFn}
+    ${analyzeUncachedFn}
     ${analyzeFn}
     ${normalizeSnapshotFn}
     ${dateEventKeyFn}
@@ -142,6 +163,7 @@ function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, inde
     ${barBaseBeforeFn}
     ${reactionFromBarsClientFn}
     ${preReleaseAtrPctFn}
+    ${reactionForUncachedFn}
     ${reactionForFn}
     ${momentumForFn}
     ${postNewsMomentumFn}
@@ -461,6 +483,10 @@ function buildCatalyst(eventList, reaction) {
     ${numFn}
     ${countryFn}
     ${biasFn}
+    ${cacheHelpers}
+    let BARS_GEN = 0;
+    let SIGNALS_REV = 0;
+    ${analyzeUncachedFn}
     ${analyzeFn}
     ${dateEventKeyFn}
     ${eventKeyFn}
@@ -474,6 +500,7 @@ function buildCatalyst(eventList, reaction) {
     ${barBaseBeforeFn}
     ${reactionFromBarsClientFn}
     ${preReleaseAtrPctFn}
+    ${reactionForUncachedFn}
     ${reactionForFn}
     ${momentumForFn}
     ${forecastBiasFn}
@@ -613,6 +640,10 @@ function buildCryptoState(evts, now, rates, change, reaction = null) {
     ${numFn}
     ${countryFn}
     ${biasFn}
+    ${cacheHelpers}
+    let BARS_GEN = 0;
+    let SIGNALS_REV = 0;
+    ${analyzeUncachedFn}
     ${analyzeFn}
     ${dateEventKeyFn}
     ${postNewsExpiryFn}
@@ -625,6 +656,7 @@ function buildCryptoState(evts, now, rates, change, reaction = null) {
     ${barBaseBeforeFn}
     ${reactionFromBarsClientFn}
     ${preReleaseAtrPctFn}
+    ${reactionForUncachedFn}
     ${reactionForFn}
     ${moveNoteFn}
     ${indexRateFn}
@@ -1298,6 +1330,7 @@ const applyFx = new Function(`
   let FOREX_QUOTES = {}, FOREX_RATES = {}, FOREX_META = {}, FOREX_TICK = {}, FOREX_LIVE = false;
   let renders = 0;
   const render = () => { renders++; };
+  const scheduleRender = () => { renders++; };
   const recordLiveTick = () => {};
   ${extractFunction('forexTicks')}
   ${extractFunction('applyForexPayload')}
@@ -1351,6 +1384,10 @@ function buildEngine(price, { reaction = null, preNews = {}, indexRates = {}, st
     ${numFn}
     ${countryFn}
     ${biasFn}
+    ${cacheHelpers}
+    let BARS_GEN = 0;
+    let SIGNALS_REV = 0;
+    ${analyzeUncachedFn}
     ${analyzeFn}
     ${dateEventKeyFn}
     ${eventKeyFn}
@@ -1364,6 +1401,7 @@ function buildEngine(price, { reaction = null, preNews = {}, indexRates = {}, st
     ${barBaseBeforeFn}
     ${reactionFromBarsClientFn}
     ${preReleaseAtrPctFn}
+    ${reactionForUncachedFn}
     ${reactionForFn}
     ${momentumForFn}
     ${forecastBiasFn}

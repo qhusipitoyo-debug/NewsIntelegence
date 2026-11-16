@@ -301,6 +301,35 @@
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+// ==========================================================================
+// LAYER CACHE & THROTTLE RENDER
+// Kalendar berisi ratusan event dan setiap kartu menjalankan analisis berat
+// (signal, ATR, reaksi bar 1-menit). Tanpa cache, satu render() bisa memblokir
+// UI puluhan detik dan dipicu ulang setiap 20-30 detik oleh polling harga —
+// inilah penyebab tab Upcoming/High impact "ngelag tidak bisa dibuka".
+// ==========================================================================
+const MEMO_CACHE = new Map();
+function memoGet(key) {
+    const hit = MEMO_CACHE.get(key);
+    if (!hit) return undefined;
+    if (hit.exp && hit.exp < Date.now()) { MEMO_CACHE.delete(key); return undefined; }
+    return hit.val;
+}
+function memoSet(key, val, ttlMs = 0) {
+    if (MEMO_CACHE.size > 4000) MEMO_CACHE.clear();
+    MEMO_CACHE.set(key, { val, exp: ttlMs > 0 ? Date.now() + ttlMs : 0 });
+    return val;
+}
+// Versi data bar 1-menit. Naik setiap kali markets.json / live bars diperbarui,
+// supaya cache yang bergantung pada bar otomatis invalid.
+let BARS_GEN = 0;
+// Versi lock sinyal. Naik setiap kali Entry/SL/TP baru dikunci sehingga kartu
+// yang sudah ter-cache menghitung ulang tampilannya.
+let SIGNALS_REV = 0;
+function bumpBarsGen() { BARS_GEN++; }
+const bucketOf = (ms, size) => Math.floor((Number(ms) || Date.now()) / size);
+
 function num(v) {
     if (v === null || v === undefined || String(v).trim() === '' || v === '-' || v === '—') return null;
     const raw = String(v).trim().replace(/,/g, '');
@@ -383,7 +412,7 @@ window.applyLiveXauPrice = function (price) {
     recordLiveTick('XAU/USD', p);
     if (LIVE_PRICE === p) return;
     LIVE_PRICE = p;
-    if (events.length) render();
+    if (events.length) scheduleRender();
 };
 
 const fmtDate = d => new Intl.DateTimeFormat('en-IN', { timeZone: WITA, weekday: 'short', day: '2-digit', month: 'short' }).format(d);
@@ -434,11 +463,27 @@ function readWatchHold(key) {
 }
 
 function writeWatchHold(key, dir) {
-    try { localStorage.setItem(key, JSON.stringify({ dir, at: new Date().toISOString() })); } catch {}
+    try {
+        let prev = null;
+        try { prev = JSON.parse(localStorage.getItem(key) || 'null'); } catch {}
+        // Tulis hanya bila arah berubah atau timestamp perlu digulir. Tanpa ini,
+        // lock yang sama ditulis ulang di setiap render dan meng-invalidate seluruh
+        // cache kartu (SIGNALS_REV naik terus) — salah satu penyebab lag.
+        if (prev && prev.dir === dir) {
+            const at = Date.parse(prev.at || '');
+            if (Number.isFinite(at) && Date.now() - at < 30 * 60 * 1000) return;
+        }
+        localStorage.setItem(key, JSON.stringify({ dir, at: new Date().toISOString() }));
+        SIGNALS_REV++;
+    } catch {}
 }
 
 function clearWatchHold(key) {
-    try { localStorage.removeItem(key); } catch {}
+    try {
+        if (localStorage.getItem(key) === null) return;
+        localStorage.removeItem(key);
+        SIGNALS_REV++;
+    } catch {}
 }
 
 function normalizeSnapshot(raw) {
@@ -547,31 +592,45 @@ function barsOf(asset) {
 
 function barBaseBefore(asset, releaseMs, maxGapMin = 10) {
     if (!Number.isFinite(releaseMs)) return null;
+    // Deterministik terhadap (aset, waktu rilis, generasi bar) — aman di-cache
+    // karena dipanggil ulang untuk kombinasi yang sama di tiap render.
+    const ckey = 'barBase|' + asset + '|' + releaseMs + '|' + BARS_GEN;
+    const cached = memoGet(ckey);
+    if (cached !== undefined) return cached;
     let best = null;
     for (const b of barsOf(asset)) {
         const end = (Number(b && b.k) + 1) * 60000, c = Number(b && b.c);
         if (!(c > 0) || !Number.isFinite(end) || end > releaseMs) continue;
         if (!best || end > best.end) best = { end, c };
     }
-    return best && releaseMs - best.end <= maxGapMin * 60000 ? best.c : null;
+    const out = best && releaseMs - best.end <= maxGapMin * 60000 ? best.c : null;
+    memoSet(ckey, out, 5 * 60 * 1000);
+    return out;
 }
 
 // ATR 1 menit (%) dari 60 bar SEBELUM rilis = baseline volatilitas tenang, tidak
 // terkontaminasi spike berita. Dipakai untuk menormalkan ambang reaksi.
 function preReleaseAtrPct(asset, releaseMs) {
     if (!Number.isFinite(releaseMs)) return null;
+    // ATR pra-rilis hanya bergantung pada bar & waktu rilis — hasil identik untuk
+    // event yang sama di setiap render, jadi di-cache (pemanggil terbesar: kartu).
+    const ckey = 'atrPre|' + asset + '|' + releaseMs + '|' + BARS_GEN;
+    const cached = memoGet(ckey);
+    if (cached !== undefined) return cached;
     const rows = barsOf(asset)
         .map(b => ({ end: (Number(b && b.k) + 1) * 60000, h: Number(b && b.h), l: Number(b && b.l), c: Number(b && b.c) }))
         .filter(r => r.end <= releaseMs && r.h > 0 && r.l > 0 && r.c > 0)
         .sort((x, y) => x.end - y.end)
         .slice(-60);
-    if (rows.length < 20) return null;
+    if (rows.length < 20) return memoSet(ckey, null, 5 * 60 * 1000);
     let sum = 0;
     for (let i = 1; i < rows.length; i++) {
         sum += Math.max(rows[i].h - rows[i].l, Math.abs(rows[i].h - rows[i - 1].c), Math.abs(rows[i].l - rows[i - 1].c));
     }
     const atr = sum / (rows.length - 1), px = rows[rows.length - 1].c;
-    return atr > 0 ? atr / px * 100 : null;
+    const out = atr > 0 ? atr / px * 100 : null;
+    memoSet(ckey, out, 5 * 60 * 1000);
+    return out;
 }
 
 function momentumFor(e, kind, pair) {
@@ -649,6 +708,17 @@ function reactionFromBarsClient(bars, releaseMs, settleMin = 15, horizonMin = 45
 }
 
 function reactionFor(e, pair) {
+    // Hasil per (event, pair, bucket 30 detik): reaksi bar bersifat deterministik,
+    // hanya validitas waktu yang bergerak — cukup dihitung ulang 2x per menit.
+    const rkey = 'react|' + dateEventKey(e) + '|' + pair + '|' + bucketOf(Date.now(), 30000) + '|' + BARS_GEN;
+    const cached = memoGet(rkey);
+    if (cached !== undefined) return cached;
+    const result = reactionForUncached(e, pair);
+    memoSet(rkey, result, 60 * 1000);
+    return result;
+}
+
+function reactionForUncached(e, pair) {
     const entry = REACTION && REACTION.events ? REACTION.events[dateEventKey(e)] : null;
     let hit = entry && entry.pairs ? entry.pairs[pair] : null;
     const generatedAt = Date.parse(REACTION && REACTION.generatedAt);
@@ -717,7 +787,7 @@ async function loadPreNews() {
         const r = await fetch(`data/prenews.json?v=${Date.now()}`, { cache: 'no-store' });
         if (!r.ok) return;
         const j = await r.json();
-        if (j && typeof j === 'object') { PRE_NEWS = j; render(); }
+        if (j && typeof j === 'object') { PRE_NEWS = j; scheduleRender(); }
     } catch (e) { console.log('Pre-news snapshots unavailable', e); }
 }
 
@@ -726,7 +796,7 @@ async function loadReaction() {
         const r = await fetch(`data/reaction.json?v=${Date.now()}`, { cache: 'no-store' });
         if (!r.ok) return;
         const j = await r.json();
-        if (j && j.events) { REACTION = j; render(); }
+        if (j && j.events) { REACTION = j; scheduleRender(); }
     } catch (e) { console.log('Reaction data unavailable', e); }
 }
 
@@ -753,11 +823,12 @@ async function loadLiveBarsFallback(force = false) {
             const bars = typeof parseYahooBarsPayload === 'function' ? parseYahooBarsPayload(j, 150) : [];
             if (bars.length >= 15 && typeof LIVE_BARS === 'object' && LIVE_BARS) {
                 LIVE_BARS[asset] = { generatedAt: new Date().toISOString(), bars };
+                bumpBarsGen();
                 updated++;
             }
         } catch (e) {}
     }));
-    if (updated) render();
+    if (updated) scheduleRender();
 }
 
 async function loadMarkets() {
@@ -765,7 +836,7 @@ async function loadMarkets() {
         const r = await fetch(`data/markets.json?v=${Date.now()}`, { cache: 'no-store' });
         if (r.ok) {
             const j = await r.json();
-            if (j && j.pairs) { MARKETS = j; render(); }
+            if (j && j.pairs) { MARKETS = j; bumpBarsGen(); scheduleRender(); }
         }
     } catch (e) { console.log('Markets history unavailable', e); }
     loadLiveBarsFallback();
@@ -816,7 +887,7 @@ async function loadHistoryBars() {
         const r = await fetch(`data/history-bars.json?v=${Date.now()}`, { cache: 'no-store' });
         if (!r.ok) return;
         const j = await r.json();
-        if (j && j.pairs) { HISTORY_BARS = j; renderSignalHistory(); }
+        if (j && j.pairs) { HISTORY_BARS = j; bumpBarsGen(); renderSignalHistory(); }
     } catch (e) { console.log('History bars unavailable', e); }
 }
 
@@ -1257,7 +1328,7 @@ function applyForexPayload(j, fallbackSource, live) {
         live: Boolean(live),
         providers: j.providers && typeof j.providers === 'object' ? j.providers : {}
     };
-    render();
+    scheduleRender();
     return true;
 }
 
@@ -2319,7 +2390,7 @@ async function loadIndices() {
         } catch (e) { console.log('Live index API failed', e); }
     }
     renderIndicesBoard();
-    render();
+    scheduleRender();
 }
 
 async function loadCryptoKlines() {
@@ -2344,7 +2415,7 @@ async function loadCryptoKlines() {
             }
         } catch (e) { console.log('Binance klines unavailable', sym, e); }
     }));
-    if (updated) render();
+    if (updated) scheduleRender();
 }
 
 async function loadCrypto() {
@@ -2361,7 +2432,7 @@ async function loadCrypto() {
         if (Number.isFinite(ec)) chg['ETH/USD'] = ec;
         CRYPTO_CHANGE = chg;
         renderCryptoBoard();
-        render();
+        scheduleRender();
         return true;
     };
     try {
@@ -2603,6 +2674,20 @@ function mapPairBias(pair, dir, country) {
 // tercetak, bandingkan Actual dengan Previous; kalau Actual tidak ada sama sekali,
 // jangan pernah mengembalikan angka confidence sintetis.
 function analyze(e) {
+    // Cache per event: analyze dipanggil berulang dari card/finalVerdict/
+    // signalDirectionCore untuk event yang sama. Kunci memuat Actual/Forecast
+    // (bisa berubah saat feed update) dan bucket waktu 60 detik karena status
+    // "sudah rilis" bergantung pada jam sekarang.
+    const ANALYZE_CACHE_TTL = 60 * 1000;
+    const key = 'analyze|' + dateEventKey(e) + '|' + String(e.Actual ?? '') + '|' + String(e.Forecast ?? '') + '|' + String(e.Previous ?? '') + '|' + String(e.Importance ?? '') + '|' + bucketOf(Date.now(), ANALYZE_CACHE_TTL);
+    const cached = memoGet(key);
+    if (cached !== undefined) return cached;
+    const result = analyzeUncached(e);
+    memoSet(key, result, ANALYZE_CACHE_TTL);
+    return result;
+}
+
+function analyzeUncached(e) {
     const name = (e.Event || e.Category || '').toLowerCase();
     const country = countryCode(e.Country);
     const forecast = num(e.Forecast || e.TEForecast);
@@ -2852,6 +2937,18 @@ function detectPriceSpike(bars, livePrice = null, { lookback = 60 } = {}) {
 // Rangkuman konfluensi per aset: arah teknikal = mayoritas vote (EMA/RSI/pola/
 // ICT) dengan minimal 3 suara searah.
 function technicalView(kind, asset) {
+    // Dipanggil untuk setiap kartu + seluruh panel teknikal/makro. Kunci memuat
+    // generasi bar dan bucket harga 10 detik (harga live memengaruhi vote).
+    const price = assetPrice(kind, asset);
+    const tkey = 'tech|' + kind + '|' + asset + '|' + BARS_GEN + '|' + bucketOf(Number(price) || 0, 10000);
+    const cached = memoGet(tkey);
+    if (cached !== undefined) return cached;
+    const out = technicalViewUncached(kind, asset);
+    memoSet(tkey, out, 30 * 1000);
+    return out;
+}
+
+function technicalViewUncached(kind, asset) {
     const price = assetPrice(kind, asset);
     if (!Number.isFinite(price) || price <= 0) return null;
     const rawBars = assetBars(asset);
@@ -3116,7 +3213,7 @@ async function loadSentiment() {
             SENTIMENT = { ...SENTIMENT_CACHE.cnn, at: SENTIMENT_CACHE.generatedAt || null };
         }
         renderMacroBoard();
-        render();
+        scheduleRender();
         return;
     }
     SENTIMENT = {
@@ -3126,7 +3223,7 @@ async function loadSentiment() {
         at: new Date().toISOString()
     };
     renderMacroBoard();
-    render();
+    scheduleRender();
 }
 
 function macroPanelHtml() {
@@ -4135,7 +4232,28 @@ function readSignalLock(e, asset) {
 }
 
 function writeSignalLock(e, asset, payload) {
-    try { localStorage.setItem(signalLockKey(e, asset), JSON.stringify(payload)); } catch {}
+    try {
+        const key = signalLockKey(e, asset);
+        const prev = localStorage.getItem(key);
+        const next = JSON.stringify(payload);
+        if (prev === next) return;
+        if (prev) {
+            // Lock identik (arah/fase/basis/level sama) tidak perlu ditulis ulang —
+            // tulis ulang tiap render membuat freshness 'at' berputar dan meng-invalid
+            // cache kartu lewat SIGNALS_REV.
+            try {
+                const p = JSON.parse(prev), n = payload;
+                const same = p && p.dir === n.dir && p.phase === n.phase && p.basis === n.basis
+                    && Number(p.entry) === Number(n.entry) && Number(p.sl) === Number(n.sl)
+                    && Number(p.tp) === Number(n.tp)
+                    && (Number(p.tp1) || 0) === (Number(n.tp1) || 0)
+                    && (Number(p.pullback) || 0) === (Number(n.pullback) || 0);
+                if (same) return;
+            } catch {}
+        }
+        localStorage.setItem(key, next);
+        SIGNALS_REV++;
+    } catch {}
 }
 
 function assetPrice(kind, asset) {
@@ -4853,7 +4971,27 @@ async function load() {
         $('#status').textContent = 'Live feed unavailable - run GitHub updater';
         $('#liveText').textContent = 'FEED OFFLINE';
     }
-    render();
+    scheduleRender();
+}
+
+// Batas jumlah kartu per render. Kalender live berisi 700-900 event; merender
+// semuanya sekaligus memblokir UI puluhan detik di perangkat mobile. Sisanya
+// bisa dimuat dengan tombol "Tampilkan lebih banyak".
+const CALENDAR_PAGE_SIZE = 100;
+let calendarLimit = CALENDAR_PAGE_SIZE;
+
+// Cache HTML kartu: kunci memuat fase news, Actual, versi lock sinyal, bucket
+// harga 30 detik dan generasi bar. Kartu yang sama tidak dihitung ulang di setiap
+// render (render dipicu tiap 20-30 detik oleh polling harga).
+function cardCached(e) {
+    const phase = newsPhase(e);
+    const key = 'card|' + dateEventKey(e) + '|' + phase + '|' + String(e.Actual ?? '') + '|' + SIGNALS_REV + '|' + BARS_GEN
+        + '|' + bucketOf(Date.now(), 30000);
+    const cached = memoGet(key);
+    if (cached !== undefined) return cached;
+    const html = card(e);
+    memoSet(key, html, 90 * 1000);
+    return html;
 }
 
 function render() {
@@ -4873,20 +5011,34 @@ function render() {
 
         return filter === 'all' || (filter === 'upcoming' && new Date(e.Date) >= now) || (filter === 'high' && e.Importance >= 3);
     });
-    
+
     $('#eventCount').textContent = events.length;
     $('#highCount').textContent = events.filter(e => e.Importance >= 3).length;
     $('#monthTitle').textContent = new Intl.DateTimeFormat('en-IN', { timeZone: WITA, month: 'long', year: 'numeric' }).format(events[0] ? new Date(events[0].Date) : now) + ' calendar';
-    
-    const groups = list.reduce((o, e) => {
+
+    // Halaman: render sebagian kartu saja supaya UI tetap responsif.
+    const totalMatching = list.length;
+    const shown = list.slice(0, calendarLimit);
+
+    const groups = shown.reduce((o, e) => {
         const d = fmtDate(new Date(e.Date));
         (o[d] ??= []).push(e);
         return o;
     }, {});
-    
-    $('#calendar').innerHTML = list.length 
-        ? Object.entries(groups).map(([day, es]) => `<div class="day"><div class="datebar"><strong>${day}</strong><span>${es.length} event${es.length > 1 ? 's' : ''}</span></div>${es.map(card).join('')}</div>`).join('')
+
+    let calendarHtml = shown.length 
+        ? Object.entries(groups).map(([day, es]) => `<div class="day"><div class="datebar"><strong>${day}</strong><span>${es.length} event${es.length > 1 ? 's' : ''}</span></div>${es.map(cardCached).join('')}</div>`).join('')
         : `<div class="empty glass"><h3>No events to show</h3><p>The live feed has not been generated yet or this filter has no matching releases.</p></div>`;
+    if (totalMatching > shown.length) {
+        const remaining = totalMatching - shown.length;
+        calendarHtml += `<div style="display:flex;justify-content:center;margin:16px 0 4px;">
+            <button type="button" id="loadMoreEvents" class="refresh" style="border:1px solid var(--line);background:rgba(5,17,25,.48);padding:10px 18px;border-radius:999px;cursor:pointer;font-weight:700;">
+                Tampilkan lebih banyak (sisa ${remaining} event)
+            </button></div>`;
+    }
+    $('#calendar').innerHTML = calendarHtml;
+    const moreBtn = document.getElementById('loadMoreEvents');
+    if (moreBtn) moreBtn.onclick = () => { calendarLimit += 200; render(); };
         
     const next = events.find(e => new Date(e.Date) >= now);
     if (next) {
@@ -4913,6 +5065,22 @@ function render() {
     if (lowEl) lowEl.textContent = events.filter(e => (+e.Importance || 1) <= 1).length;
 }
 
+// Coalesce: banyak loader (kalender, forex, crypto, reaction, markets, widget
+// harga) memanggil render hampir bersamaan. Tanpa throttle, UI menggambar ulang
+// puluhan kali per menit. renderNow() tetap instan untuk interaksi pengguna.
+let lastRenderAt = 0, renderQueued = false;
+function renderNow() {
+    lastRenderAt = Date.now();
+    render();
+}
+function scheduleRender() {
+    const wait = 1500 - (Date.now() - lastRenderAt);
+    if (wait <= 0) { renderNow(); return; }
+    if (renderQueued) return;
+    renderQueued = true;
+    setTimeout(() => { renderQueued = false; renderNow(); }, wait);
+}
+
 function updateCountdown(next) {
     clearInterval(timer);
     if (!next) { $('#countdown').textContent = '--:--:--'; return; }
@@ -4931,8 +5099,9 @@ document.querySelector('.filters').addEventListener('click', ev => {
     window.__ferihaHistory = false;
     document.querySelectorAll('[data-filter]').forEach(x => x.classList.remove('active'));
     b.classList.add('active');
+    if (filter !== b.dataset.filter) calendarLimit = CALENDAR_PAGE_SIZE;
     filter = b.dataset.filter;
-    render();
+    renderNow();
 });
 
 $('#refresh').onclick = () => { load(); loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadLiveBarsFallback(true); loadTradeStats(); renderTradeStats(); loadSentiment(); };
