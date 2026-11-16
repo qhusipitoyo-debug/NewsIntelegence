@@ -852,7 +852,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "-2.4%",
-    "Actual": ""
+    "Actual": "2%"
   },
   {
     "Date": "2026-11-15T23:30:00-05:00",
@@ -861,7 +861,7 @@
     "Importance": 1,
     "Forecast": "2.2%",
     "Previous": "2.2%",
-    "Actual": ""
+    "Actual": "2%"
   },
   {
     "Date": "2026-11-16T06:00:00.000Z",
@@ -6863,7 +6863,7 @@
     "Country": "JPY",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "2%",
     "Actual": ""
   },
   {
@@ -7960,6 +7960,132 @@
     "Event": "Unemployment Rate",
     "Country": "AUD",
     "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T05:30:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T07:45:00.000Z",
+    "Event": "Business Confidence",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T08:00:00.000Z",
+    "Event": "Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T08:00:00.000Z",
+    "Event": "Austria-CPI-CPI NSA*",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T08:00:00.000Z",
+    "Event": "Harmonised Inflation Rate YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T08:00:00.000Z",
+    "Event": "Harmonised Inflation Rate MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T09:00:00.000Z",
+    "Event": "Ifo Business Climate",
+    "Country": "EUR",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T10:00:00.000Z",
+    "Event": "Core Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T10:00:00.000Z",
+    "Event": "HICP Excluding Tobacco",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T10:00:00.000Z",
+    "Event": "Inflation Rate MoM Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T10:00:00.000Z",
+    "Event": "HICP ex Food & Energy MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T10:00:00.000Z",
+    "Event": "HICP ex Food & Energy YoY Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T10:00:00.000Z",
+    "Event": "Euro Zone-Inflation-HICP Ex-Tobacco Revised*",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T10:00:00.000Z",
+    "Event": "Consumer Confidence",
+    "Country": "EUR",
+    "Importance": 1,
     "Forecast": "",
     "Previous": "",
     "Actual": ""
