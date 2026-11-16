@@ -1325,19 +1325,20 @@ function anchorQuotesToBroker(quotes, now = Date.now()) {
     for (const [pair, q] of Object.entries(out)) {
         if (!q || typeof q !== 'object') continue;
         const bq = brokerQuoteFor(pair, now);
-        if (!bq || !Number.isFinite(bq.mid) || bq.mid <= 0) continue;
+        // Jika tidak ada data broker atau data basi, jangan paksa anchor —
+        // harga scanner (FBS bila tersedia) sudah cukup akurat. Campuran 50/50
+        // dengan data basi justru akan mendorong harga ke angka lama.
+        if (!bq || !Number.isFinite(bq.mid) || bq.mid <= 0 || bq.stale) continue;
         const price = Number(q.price);
-        const anchored = Number.isFinite(price) && price > 0
-            ? (bq.stale ? bq.mid * 0.5 + price * 0.5 : bq.mid)
-            : bq.mid;
+        const anchored = Number.isFinite(price) && price > 0 ? bq.mid : bq.mid;
         out[pair] = {
             ...q,
             price: Number(anchored.toFixed(7)),
             source: q.source
-                ? q.source + ' (dianchor ke FBS broker ' + (bq.stale ? 'basi' : 'segara') + ')'
+                ? q.source + ' (FBS broker segar)'
                 : 'FBS broker mid',
             brokerAnchored: true,
-            brokerStale: !!bq.stale
+            brokerStale: false
         };
     }
     return out;
@@ -1350,9 +1351,8 @@ function anchorAssetPrice(asset, rawPrice) {
     const p = Number(rawPrice);
     if (!Number.isFinite(p) || p <= 0) return p;
     const bq = brokerQuoteFor(asset);
-    if (!bq || !Number.isFinite(bq.mid) || bq.mid <= 0) return p;
-    const anchored = bq.stale ? bq.mid * 0.5 + p * 0.5 : bq.mid;
-    return Number(anchored.toFixed(7));
+    if (!bq || !Number.isFinite(bq.mid) || bq.mid <= 0 || bq.stale) return p;
+    return Number(bq.mid.toFixed(7));
 }
 
 function applyForexPayload(j, fallbackSource, live) {
@@ -1463,18 +1463,34 @@ function buildForexScanPayload(feeds, now) {
         }
         if (!prices.length) continue;
         const oanda = Number(feeds && feeds.OANDA && feeds.OANDA[pair] && feeds.OANDA[pair].price);
-        const anchored = Number.isFinite(oanda) && oanda > 0;
-        const anchor = anchored ? oanda : forexMedian(prices);
+        const fbs = Number(feeds && feeds.FBS && feeds.FBS[pair] && feeds.FBS[pair].price);
+        // Prefer FBS price as anchor agar selisih harga tampilan dengan eksekusi
+        // broker FBS minimal, tanpa perlu memperbarui file forex-broker.json secara manual.
+        let anchor, anchorSource;
+        if (Number.isFinite(fbs) && fbs > 0) {
+            anchor = fbs;
+            anchorSource = 'FBS (live scanner)';
+        } else if (Number.isFinite(oanda) && oanda > 0) {
+            anchor = oanda;
+            anchorSource = 'OANDA';
+        } else {
+            anchor = forexMedian(prices);
+            anchorSource = 'broker consensus';
+        }
         const references = prices.filter(p => Math.abs(p - anchor) > 1e-12);
         const crossCheckPct = references.length
             ? Math.max(...references.map(p => (Math.abs(p - anchor) / anchor) * 100))
             : 0;
-        const change = feeds && feeds.OANDA && feeds.OANDA[pair] && feeds.OANDA[pair].changePct;
+        const change = Number.isFinite(Number(feeds && feeds.FBS && feeds.FBS[pair] && feeds.FBS[pair].changePct))
+            ? Number(feeds.FBS[pair].changePct)
+            : (Number.isFinite(Number(feeds && feeds.OANDA && feeds.OANDA[pair] && feeds.OANDA[pair].changePct))
+                ? Number(feeds.OANDA[pair].changePct)
+                : null);
         quotes[pair] = {
-            price: anchor,
+            price: Number(anchor.toFixed(7)),
             consensus: forexMedian(prices),
-            source: anchored ? 'OANDA' : 'broker consensus',
-            changePct: Number.isFinite(Number(change)) ? Number(change) : null,
+            source: anchorSource,
+            changePct: change,
             crossCheckPct: Number(crossCheckPct.toFixed(3)),
             providers,
             updatedAt: now.toISOString()
@@ -1487,8 +1503,8 @@ function buildForexScanPayload(feeds, now) {
     }
     return {
         generatedAt: now.toISOString(),
-        source: 'OANDA (live scanner)',
-        anchor: 'OANDA',
+        source: 'TradingView live scanner (anchor FBS bila tersedia)',
+        anchor: 'FBS',
         quotes,
         rates: forexRatesFromQuotes(quotes),
         providers: providerStatus
