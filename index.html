@@ -438,8 +438,6 @@ const WINRATE_PARAMS = {
     // Simulasi: asumsi slippage + spread (% dari harga) yang dikurangi dari hasil.
     // Dikonversi ke satuan R di simulateTradeOnBars (slip / jarak SL), bukan dikurangi mentah.
     slippagePct: { gold: 0.02, forex: 0.01, crypto: 0.05, index: 0.02 },
-    // Backtest kalender: isi arah dari bias Forecast bila sinyal pasca-rilis tidak ada (TIDAK sama dengan live).
-    backtestPreNewsFallback: false,
     // Model exit: porsi posisi yang ditutup di TP1 (sisanya lari ke TP2 dengan SL di BE).
     tp1Fraction: 0.5,
     // Jarak TP1 dalam kelipatan R (1.0 = 1:1). Dipakai computeSignalLevels DAN simulasi.
@@ -1065,11 +1063,6 @@ function summarizeTradeSet(trades) {
         ? (grossLossR > 0 ? Number((grossWinR / grossLossR).toFixed(2)) : (grossWinR > 0 ? Infinity : null))
         : null;
     const expectancyR = closedCount > 0 ? Number((netR / closedCount).toFixed(2)) : null;
-    // Metrik bebas bias penyensoran: semua trade (closed + open dimark-to-market). "Closed saja" condong
-    // optimistis karena trade yang cepat menyentuh TP1 langsung dihitung closed, sedangkan trade yang
-    // berputar-putar atau menjauhi entry tetap 'open' dan tidak masuk statistik.
-    const allNetR = Number(list.reduce((s, t) => s + (Number(t.r) || 0), 0).toFixed(2));
-    const allExpectancyR = list.length > 0 ? Number((allNetR / list.length).toFixed(2)) : null;
     const avgWinR = wins.length ? Number((grossWinR / wins.length).toFixed(2)) : null;
     const avgLossR = losses.length ? Number((grossLossR / losses.length).toFixed(2)) : null;
     // Winrate minimum agar impas dengan rata-rata win/loss saat ini (diagnostik).
@@ -1097,8 +1090,6 @@ function summarizeTradeSet(trades) {
         avgWinR,
         avgLossR,
         breakEvenWinPct,
-        allNetR,
-        allExpectancyR,
         verdict
     };
 }
@@ -1233,24 +1224,15 @@ function evaluateSignalHistory({
 
         // 1. Evaluasi sinyal rilis event historis (Actual vs Forecast/Previous + reaksi) dalam rentang bar
         if (Array.isArray(eventList)) {
-            // Beberapa event dirilis pada menit yang sama (mis. PPI & Core PPI) dan menghasilkan
-            // trade identik -> dihitung ganda. Ambil satu per (aset, menit rilis), impact tertinggi dulu.
-            const seenRelease = new Set();
-            const ordered = eventList.slice().sort((x, y) => (+y.Importance || 1) - (+x.Importance || 1));
-            for (const ev of ordered) {
+            for (const ev of eventList) {
                 if ((+ev.Importance || 1) < 2) continue;
-                const relKey = `${asset}|${Math.floor(Date.parse(ev.Date) / 60000)}`;
-                if (seenRelease.has(relKey)) continue;
                 const relMs = Date.parse(ev.Date);
                 if (!Number.isFinite(relMs) || relMs + 15 * 60000 < firstMs || relMs + 20 * 60000 >= lastMs) continue;
                 const entryIdx = bars.findIndex(b => Number(b.k) * 60000 >= relMs + 15 * 60000);
                 if (entryIdx < 1 || entryIdx >= bars.length - 1) continue;
                 const bias = typeof preNewsBias === 'function' ? preNewsBias(ev) : null;
                 const sig = typeof signalDirectionCore === 'function' ? signalDirectionCore(ev, asset, kind, relMs + 16 * 60000) : null;
-                // Sistem live menjawab WAIT bila reaksi/momentum/Actual tidak memberi arah; bias Forecast hanya
-                // berlaku PRA-rilis. Mengisi arah dari bias Forecast pada +15 menit pasca-rilis memasukkan trade
-                // yang tidak akan pernah diambil live (mayoritas basis 'flat'), jadi hanya aktif bila diminta.
-                const rawDir = (sig && sig.dir) || (WINRATE_PARAMS.backtestPreNewsFallback && bias && typeof mapAssetBias === 'function' ? mapAssetBias(kind, asset, bias.dir, ev) : null);
+                const rawDir = (sig && sig.dir) || (bias && typeof mapAssetBias === 'function' ? mapAssetBias(kind, asset, bias.dir, ev) : null);
                 if (!rawDir) continue;
                 const px = Number(bars[entryIdx].c);
                 const lvl = typeof computeSignalLevels === 'function'
@@ -1258,7 +1240,6 @@ function evaluateSignalHistory({
                     : null;
                 if (!lvl || !lvl.sl || !lvl.tp) continue;
                 const sim = simulateTradeOnBars(rawDir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(entryIdx + 1), kind);
-                seenRelease.add(relKey);
                 trades.push({
                     origin: 'calendar',
                     kind,
@@ -1435,7 +1416,6 @@ function signalHistoryHtml(res) {
             <div class="hist-kpi"><small>Expectancy / Sinyal</small><b>${expStr}</b></div>
             <div class="hist-kpi"><small>Gross Win / Loss</small><b>+${ov.grossWinR.toFixed(1)}R / -${ov.grossLossR.toFixed(1)}R</b></div>
             <div class="hist-kpi"><small>Avg Win / Avg Loss</small><b>${ov.avgWinR == null ? '—' : '+' + ov.avgWinR.toFixed(2)}R / ${ov.avgLossR == null ? '—' : '-' + ov.avgLossR.toFixed(2)}R</b></div>
-            <div class="hist-kpi"><small>Expectancy SEMUA trade (incl. open)</small><b style="color:${ov.allExpectancyR > 0 ? 'var(--green)' : ov.allExpectancyR < 0 ? 'var(--red)' : 'var(--text)'};">${ov.allExpectancyR == null ? '—' : (ov.allExpectancyR >= 0 ? '+' : '') + ov.allExpectancyR.toFixed(2) + ' R'} <span style="font-size:10px;font-weight:400;color:var(--muted);">(${ov.total} trade)</span></b></div>
             <div class="hist-kpi"><small>Winrate Impas</small><b>${ov.breakEvenWinPct == null ? '—' : ov.breakEvenWinPct.toFixed(1) + '%'}</b></div>
         </div>
         <div class="hist-classes">${classCards}</div>
@@ -3027,10 +3007,7 @@ function mapPairBias(pair, dir, country) {
     }
     if (c === base) return dir;
     if (c === quote) return invertDir(dir);
-    // Event mata uang lain (mis. GBP/CAD) TIDAK menentukan arah pair yang tidak memuat
-    // mata uang itu. Sebelumnya baris ini memetakannya seolah event USD (sinyal palsu
-    // di EUR/USD, AUD/USD, USD/JPY, dst. dari data Inggris/Kanada).
-    return null;
+    return base === 'USD' ? invertDir(dir) : dir;
 }
 
 // Actual adalah satu-satunya dasar klaim "kejutan ekonomi". Kalau Forecast belum
@@ -3769,9 +3746,6 @@ function mapAssetBias(kind, asset, dir, e) {
     if (dir !== 'long' && dir !== 'short') return null;
     const name = (e && (e.Event || e.Category)) || '';
     if (kind === 'forex') return mapPairBias(asset, dir, e && e.Country);
-    // Emas, kripto, dan indeks dinilai dalam USD: hanya katalis USD yang valid.
-    const evCur = e && e.Country ? countryCode(e.Country) : '';
-    if (evCur && evCur !== 'USD') return null;
     if (kind === 'index' || kind === 'crypto') return RATE_DRIVEN_EVENT.test(name) ? dir : null;
     return dir;
 }
