@@ -1421,6 +1421,9 @@ function signalHistoryHtml(res) {
     const shortTip = !res.usedHistory5d
         ? `<div style="font-size:11px;color:var(--amber);margin-bottom:10px;">⚠️ Saat ini hanya memakai bar 1 menit ~4.5 jam terakhir (${esc(rangeTxt)}), sehingga banyak sinyal belum sempat menyentuh SL/TP2. Jalankan <code>node scripts/fetch-calendar.mjs</code> untuk mengisi <b>data/history-bars.json</b> (backtest penuh 5 hari lintas sesi London/NY & rilis berita).</div>`
         : '';
+    const engineSampleTip = ov.closedCount < 10
+        ? `<div style="font-size:11px;color:var(--amber);margin-bottom:10px;">⚠️ Panel ini sekarang <b>hanya mengukur setup pasca-rilis yang lolos SignalEngine</b>. Sampel closed baru <b>${ov.closedCount}</b> trade — terlalu kecil untuk disebut winrate. Penyebabnya: dari ratusan event kalender, hanya segeligit yang punya <b>Actual + Forecast</b> dan berada di dalam rentang <b>data/history-bars.json</b>. NO TRADE / angka kosong adalah hasil yang benar, bukan sinyal Watch yang disembunyikan. Perbanyak Actual pada kalender & bar historis untuk evaluasi yang signifikan.</div>`
+        : '';
 
     return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;color:var(--aqua);">📈 Evaluasi Winrate &amp; Profit/Loss History Sinyal (Model TP1 1:1 BE-Lock + TP2 1:2)</div>
         <div class="hist-verdict ${verdictCls}">
@@ -1431,6 +1434,7 @@ function signalHistoryHtml(res) {
             <div style="font-size:11px;color:var(--muted);text-align:right;">Closed: <b>${ov.closedCount}</b> (TP2: <b>${ov.tp2Count}</b>, TP1: <b>${ov.tp1Count}</b>, SL: <b>${ov.lossesCount}</b>) • Open: <b>${ov.openCount}</b> (Unrealized ${ov.unrealizedR >= 0 ? '+' : ''}${ov.unrealizedR.toFixed(2)}R)</div>
         </div>
         ${shortTip}
+        ${engineSampleTip}
         <div class="hist-grid">
             <div class="hist-kpi"><small>Winrate (Closed)</small><b style="color:${ov.winRatePct >= 50 ? 'var(--green)' : ov.winRatePct != null ? 'var(--red)' : 'var(--muted)'};">${wrStr}</b></div>
             <div class="hist-kpi"><small>Profit Factor</small><b>${pfStr}</b></div>
@@ -3838,7 +3842,13 @@ function signalEngineSignal(e, asset, kind, dirText, now = Date.now()) {
 
     // Event format engine: { id, title, currency, impact, ts, actual, forecast }
     const evEng = { id: dateEventKey(e), title: e.Event || e.Category || '', currency: countryCode(e.Country), impact, ts: releasedAt, actual: e.Actual, forecast: e.Forecast };
-    const fundDir = dirText === 'long' ? 1 : dirText === 'short' ? -1 : 0;
+    // Arah fundamental HARUS memakai pemetaan aset-relative milik engine.
+    // analyze()+mapActualBias() halaman bersifat USD-sentris dan menolak event
+    // non-USD (mis. JPY GDP), sehingga engine kelaparan sinyal walaupun Actual,
+    // surprise, dan reaksi harga valid. Fallback ke peta halaman hanya bila aset
+    // tidak dikenal engine.
+    const seFund = typeof SE.fundamentalDir === 'function' ? SE.fundamentalDir(evEng, asset) : 0;
+    const fundDir = seFund || (dirText === 'long' ? 1 : dirText === 'short' ? -1 : 0);
     const g = SE.tradeGate(evEng, asset, { minsSince, react, atr5: a5, fundDir });
     if (!g.ok) return { engineReject: g.why };
 
@@ -3860,7 +3870,7 @@ function signalEngineSignal(e, asset, kind, dirText, now = Date.now()) {
             rr: SE.CONFIG.tp2R / SE.CONFIG.tp1R, kind, dec, stopPips: null, riskPct: null,
             impulse: { low: rngLo, high: rngHi }
         },
-        note: `Engine: order LIMIT ${dir === 'long' ? 'BUY' : 'SELL'} di retrace 50% impuls ${o.entry.toFixed(dec)} — jangan kejar harga. SL struktural di balik asal impuls, TP1 1R (SL→BE), TP2 2R. Reaksi ${(react.movePct >= 0 ? '+' : '') + react.movePct.toFixed(2)}% dalam ${react.minutes} mnt ≥ 1.0× ATR(5m), Actual & harga searah. Order hangus ${SE.CONFIG.orderTtlMin} mnt bila tak terisi.`
+        note: `Engine: order LIMIT ${dir === 'long' ? 'BUY' : 'SELL'} di retrace 50% impuls ${o.entry.toFixed(dec)} — jangan kejar harga. SL struktural di balik asal impuls, TP1 1R (SL→BE), TP2 2R. Reaksi ${(react.movePct >= 0 ? '+' : '') + react.movePct.toFixed(2)}% dalam ${react.minutes} mnt ≥ 1.5× ATR(5m), Actual & harga searah. Order hangus ${SE.CONFIG.orderTtlMin} mnt bila tak terisi.`
     };
 }
 
