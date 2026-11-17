@@ -413,23 +413,23 @@ const WATCH_HOLD_SCORE = 0.55;
 // Semakin tinggi ambang, semakin sedikit sinyal tapi semakin tinggi akurasinya.
 // ═════════════════════════════════════════════════════════════════════
 const WINRATE_PARAMS = {
-    // Skor gabungan minimum agar sinyal WATCH dianggap AKTIF (default lama 1.25).
-    // Dinaikkan agar hanya konfluensi kuat yang menghasilkan entry.
-    minNetScoreActive: 1.6,
+    // Skor gabungan minimum agar sinyal WATCH dianggap AKTIF. Dinaikkan agar
+    // hanya konfluensi sangat kuat yang menghasilkan entry.
+    minNetScoreActive: 2.0,
     // Minimal jumlah faktor yang harus searah (aligned) untuk sinyal aktif.
-    minAlignedFactors: 2,
+    // Naik ke 3 dari 4 (makro, mikro, F&G, spike) — sinyal harus konvergen.
+    minAlignedFactors: 3,
     // Jika netScore >= ini, satu faktor yang cukup (aligned >= 1) sudah boleh aktif.
-    strongNetScoreBypass: 2.2,
+    strongNetScoreBypass: 2.8,
     // Confidence minimum agar levels ditampilkan & order dianggap "fillable".
-    minConfidence: 65,
-    // Confidence minimum untuk sinyal pre-news (forecast basis).
-    minConfidencePre: 70,
+    minConfidence: 80,
+    // Confidence minimum untuk sinyal pre-news (forecast basis) — lebih ketat.
+    minConfidencePre: 85,
     // Jangan trade saat volatilitas ATR 1 menit melebihi ini (%) — pasar terlalu liar.
-    maxAtrPct: { gold: 1.2, forex: 0.10, crypto: 2.0, index: 0.8 },
+    maxAtrPct: { gold: 1.0, forex: 0.08, crypto: 1.5, index: 0.6 },
     // Jangan trade saat ATR di bawah ini — pasar terlalu sepi / noise spread.
-    minAtrPct: { gold: 0.05, forex: 0.015, crypto: 0.10, index: 0.05 },
+    minAtrPct: { gold: 0.06, forex: 0.02, crypto: 0.12, index: 0.06 },
     // Batasi sinyal pada sesi likuransi tinggi (UTC): London 7-17, NY 13-22.
-    // Kosongkan array = nonaktifkan filter sesi.
     activeUtcHours: [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
     // RR target dasar; dinaikkan saat confidence tinggi untuk menang lebih besar.
     baseRR: 2.0,
@@ -438,6 +438,12 @@ const WINRATE_PARAMS = {
     rrConfidenceThreshold: 80,
     // Simulasi: asumsi slippage + spread (pip/poin) yang dikurangi dari hasil.
     slippagePct: { gold: 0.02, forex: 0.01, crypto: 0.05, index: 0.02 },
+    // Filter tren wajib: hanya BUY saat EMA20 > EMA50, hanya SELL saat EMA20 < EMA50.
+    requireTrendAlignment: true,
+    // Konfirmasi momentum wajib: harga harus sudah bergerak ke arah sinyal.
+    requireMomentumConfirm: true,
+    // Minimal momentum change (%) untuk konfirmasi arah.
+    minMomentumConfirmPct: { gold: 0.08, forex: 0.04, crypto: 0.15, index: 0.05 },
 };
 function recordLiveTick(asset, price, now = Date.now()) {
     const p = Number(price);
@@ -3805,6 +3811,20 @@ function signalDirectionCore(e, asset, kind, now = Date.now()) {
 // sinyal yang SEARAH tren teknikal diperkuat konfluensinya.
 function applyMarketContext(sig, kind, asset) {
     if (!sig || (sig.dir !== 'long' && sig.dir !== 'short') || (sig.phase !== 'post' && sig.phase !== 'pre')) return sig;
+
+    // Filter volatilitas ATR — jangan trade saat terlalu sepi atau terlalu liar.
+    const volOk = volRegimeOk(kind, asset);
+    if (!volOk.ok) {
+        return { ...sig, dir: null, blocked: true, basis: 'vol-block', ctx: null, conf: null,
+            note: `Sinyal dibatalkan: ${volOk.reason}` };
+    }
+
+    // Filter sesi likuransi UTC.
+    if (!inActiveUtcSession()) {
+        return { ...sig, dir: null, blocked: true, basis: 'session-block', ctx: null, conf: null,
+            note: 'Sinyal dibatalkan: di luar sesi likuransi tinggi (UTC 07–21).' };
+    }
+
     const usd = typeof usdBias === 'function' ? usdBias() : null;
     const fgEff = typeof effectiveFearGreed === 'function' ? effectiveFearGreed() : null;
     const ctx = contextAlignment({
@@ -3819,35 +3839,42 @@ function applyMarketContext(sig, kind, asset) {
             note: `Sinyal dibatalkan: basis ${sig.basis === 'actual' ? 'Actual' : 'momentum'} lemah dan melawan konteks pasar.${ctxNote}` };
     }
 
-    // Guard Konfluensi Tren Teknikal (EMA20 vs EMA50 & Price Action)
+    // Guard Konfluensi Tren Teknikal (EMA20 vs EMA50 & Price Action) — WAJIB.
     const tech = typeof technicalView === 'function' ? technicalView(kind, asset) : null;
     let techNote = '';
+    let trendAligned = false;
     if (tech && Number.isFinite(tech.emaFast) && Number.isFinite(tech.emaSlow)) {
         const isBullTrend = tech.emaFast > tech.emaSlow;
         const isBearTrend = tech.emaFast < tech.emaSlow;
         const sigIsBuy = sig.dir === 'long';
         const sigIsSell = sig.dir === 'short';
 
-        if (sigIsBuy && isBearTrend && tech.dir === 'sell' && tech.price < tech.emaFast) {
-            if (sig.basis !== 'reaction' || (sig.reaction && sig.reaction.faded)) {
-                return {
-                    ...sig, dir: null, blocked: true, basis: 'conflict-trend', ctx, conf: null,
-                    note: `Sinyal BUY dibatalkan: Melawan tren bearish teknikal (${tech.trendText}). Hindari counter-trend; gunakan Straddle/Breakout OCO.${ctxNote}`
-                };
-            }
-        } else if (sigIsSell && isBullTrend && tech.dir === 'buy' && tech.price > tech.emaFast) {
-            if (sig.basis !== 'reaction' || (sig.reaction && sig.reaction.faded)) {
-                return {
-                    ...sig, dir: null, blocked: true, basis: 'conflict-trend', ctx, conf: null,
-                    note: `Sinyal SELL dibatalkan: Melawan tren bullish teknikal (${tech.trendText}). Hindari counter-trend; gunakan Straddle/Breakout OCO.${ctxNote}`
-                };
-            }
-        } else if ((sigIsBuy && isBullTrend) || (sigIsSell && isBearTrend)) {
+        if ((sigIsBuy && isBullTrend) || (sigIsSell && isBearTrend)) {
+            trendAligned = true;
             techNote = ` • ✅ Konfluensi Tren: Sinyal searah ${tech.trendText}`;
+        } else {
+            // Counter-trend: hanya diperbolehkan jika basis 'reaction' dengan gerak
+            // harga sangat kuat dan tidak faded. Selain itu diblokir.
+            const isCounter = (sigIsBuy && isBearTrend) || (sigIsSell && isBullTrend);
+            if (isCounter) {
+                const strongReaction = sig.basis === 'reaction'
+                    && sig.reaction
+                    && !sig.reaction.faded
+                    && Math.abs(Number(sig.reaction.movePct || 0)) >= 0.15;
+                if (!strongReaction) {
+                    return {
+                        ...sig, dir: null, blocked: true, basis: 'conflict-trend', ctx, conf: null,
+                        note: `Sinyal ${sigIsBuy ? 'BUY' : 'SELL'} dibatalkan: Melawan tren ${tech.trendText} (${tech.trendText}). Hindari counter-trend; gunakan Straddle/Breakout OCO.${ctxNote}`
+                    };
+                }
+                techNote = ` • ⚠️ Counter-trend tapi reaksi kuat (${tech.trendText})`;
+            }
         }
+    } else {
+        // Tidak ada data EMA — jaga konservatif, tidak boost confidence.
     }
 
-    const confBoost = techNote ? 8 : (ctx.align === 'with' ? 6 : ctx.align === 'against' ? -10 : 0);
+    const confBoost = trendAligned ? 10 : (techNote.includes('Counter-trend') ? -5 : (ctx.align === 'with' ? 6 : ctx.align === 'against' ? -10 : 0));
     const conf = Number.isFinite(sig.conf) ? Math.round(clampNum(sig.conf + confBoost, 30, 95)) : sig.conf;
     return { ...sig, ctx, conf, sizeFactor: ctx.size, note: `${sig.note || ''}${ctxNote}${techNote}${ctx.size < 1 ? ` • ukuran posisi ${ctx.size}× (melawan konteks)` : ''}` };
 }
@@ -4077,6 +4104,28 @@ function calibratedWatchSignal({
     const strongBypass = absScore >= WINRATE_PARAMS.strongNetScoreBypass && aligned >= 1;
     const scorePass = absScore >= WINRATE_PARAMS.minNetScoreActive && (enoughAligned || strongBypass);
 
+    // Filter tren wajib: BUY hanya saat EMA20 > EMA50; SELL hanya saat EMA20 < EMA50.
+    let trendOk = true;
+    if (WINRATE_PARAMS.requireTrendAlignment && emaFast != null && emaSlow != null && candidateDir) {
+        const isBull = emaFast > emaSlow;
+        trendOk = (candidateDir === 'long' && isBull) || (candidateDir === 'short' && !isBull);
+        if (!trendOk) {
+            factors.push(`Tren ${isBull ? 'naik' : 'turun'} vs sinyal ${candidateDir} — diblokir`);
+        }
+    }
+
+    // Konfirmasi momentum wajib: harga harus sudah bergerak ke arah sinyal.
+    let momentumOk = true;
+    if (WINRATE_PARAMS.requireMomentumConfirm && candidateDir) {
+        const minMom = WINRATE_PARAMS.minMomentumConfirmPct[kind] || 0.05;
+        const momPct = Number.isFinite(chg) ? chg : (spike.state !== 'NONE' ? (spike.move5mPct || 0) : 0);
+        const dirSign = candidateDir === 'long' ? 1 : -1;
+        momentumOk = momPct * dirSign >= minMom;
+        if (!momentumOk) {
+            factors.push(`Momentum ${momPct.toFixed(2)}% belum mengarah ${candidateDir} — diblokir`);
+        }
+    }
+
     // Confidence kandidat dihitung sebelum keputusan aktif agar ambang kepercayaan
     // bisa difilter di sini (tidak menampilkan sinyal lemah sebagai entry).
     const confCandidate = Math.round(clampNum(52 + absScore * 9 + aligned * 3, 52, 88));
@@ -4087,6 +4136,8 @@ function calibratedWatchSignal({
         scorePass &&
         volOk.ok &&
         sessionOk &&
+        trendOk &&
+        momentumOk &&
         confCandidate >= minConf
     );
     const holdPrev = active ? null : readWatchHold(wKey);
@@ -4094,7 +4145,21 @@ function calibratedWatchSignal({
         const heldSign = holdPrev.dir === 'long' ? 1 : -1;
         const heldScore = netScore * heldSign;
         const heldFakeout = spike.state === 'SPIKE_FADED' && spike.fadedDir === holdPrev.dir;
-        if (heldScore >= WATCH_HOLD_SCORE && !heldFakeout) {
+
+        // Jika tren EMA berbalik terhadap arah hold, atau momentum berlawanan,
+        // bersihkan hold segera (tidak menahan sinyal yang sudah invalid).
+        let holdTrendOk = true, holdMomOk = true;
+        if (WINRATE_PARAMS.requireTrendAlignment && emaFast != null && emaSlow != null) {
+            const isBull = emaFast > emaSlow;
+            holdTrendOk = (holdPrev.dir === 'long' && isBull) || (holdPrev.dir === 'short' && !isBull);
+        }
+        if (WINRATE_PARAMS.requireMomentumConfirm) {
+            const minMom = WINRATE_PARAMS.minMomentumConfirmPct[kind] || 0.05;
+            const momPct = Number.isFinite(chg) ? chg : (spike.state !== 'NONE' ? (spike.move5mPct || 0) : 0);
+            holdMomOk = momPct * heldSign >= minMom * 0.5; // sedikit lebih longgar untuk hold
+        }
+
+        if (heldScore >= WATCH_HOLD_SCORE && !heldFakeout && holdTrendOk && holdMomOk) {
             // Hysteresis: sinyal Watch yang sudah aktif tetap aktif sampai skor
             // melemah di bawah batas tahan — bukan toggle setiap kali skor
             // melintasi ambang 1.25.
@@ -4715,8 +4780,8 @@ function computeSignalLevels(kind, asset, dir, price, e, signal) {
         // Saat pasar tenang formula tetap yang menang; saat rilis high-impact
         // SL melebar mengikuti pasar, dan tetap di-clamp agar tidak melar.
         const stopPips = clampNum(
-            Math.max(basePips * (1 + 0.35 * Math.max(0, impact - 2)) + 0.25 * volPips, atrPips * 1.2 + spreadPips * 1.5),
-            basePips, basePips * 1.8
+            Math.max(basePips * (1 + 0.35 * Math.max(0, impact - 2)) + 0.25 * volPips, atrPips * 1.5 + spreadPips * 2.0),
+            basePips, basePips * 2.2
         );
         let stop = stopPips * pip;
         const structD = structureStopDistance(asset, isBuy, entry, Date.parse(e.Date), info ? info.atr : 0);
@@ -4735,11 +4800,11 @@ function computeSignalLevels(kind, asset, dir, price, e, signal) {
     const base = kind === 'gold' ? 0.55
         : kind === 'crypto' ? (asset === 'BTC/USD' ? 1.2 : 1.5)
         : 0.6;
-    const riskPctFixed = clampNum(base * (1 + 0.30 * Math.max(0, impact - 2)) + 0.20 * vol, base, base * 2.0);
+    const riskPctFixed = clampNum(base * (1 + 0.30 * Math.max(0, impact - 2)) + 0.20 * vol, base, base * 2.5);
     const info = atrInfo(asset, price);
     // Lantai ATR diterapkan SETELAH clamp pola tetap: kalau volatilitas riil
     // 1 menit melebihi pola (rilis besar), SL mengikuti pasar — bukan sebaliknya.
-    let riskPct = info ? Math.max(riskPctFixed, info.atrPct * 1.6) : riskPctFixed;
+    let riskPct = info ? Math.max(riskPctFixed, info.atrPct * 2.0) : riskPctFixed;
     const structD = structureStopDistance(asset, isBuy, entry, Date.parse(e.Date), info ? info.atr : 0);
     if (structD) {
         const structPct = structD / entry * 100;
