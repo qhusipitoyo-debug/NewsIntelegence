@@ -407,6 +407,38 @@ const WATCH_LOCK_TTL_MS = 4 * 60 * 60 * 1000;
 // Skor minimum untuk MENAHAN sinyal Watch yang sudah aktif (hysteresis): cukup
 // kuat untuk tetap aktif, tetapi re-entry butuh konfluensi penuh (>= 1.25).
 const WATCH_HOLD_SCORE = 0.55;
+
+// ═════════════════════════════════════════════════════════════════════
+// PARAMETER KALIBRASI WINRATE — sesuaikan ambang kelayakan sinyal di sini.
+// Semakin tinggi ambang, semakin sedikit sinyal tapi semakin tinggi akurasinya.
+// ═════════════════════════════════════════════════════════════════════
+const WINRATE_PARAMS = {
+    // Skor gabungan minimum agar sinyal WATCH dianggap AKTIF (default lama 1.25).
+    // Dinaikkan agar hanya konfluensi kuat yang menghasilkan entry.
+    minNetScoreActive: 1.6,
+    // Minimal jumlah faktor yang harus searah (aligned) untuk sinyal aktif.
+    minAlignedFactors: 2,
+    // Jika netScore >= ini, satu faktor yang cukup (aligned >= 1) sudah boleh aktif.
+    strongNetScoreBypass: 2.2,
+    // Confidence minimum agar levels ditampilkan & order dianggap "fillable".
+    minConfidence: 65,
+    // Confidence minimum untuk sinyal pre-news (forecast basis).
+    minConfidencePre: 70,
+    // Jangan trade saat volatilitas ATR 1 menit melebihi ini (%) — pasar terlalu liar.
+    maxAtrPct: { gold: 1.2, forex: 0.10, crypto: 2.0, index: 0.8 },
+    // Jangan trade saat ATR di bawah ini — pasar terlalu sepi / noise spread.
+    minAtrPct: { gold: 0.05, forex: 0.015, crypto: 0.10, index: 0.05 },
+    // Batasi sinyal pada sesi likuransi tinggi (UTC): London 7-17, NY 13-22.
+    // Kosongkan array = nonaktifkan filter sesi.
+    activeUtcHours: [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
+    // RR target dasar; dinaikkan saat confidence tinggi untuk menang lebih besar.
+    baseRR: 2.0,
+    maxRR: 3.0,
+    // Confidence di atas ini naikkan RR target ke maxRR.
+    rrConfidenceThreshold: 80,
+    // Simulasi: asumsi slippage + spread (pip/poin) yang dikurangi dari hasil.
+    slippagePct: { gold: 0.02, forex: 0.01, crypto: 0.05, index: 0.02 },
+};
 function recordLiveTick(asset, price, now = Date.now()) {
     const p = Number(price);
     if (!asset || !Number.isFinite(p) || p <= 0) return;
@@ -936,43 +968,65 @@ function writeLiveSignalHistory(list) {
     try { localStorage.setItem(SIGNAL_HISTORY_KEY, JSON.stringify(list.slice(-120))); } catch {}
 }
 
-function simulateTradeOnBars(dir, entry, sl, tp1, tp2, forwardBars) {
+function simulateTradeOnBars(dir, entry, sl, tp1, tp2, forwardBars, kind = '') {
     const isBuy = dir === 'long';
     const risk = Math.abs(entry - sl);
     if (!(risk > 0) || !Array.isArray(forwardBars) || !forwardBars.length) {
         return { outcome: 'OPEN', closed: false, r: 0, tp1Hit: false, exitBarIdx: -1, exitPrice: entry };
     }
+    // Slippage per aset (persen dari harga) — menurunkan hasil exit secara realistik.
+    const slipPct = Number(WINRATE_PARAMS.slippagePct[kind]) || 0;
+    const slip = entry * (slipPct / 100);
     const tp1Val = Number.isFinite(Number(tp1)) && Number(tp1) > 0 ? Number(tp1) : (isBuy ? entry + risk : entry - risk);
+    const tp2Val = Number.isFinite(Number(tp2)) && Number(tp2) > 0 ? Number(tp2) : (isBuy ? entry + risk * 2 : entry - risk * 2);
     let tp1Hit = false;
+    let entryFilled = false;
     for (let j = 0; j < forwardBars.length; j++) {
         const b = forwardBars[j];
         const h = Number(b && b.h), l = Number(b && b.l);
         if (!(h > 0 && l > 0)) continue;
+        // Order belum terisi: harga harus melewati level entry terlebih dahulu.
+        if (!entryFilled) {
+            const filled = isBuy ? h >= entry : l <= entry;
+            if (!filled) continue;
+            entryFilled = true;
+            // Saat gap entry langsung melewati SL (tidak mungkin entry di harga baik),
+            // anggap entry tercapai lalu secepatnya kena SL di bar yang sama.
+        }
+        // Setelah entry: cek SL dulu (invalidasi), baru target.
+        if (isBuy ? l <= sl : h >= sl) {
+            const exitPx = Math.max(sl - slip, 0);
+            return { outcome: 'LOSS', closed: true, r: -1 - slipPct / 100, tp1Hit: false, exitBarIdx: j, exitPrice: exitPx };
+        }
         if (!tp1Hit) {
-            if (isBuy ? l <= sl : h >= sl) {
-                return { outcome: 'LOSS', closed: true, r: -1, tp1Hit: false, exitBarIdx: j, exitPrice: sl };
-            }
             if (isBuy ? h >= tp1Val : l <= tp1Val) {
                 tp1Hit = true;
-                if (isBuy ? h >= tp2 : l <= tp2) {
-                    return { outcome: 'WIN_TP2', closed: true, r: 1.5, tp1Hit: true, exitBarIdx: j, exitPrice: tp2 };
+                // Jika TP2 juga terkena bar yang sama, ambil TP2.
+                if (isBuy ? h >= tp2Val : l <= tp2Val) {
+                    const exitPx = isBuy ? tp2Val - slip : tp2Val + slip;
+                    return { outcome: 'WIN_TP2', closed: true, r: 2 - slipPct / 100, tp1Hit: true, exitBarIdx: j, exitPrice: exitPx };
                 }
             }
         } else {
+            // Sudah tp1 (beralih ke BE). Cek kembali ke entry (BE) atau lanjut TP2.
             if (isBuy ? l <= entry : h >= entry) {
-                return { outcome: 'WIN_TP1', closed: true, r: 0.5, tp1Hit: true, exitBarIdx: j, exitPrice: entry };
+                return { outcome: 'WIN_TP1', closed: true, r: 0 - slipPct / 100, tp1Hit: true, exitBarIdx: j, exitPrice: entry };
             }
-            if (isBuy ? h >= tp2 : l <= tp2) {
-                return { outcome: 'WIN_TP2', closed: true, r: 1.5, tp1Hit: true, exitBarIdx: j, exitPrice: tp2 };
+            if (isBuy ? h >= tp2Val : l <= tp2Val) {
+                const exitPx = isBuy ? tp2Val - slip : tp2Val + slip;
+                return { outcome: 'WIN_TP2', closed: true, r: 2 - slipPct / 100, tp1Hit: true, exitBarIdx: j, exitPrice: exitPx };
             }
         }
     }
     const lastClose = Number(forwardBars[forwardBars.length - 1].c) || entry;
     const rawR = isBuy ? (lastClose - entry) / risk : (entry - lastClose) / risk;
-    if (tp1Hit) {
-        return { outcome: 'WIN_TP1', closed: true, r: Number((0.5 + 0.5 * Math.max(0, rawR)).toFixed(2)), tp1Hit: true, exitBarIdx: forwardBars.length - 1, exitPrice: lastClose };
+    if (!entryFilled) {
+        return { outcome: 'OPEN', closed: false, r: 0, tp1Hit: false, exitBarIdx: -1, exitPrice: entry };
     }
-    return { outcome: 'OPEN', closed: false, r: Number(clampNum(rawR, -1, 1.5).toFixed(2)), tp1Hit: false, exitBarIdx: forwardBars.length - 1, exitPrice: lastClose };
+    if (tp1Hit) {
+        return { outcome: 'WIN_TP1', closed: true, r: Number(clampNum(0 + 0.5 * Math.max(0, rawR) - slipPct / 100, -1, 2).toFixed(2)), tp1Hit: true, exitBarIdx: forwardBars.length - 1, exitPrice: lastClose };
+    }
+    return { outcome: 'OPEN', closed: false, r: Number(clampNum(rawR - slipPct / 100, -1, 2).toFixed(2)), tp1Hit: false, exitBarIdx: forwardBars.length - 1, exitPrice: lastClose };
 }
 
 function summarizeTradeSet(trades) {
@@ -1076,7 +1130,7 @@ function syncLiveSignalHistory(now = Date.now()) {
         const bars = (typeof barsOf === 'function' ? barsOf(item.asset) : []).filter(b => Number(b.k) * 60000 >= item.at - 60000);
         const probeBars = px > 0 ? bars.concat([{ k: Math.floor(now / 60000), o: px, h: px, l: px, c: px }]) : bars;
         if (!probeBars.length) return item;
-        const sim = simulateTradeOnBars(item.dir, item.entry, item.sl, item.tp1, item.tp, probeBars);
+        const sim = simulateTradeOnBars(item.dir, item.entry, item.sl, item.tp1, item.tp, probeBars, item.kind);
         return { ...item, outcome: sim.outcome, closed: sim.closed, tp1Hit: sim.tp1Hit || item.tp1Hit, r: sim.r };
     });
 
@@ -1142,7 +1196,7 @@ function evaluateSignalHistory({
                     ? computeSignalLevels(kind, asset, rawDir, px, ev, { movePct: sig ? sig.movePct : null })
                     : null;
                 if (!lvl || !lvl.sl || !lvl.tp) continue;
-                const sim = simulateTradeOnBars(rawDir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(entryIdx + 1));
+                const sim = simulateTradeOnBars(rawDir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(entryIdx + 1), kind);
                 trades.push({
                     origin: 'calendar',
                     kind,
@@ -1154,6 +1208,8 @@ function evaluateSignalHistory({
                     sl: lvl.sl,
                     tp1: lvl.tp1,
                     tp: lvl.tp,
+                    conf: sig && Number.isFinite(sig.conf) ? sig.conf : null,
+                    basis: sig ? sig.basis : null,
                     outcome: sim.outcome,
                     closed: sim.closed,
                     r: sim.r
@@ -1192,7 +1248,7 @@ function evaluateSignalHistory({
                 : null;
             if (!lvl || !lvl.sl || !lvl.tp) { i += 3; continue; }
             const fwdEnd = Math.min(bars.length, i + 1 + horizonBars);
-            const sim = simulateTradeOnBars(sig.dir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(i + 1, fwdEnd));
+            const sim = simulateTradeOnBars(sig.dir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(i + 1, fwdEnd), kind);
             trades.push({
                 origin: 'replay',
                 kind,
@@ -1322,6 +1378,117 @@ function signalHistoryHtml(res) {
         ${rows ? `<div style="overflow-x:auto;"><table class="hist-table"><thead><tr><th>Aset</th><th>Arah &amp; Basis</th><th>Entry</th><th>SL / TP2</th><th>Hasil</th><th>Return</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}`;
 }
 
+// ── Panel Validasi & Kalibrasi (reliabilitas winrate) ──────────────────────
+// Mengecek apakah confidence yang ditampilkan model benar-benar mencerminkan
+// hasil historis (calibration), plus pemotongan winrate per basis & aset.
+function confidenceBuckets(trades) {
+    const list = Array.isArray(trades) ? trades.filter(t => t.closed && Number.isFinite(t.conf)) : [];
+    const buckets = [
+        { lo: 50, hi: 60, label: '50–60' },
+        { lo: 60, hi: 70, label: '60–70' },
+        { lo: 70, hi: 80, label: '70–80' },
+        { lo: 80, hi: 90, label: '80–90' },
+        { lo: 90, hi: 100, label: '90–100' }
+    ];
+    return buckets.map(b => {
+        const sub = list.filter(t => t.conf >= b.lo && t.conf < b.hi);
+        const wins = sub.filter(t => t.outcome === 'WIN_TP2' || t.outcome === 'WIN_TP1');
+        const closed = sub.length;
+        const wr = closed > 0 ? Number(((wins.length / closed) * 100).toFixed(1)) : null;
+        const mid = (b.lo + b.hi) / 2;
+        const calib = wr == null ? null : Number((wr - mid).toFixed(1)); // positif = overconfident, negatif = under
+        const netR = Number(sub.reduce((s, t) => s + (Number(t.r) || 0), 0).toFixed(2));
+        return { ...b, closed, wins: wins.length, wr, mid, calib, netR };
+    });
+}
+
+function basisStats(trades) {
+    const list = Array.isArray(trades) ? trades.filter(t => t.closed) : [];
+    const byBasis = {};
+    for (const t of list) {
+        const key = t.basis || t.origin || 'unknown';
+        if (!byBasis[key]) byBasis[key] = { total: 0, wins: 0, netR: 0 };
+        byBasis[key].total++;
+        if (t.outcome === 'WIN_TP2' || t.outcome === 'WIN_TP1') byBasis[key].wins++;
+        byBasis[key].netR += Number(t.r || 0);
+    }
+    return Object.entries(byBasis).map(([k, v]) => ({
+        basis: k, total: v.total, wins: v.wins,
+        wr: v.total > 0 ? Number(((v.wins / v.total) * 100).toFixed(1)) : null,
+        netR: Number(v.netR.toFixed(2))
+    })).sort((a, b) => b.total - a.total || b.wr - a.wr);
+}
+
+function maxDrawdown(trades) {
+    const list = Array.isArray(trades) ? trades.filter(t => t.closed) : [];
+    let peak = 0, trough = 0, dd = 0, cum = 0;
+    for (const t of list) {
+        cum += Number(t.r || 0);
+        if (cum > peak) peak = cum;
+        const draw = peak - cum;
+        if (draw > dd) dd = draw;
+        trough = Math.min(trough, cum - peak);
+    }
+    return { dd: Number(dd.toFixed(2)), cum: Number(cum.toFixed(2)) };
+}
+
+function renderValidationPanel(res) {
+    const ov = res.overall || {};
+    const trades = res.recentTrades || [];
+    const allTrades = [];
+    // Kumpulkan semua trade closed (recent sudah cukup untuk indikasi kalibrasi).
+    const buckets = confidenceBuckets(trades);
+    const basis = basisStats(trades);
+    const md = maxDrawdown(trades);
+    const samples = trades.filter(t => t.closed).length;
+
+    const bucketRows = buckets.map(b => {
+        const ok = b.wr == null ? '' : (Math.abs(b.calib || 0) <= 8 ? 'hist-badge win' : Math.abs(b.calib || 0) <= 15 ? 'hist-badge open' : 'hist-badge loss');
+        return `<tr>
+            <td>${b.label}%</td>
+            <td>${b.closed}</td>
+            <td>${b.wins}</td>
+            <td>${b.wr == null ? '—' : b.wr + '%'}</td>
+            <td style="font-weight:700;">${b.mid}%</td>
+            <td>${b.calib == null ? '—' : (b.calib >= 0 ? '+' : '') + b.calib}</td>
+            <td><span class="hist-badge ${ok}">${b.calib == null ? 'n/a' : Math.abs(b.calib || 0) <= 8 ? 'kalibrasi baik' : Math.abs(b.calib || 0) <= 15 ? 'cukup' : 'overconfident'}</span></td>
+            <td>${b.netR >= 0 ? '+' : ''}${b.netR.toFixed(2)}R</td>
+        </tr>`;
+    }).join('');
+
+    const basisRows = basis.map(b => `<tr>
+        <td>${esc(String(b.basis))}</td>
+        <td>${b.total}</td>
+        <td>${b.wins}</td>
+        <td>${b.wr == null ? '—' : b.wr + '%'}</td>
+        <td>${b.netR >= 0 ? '+' : ''}${b.netR.toFixed(2)}R</td>
+    </tr>`).join('');
+
+    return `<div style="margin-top:14px;border-top:1px solid var(--line);padding-top:12px;">
+        <div style="font-weight:700;font-size:12.5px;color:var(--aqua);margin-bottom:6px;">🔍 Validasi Akurasi &amp; Kalibrasi Confidence</div>
+        <div class="hist-grid" style="margin-bottom:8px;">
+            <div class="hist-kpi"><small>Sinyal Closed (sampel)</small><b>${samples}</b></div>
+            <div class="hist-kpi"><small>Max Drawdown</small><b style="color:var(--red);">-${md.dd} R</b></div>
+            <div class="hist-kpi"><small>Kumulatif R</small><b style="color:${md.cum >= 0 ? 'var(--green)' : 'var(--red)'};">${md.cum >= 0 ? '+' : ''}${md.cum.toFixed(2)} R</b></div>
+            <div class="hist-kpi"><small>Winrate Overall</small><b style="color:${ov.winRatePct >= 50 ? 'var(--green)' : 'var(--red)'};">${ov.winRatePct == null ? '—' : ov.winRatePct.toFixed(1) + '%'}</b></div>
+        </div>
+        <div style="overflow-x:auto;margin-bottom:8px;">
+            <table class="hist-table">
+                <thead><tr><th>Conf Bucket</th><th>Total</th><th>Wins</th><th>Winrate</th><th>Mid Conf</th><th>Calib Δ</th><th>Keterangan</th><th>Net R</th></tr></thead>
+                <tbody>${bucketRows}</tbody>
+            </table>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px;">Calib Δ = Winrate − Conf Tengah. Nilai mendekati 0 = terkalibrasi baik; positif besar = overconfident (terlalu yakin).</div>
+        <div style="overflow-x:auto;margin-bottom:8px;">
+            <table class="hist-table">
+                <thead><tr><th>Basis Sinyal</th><th>Total</th><th>Wins</th><th>Winrate</th><th>Net R</th></tr></thead>
+                <tbody>${basisRows}</tbody>
+            </table>
+        </div>
+        <div style="font-size:11px;color:var(--muted);">Winrate tertinggi biasanya didasari basis <b>reaction</b> / <b>actual</b> (konfirmasi harga pasca-rilis), sementara <b>forecast</b> (pra-rilis) lebih risiko. Confidence yang terlalu tinggi tapi winrate rendah → naikkan <b>minConfidence</b> di WINRATE_PARAMS.</div>
+    </div>`;
+}
+
 function renderSignalHistory(now = Date.now()) {
     const el = document.querySelector('#signalHistoryStats');
     if (!el) return;
@@ -1340,7 +1507,7 @@ function renderSignalHistory(now = Date.now()) {
     } else {
         SIGNAL_HISTORY_CACHE.data.liveSummary = summarizeTradeSet(live);
     }
-    el.innerHTML = signalHistoryHtml(SIGNAL_HISTORY_CACHE.data);
+    el.innerHTML = signalHistoryHtml(SIGNAL_HISTORY_CACHE.data) + renderValidationPanel(SIGNAL_HISTORY_CACHE.data);
 }
 
 // Tarik harga tiap pair ke arah harga broker FBS (mid bid/ask dari
@@ -3689,6 +3856,28 @@ function signalDirection(e, asset, kind, now = Date.now()) {
     return applyMarketContext(signalDirectionCore(e, asset, kind, now), kind, asset);
 }
 
+// Cek regime volatilitas ATR 1 menit: jangan trade saat terlalu sepi (noise)
+// atau terlalu liar (SL melebar, eksekusi buruk).
+function volRegimeOk(kind, asset, now = Date.now()) {
+    const p = WINRATE_PARAMS;
+    const info = typeof atrInfo === 'function' ? atrInfo(asset, assetPrice(kind, asset)) : null;
+    if (!info) return { ok: true, atrPct: null, reason: 'no-atr-data' };
+    const atrPct = info.atrPct;
+    const lo = p.minAtrPct[kind] || 0;
+    const hi = p.maxAtrPct[kind] || 0;
+    if (atrPct < lo) return { ok: false, atrPct, reason: `volatilitas terlalu sepi (${atrPct.toFixed(3)}% < ${lo}%)` };
+    if (atrPct > hi) return { ok: false, atrPct, reason: `volatilitas terlalu tinggi (${atrPct.toFixed(3)}% > ${hi}%)` };
+    return { ok: true, atrPct, reason: 'normal' };
+}
+
+// Filter sesi likuransi UTC. Di luar jam likuransi, spread lebar & gerak palsu.
+function inActiveUtcSession(now = Date.now()) {
+    const p = WINRATE_PARAMS;
+    if (!p.activeUtcHours || !p.activeUtcHours.length) return true;
+    const h = new Date(now).getUTCHours();
+    return p.activeUtcHours.includes(h);
+}
+
 // Kalibrasi Watch Multi-Faktor: Makro Kalender + Sentimen (DXY/Risk-On/Off) +
 // Fear & Greed + Mikro Teknikal (EMA/RSI/ICT/Candle) + Deteksi Spike ATR.
 function calibratedWatchSignal({
@@ -3880,7 +4069,26 @@ function calibratedWatchSignal({
         };
     }
 
-    const active = Boolean(candidateDir && Math.abs(netScore) >= 1.25 && (aligned >= 2 || Math.abs(netScore) >= 1.8));
+    // ── Filter kelayakan sinyal (winrate) ──────────────────────────────
+    const volOk = volRegimeOk(kind, asset, now);
+    const sessionOk = inActiveUtcSession(now);
+    const absScore = Math.abs(netScore);
+    const enoughAligned = aligned >= WINRATE_PARAMS.minAlignedFactors;
+    const strongBypass = absScore >= WINRATE_PARAMS.strongNetScoreBypass && aligned >= 1;
+    const scorePass = absScore >= WINRATE_PARAMS.minNetScoreActive && (enoughAligned || strongBypass);
+
+    // Confidence kandidat dihitung sebelum keputusan aktif agar ambang kepercayaan
+    // bisa difilter di sini (tidak menampilkan sinyal lemah sebagai entry).
+    const confCandidate = Math.round(clampNum(52 + absScore * 9 + aligned * 3, 52, 88));
+    const isPre = Boolean(mappedPre);
+    const minConf = isPre ? WINRATE_PARAMS.minConfidencePre : WINRATE_PARAMS.minConfidence;
+    const active = Boolean(
+        candidateDir &&
+        scorePass &&
+        volOk.ok &&
+        sessionOk &&
+        confCandidate >= minConf
+    );
     const holdPrev = active ? null : readWatchHold(wKey);
     if (!active && holdPrev) {
         const heldSign = holdPrev.dir === 'long' ? 1 : -1;
@@ -3918,8 +4126,7 @@ function calibratedWatchSignal({
     }
 
     writeWatchHold(wKey, candidateDir);
-    const conf = Math.round(clampNum(52 + Math.abs(netScore) * 9 + aligned * 3, 52, 88));
-    const isPre = Boolean(mappedPre);
+    const conf = confCandidate;
     return {
         dir: candidateDir,
         phase: event ? newsPhase(event, now) : 'watch',
@@ -4514,13 +4721,15 @@ function computeSignalLevels(kind, asset, dir, price, e, signal) {
         let stop = stopPips * pip;
         const structD = structureStopDistance(asset, isBuy, entry, Date.parse(e.Date), info ? info.atr : 0);
         if (structD && structD > stop) stop = Math.min(structD, stop * 2);
+        const rr = (signal && Number.isFinite(signal.conf) && signal.conf >= WINRATE_PARAMS.rrConfidenceThreshold)
+            ? WINRATE_PARAMS.maxRR : WINRATE_PARAMS.baseRR;
         const sl = isBuy ? entry - stop : entry + stop;
-        const tp = isBuy ? entry + stop * 2 : entry - stop * 2;
+        const tp = isBuy ? entry + stop * rr : entry - stop * rr;
         const tp1 = isBuy ? entry + stop : entry - stop;
         const pullback = isBuy ? entry - stop * 0.4 : entry + stop * 0.4;
         const dec = entry > 10 ? 3 : 5;
         const bq = ex && ex.source === 'broker' ? brokerQuoteFor(asset) : null;
-        return { entry, sl, tp, tp1, pullback, stopPips: Number((stop / pip).toFixed(1)), riskPct: null, rr: 2, dec, broker: bq ? bq.brokerName : null, brokerAgeMin: bq && Number.isFinite(bq.ageMin) ? Math.round(bq.ageMin) : null, entrySource: ex ? ex.source : null };
+        return { entry, sl, tp, tp1, pullback, stopPips: Number((stop / pip).toFixed(1)), riskPct: null, rr, dec, broker: bq ? bq.brokerName : null, brokerAgeMin: bq && Number.isFinite(bq.ageMin) ? Math.round(bq.ageMin) : null, entrySource: ex ? ex.source : null };
     }
 
     const base = kind === 'gold' ? 0.55
@@ -4538,11 +4747,13 @@ function computeSignalLevels(kind, asset, dir, price, e, signal) {
     }
     // BUY ditutup di bid, SELL di ask: tambahkan spread ke jarak stop supaya SL tidak lebih sempit dari rencana.
     if (ex && ex.spread > 0) riskPct += ex.spread / entry * 100;
+    const rr = (signal && Number.isFinite(signal.conf) && signal.conf >= WINRATE_PARAMS.rrConfidenceThreshold)
+        ? WINRATE_PARAMS.maxRR : WINRATE_PARAMS.baseRR;
     const sl = isBuy ? entry * (1 - riskPct / 100) : entry * (1 + riskPct / 100);
-    const tp = isBuy ? entry * (1 + riskPct * 2 / 100) : entry * (1 - riskPct * 2 / 100);
+    const tp = isBuy ? entry * (1 + riskPct * rr / 100) : entry * (1 - riskPct * rr / 100);
     const tp1 = isBuy ? entry * (1 + riskPct / 100) : entry * (1 - riskPct / 100);
     const pullback = isBuy ? entry * (1 - (riskPct * 0.4) / 100) : entry * (1 + (riskPct * 0.4) / 100);
-    return { entry, sl, tp, tp1, pullback, stopPips: null, riskPct: Number(riskPct.toFixed(2)), rr: 2, dec: null, broker: null, entrySource: ex ? ex.source : null };
+    return { entry, sl, tp, tp1, pullback, stopPips: null, riskPct: Number(riskPct.toFixed(2)), rr, dec: null, broker: null, entrySource: ex ? ex.source : null };
 }
 
 function levelsFromLock(lock, kind) {
