@@ -36,7 +36,7 @@
     waitMin: 15,                // tidak ada entry 15 menit pertama
     reactMaxMin: 45,            // jendela pengukuran reaksi
     planUntilMin: 90,           // setelah ini tidak membuat order baru
-    minReactAtr: 1.0,           // reaksi >= 1.0 x ATR(5m) (dalam %)
+    minReactAtr: 1.5,           // reaksi >= 1.5 x ATR(5m): gerak kecil dianggap noise/fakeout
     atrPeriod: 14,
     retrace: 0.5,               // 0.382–0.618 (zona OTE)
     slBufferAtr: 0.25,          // buffer SL di balik asal impuls
