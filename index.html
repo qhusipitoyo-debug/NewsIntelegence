@@ -413,18 +413,17 @@ const WATCH_HOLD_SCORE = 0.55;
 // Semakin tinggi ambang, semakin sedikit sinyal tapi semakin tinggi akurasinya.
 // ═════════════════════════════════════════════════════════════════════
 const WINRATE_PARAMS = {
-    // Skor gabungan minimum agar sinyal WATCH dianggap AKTIF. Dinaikkan agar
-    // hanya konfluensi sangat kuat yang menghasilkan entry.
-    minNetScoreActive: 2.0,
+    // Skor gabungan minimum agar sinyal WATCH dianggap AKTIF.
+    minNetScoreActive: 1.4,
     // Minimal jumlah faktor yang harus searah (aligned) untuk sinyal aktif.
-    // Naik ke 3 dari 4 (makro, mikro, F&G, spike) — sinyal harus konvergen.
-    minAlignedFactors: 3,
+    // 2 dari 4 cukup — jangan terlalu restrictive agar sinyal tidak mati total.
+    minAlignedFactors: 2,
     // Jika netScore >= ini, satu faktor yang cukup (aligned >= 1) sudah boleh aktif.
-    strongNetScoreBypass: 2.8,
+    strongNetScoreBypass: 2.0,
     // Confidence minimum agar levels ditampilkan & order dianggap "fillable".
-    minConfidence: 80,
-    // Confidence minimum untuk sinyal pre-news (forecast basis) — lebih ketat.
-    minConfidencePre: 85,
+    minConfidence: 68,
+    // Confidence minimum untuk sinyal pre-news (forecast basis).
+    minConfidencePre: 72,
     // Jangan trade saat volatilitas ATR 1 menit melebihi ini (%) — pasar terlalu liar.
     maxAtrPct: { gold: 1.0, forex: 0.08, crypto: 1.5, index: 0.6 },
     // Jangan trade saat ATR di bawah ini — pasar terlalu sepi / noise spread.
@@ -1015,8 +1014,10 @@ function simulateTradeOnBars(dir, entry, sl, tp1, tp2, forwardBars, kind = '') {
             }
         } else {
             // Sudah tp1 (beralih ke BE). Cek kembali ke entry (BE) atau lanjut TP2.
+            // Saat TP1 tercapai, setengah posisi diambil profit (0.5R) dan SL dipindahkan ke BE.
+            // Jika harga kembali ke entry, keluar dengan 0.5R (bukan 0R).
             if (isBuy ? l <= entry : h >= entry) {
-                return { outcome: 'WIN_TP1', closed: true, r: 0 - slipPct / 100, tp1Hit: true, exitBarIdx: j, exitPrice: entry };
+                return { outcome: 'WIN_TP1', closed: true, r: 0.5 - slipPct / 100, tp1Hit: true, exitBarIdx: j, exitPrice: entry };
             }
             if (isBuy ? h >= tp2Val : l <= tp2Val) {
                 const exitPx = isBuy ? tp2Val - slip : tp2Val + slip;
@@ -3834,15 +3835,21 @@ function applyMarketContext(sig, kind, asset) {
         usdChgPct: usd ? usd.changePct : null
     });
     const ctxNote = ctx.notes.length ? ' • Konteks: ' + ctx.notes.join('; ') : '';
+    // Konteks melawan → jangan blokir total, tapi berikan penalti confidence agar
+    // filter di calibratedWatchSignal (minConfidence) yang menentukan kelayakan.
+    let ctxPenalty = 0;
     if (sig.phase === 'post' && ctx.align === 'against' && (sig.basis === 'actual' || sig.basis === 'momentum')) {
-        return { ...sig, dir: null, blocked: true, basis: 'context-block', ctx, conf: null,
-            note: `Sinyal dibatalkan: basis ${sig.basis === 'actual' ? 'Actual' : 'momentum'} lemah dan melawan konteks pasar.${ctxNote}` };
+        ctxPenalty = -12;
+    } else if (ctx.align === 'against') {
+        ctxPenalty = -6;
     }
 
-    // Guard Konfluensi Tren Teknikal (EMA20 vs EMA50 & Price Action) — WAJIB.
+    // Guard Konfluensi Tren Teknikal (EMA20 vs EMA50 & Price Action).
+    // Sinyal searah tren mendapat boost; counter-trend mendapat penalti tapi
+    // tidak diblokir total (harga bisa berbalik pada support/resistance kuat).
     const tech = typeof technicalView === 'function' ? technicalView(kind, asset) : null;
     let techNote = '';
-    let trendAligned = false;
+    let trendBonus = 0;
     if (tech && Number.isFinite(tech.emaFast) && Number.isFinite(tech.emaSlow)) {
         const isBullTrend = tech.emaFast > tech.emaSlow;
         const isBearTrend = tech.emaFast < tech.emaSlow;
@@ -3850,31 +3857,26 @@ function applyMarketContext(sig, kind, asset) {
         const sigIsSell = sig.dir === 'short';
 
         if ((sigIsBuy && isBullTrend) || (sigIsSell && isBearTrend)) {
-            trendAligned = true;
+            trendBonus = 10;
             techNote = ` • ✅ Konfluensi Tren: Sinyal searah ${tech.trendText}`;
         } else {
-            // Counter-trend: hanya diperbolehkan jika basis 'reaction' dengan gerak
-            // harga sangat kuat dan tidak faded. Selain itu diblokir.
             const isCounter = (sigIsBuy && isBearTrend) || (sigIsSell && isBullTrend);
             if (isCounter) {
+                trendBonus = -8;
                 const strongReaction = sig.basis === 'reaction'
                     && sig.reaction
                     && !sig.reaction.faded
                     && Math.abs(Number(sig.reaction.movePct || 0)) >= 0.15;
-                if (!strongReaction) {
-                    return {
-                        ...sig, dir: null, blocked: true, basis: 'conflict-trend', ctx, conf: null,
-                        note: `Sinyal ${sigIsBuy ? 'BUY' : 'SELL'} dibatalkan: Melawan tren ${tech.trendText} (${tech.trendText}). Hindari counter-trend; gunakan Straddle/Breakout OCO.${ctxNote}`
-                    };
+                if (strongReaction) {
+                    techNote = ` • ⚠️ Counter-trend tapi reaksi kuat (${tech.trendText})`;
+                } else {
+                    techNote = ` • ⚠️ Melawan tren ${tech.trendText}`;
                 }
-                techNote = ` • ⚠️ Counter-trend tapi reaksi kuat (${tech.trendText})`;
             }
         }
-    } else {
-        // Tidak ada data EMA — jaga konservatif, tidak boost confidence.
     }
 
-    const confBoost = trendAligned ? 10 : (techNote.includes('Counter-trend') ? -5 : (ctx.align === 'with' ? 6 : ctx.align === 'against' ? -10 : 0));
+    const confBoost = trendBonus + ctxPenalty + (ctx.align === 'with' && trendBonus <= 0 ? 6 : 0);
     const conf = Number.isFinite(sig.conf) ? Math.round(clampNum(sig.conf + confBoost, 30, 95)) : sig.conf;
     return { ...sig, ctx, conf, sizeFactor: ctx.size, note: `${sig.note || ''}${ctxNote}${techNote}${ctx.size < 1 ? ` • ukuran posisi ${ctx.size}× (melawan konteks)` : ''}` };
 }
