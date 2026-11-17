@@ -1065,6 +1065,11 @@ function summarizeTradeSet(trades) {
         ? (grossLossR > 0 ? Number((grossWinR / grossLossR).toFixed(2)) : (grossWinR > 0 ? Infinity : null))
         : null;
     const expectancyR = closedCount > 0 ? Number((netR / closedCount).toFixed(2)) : null;
+    // Metrik bebas bias penyensoran: semua trade (closed + open dimark-to-market). "Closed saja" condong
+    // optimistis karena trade yang cepat menyentuh TP1 langsung dihitung closed, sedangkan trade yang
+    // berputar-putar atau menjauhi entry tetap 'open' dan tidak masuk statistik.
+    const allNetR = Number(list.reduce((s, t) => s + (Number(t.r) || 0), 0).toFixed(2));
+    const allExpectancyR = list.length > 0 ? Number((allNetR / list.length).toFixed(2)) : null;
     const avgWinR = wins.length ? Number((grossWinR / wins.length).toFixed(2)) : null;
     const avgLossR = losses.length ? Number((grossLossR / losses.length).toFixed(2)) : null;
     // Winrate minimum agar impas dengan rata-rata win/loss saat ini (diagnostik).
@@ -1092,6 +1097,8 @@ function summarizeTradeSet(trades) {
         avgWinR,
         avgLossR,
         breakEvenWinPct,
+        allNetR,
+        allExpectancyR,
         verdict
     };
 }
@@ -1428,6 +1435,7 @@ function signalHistoryHtml(res) {
             <div class="hist-kpi"><small>Expectancy / Sinyal</small><b>${expStr}</b></div>
             <div class="hist-kpi"><small>Gross Win / Loss</small><b>+${ov.grossWinR.toFixed(1)}R / -${ov.grossLossR.toFixed(1)}R</b></div>
             <div class="hist-kpi"><small>Avg Win / Avg Loss</small><b>${ov.avgWinR == null ? '—' : '+' + ov.avgWinR.toFixed(2)}R / ${ov.avgLossR == null ? '—' : '-' + ov.avgLossR.toFixed(2)}R</b></div>
+            <div class="hist-kpi"><small>Expectancy SEMUA trade (incl. open)</small><b style="color:${ov.allExpectancyR > 0 ? 'var(--green)' : ov.allExpectancyR < 0 ? 'var(--red)' : 'var(--text)'};">${ov.allExpectancyR == null ? '—' : (ov.allExpectancyR >= 0 ? '+' : '') + ov.allExpectancyR.toFixed(2) + ' R'} <span style="font-size:10px;font-weight:400;color:var(--muted);">(${ov.total} trade)</span></b></div>
             <div class="hist-kpi"><small>Winrate Impas</small><b>${ov.breakEvenWinPct == null ? '—' : ov.breakEvenWinPct.toFixed(1) + '%'}</b></div>
         </div>
         <div class="hist-classes">${classCards}</div>
