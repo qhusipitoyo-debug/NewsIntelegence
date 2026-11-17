@@ -25,6 +25,18 @@
     .warning-badge { background: rgba(255,100,125,0.15); color: var(--red); border: 1px solid rgba(255,100,125,0.3); padding: 5px 10px; border-radius: 8px; font-size: 11px; display: inline-block; margin-bottom: 10px; font-weight: bold; }
     .expired-badge { background: rgba(145,174,184,0.15); color: var(--muted); border: 1px solid rgba(145,174,184,0.3); padding: 5px 10px; border-radius: 8px; font-size: 11px; display: inline-block; margin-bottom: 10px; font-weight: bold; }
     .postnews-badge { background: rgba(24,209,154,0.12); color: var(--green); border: 1px solid rgba(24,209,154,0.35); padding: 6px 10px; border-radius: 8px; font-size: 11px; display: inline-block; font-weight: bold; }
+    .order-active-badge { background: linear-gradient(135deg, rgba(24,209,154,0.18), rgba(39,213,224,0.18)); border: 1px solid rgba(24,209,154,0.45); border-radius: 8px; padding: 7px 12px; margin-bottom: 8px; font-size: 11px; color: #eafff8; font-weight: 700; display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; box-shadow: 0 4px 14px rgba(24,209,154,0.12); }
+    .order-active-badge .act-txt { color: var(--green); font-weight: 800; font-size: 12px; letter-spacing: 0.4px; }
+    .order-active-badge .pnl-txt { font-weight: 800; }
+    .order-active-badge .pnl-pos { color: var(--green); }
+    .order-active-badge .pnl-neg { color: var(--red); }
+    .order-active-badge .exp-txt { color: #8bd4ff; font-weight: 600; }
+    .sl-reversal-box { background: rgba(255,100,125,0.12); border: 1px solid rgba(255,100,125,0.38); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; font-size: 11px; }
+    .sl-reversal-box .sl-title { color: var(--red); font-weight: 800; font-size: 11.5px; margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+    .sl-reversal-box .sl-desc { color: #fce8eb; line-height: 1.45; margin-bottom: 6px; }
+    .sl-reversal-box .rev-grid { display: flex; flex-wrap: wrap; gap: 6px 10px; background: rgba(0,0,0,0.28); padding: 6px 10px; border-radius: 6px; color: #fff; font-size: 10.5px; }
+    .sl-reversal-box .rev-grid span { color: #ffccd5; }
+    .sl-reversal-box .rev-grid b { color: #fff; }
     .exec-box { width: 100%; margin-top: 10px; background: rgba(242, 184, 75, 0.05); border: 1px solid rgba(242, 184, 75, 0.3); border-radius: 12px; padding: 12px; }
     .exec-box h5 { margin: 0 0 8px 0; color: var(--amber); font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
     .exec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -437,6 +449,26 @@ function eventKey(e) {
 // ini, bukan timestamp sekarang, supaya Entry/SL/TP yang dikunci bisa ditemukan
 // lagi di render berikutnya (sebelumnya Date=now membuat kunci berubah tiap tick
 // dan sinyal tidak pernah benar-benar terkunci).
+function findUpcomingEvent(asset, now = Date.now()) {
+    const list = Array.isArray(events) ? events : [];
+    if (!list.length) return null;
+    const isGold = asset === 'XAU/USD' || asset === 'gold';
+    const isCrypto = asset === 'BTC/USD' || asset === 'ETH/USD' || asset === 'crypto';
+    const isIndex = asset === 'US500' || asset === 'index';
+    let filtered;
+    if (isGold || isCrypto || isIndex) {
+        filtered = list.filter(e => countryCode(e.Country) === 'USD' && (+e.Importance || 1) >= 2);
+    } else {
+        const currencies = pairCurrencies(asset);
+        filtered = list.filter(e => (+e.Importance || 1) >= 1 && currencies.includes(countryCode(e.Country)));
+    }
+    const upcoming = filtered
+        .map(e => ({ e, t: new Date(e.Date).getTime() }))
+        .filter(x => Number.isFinite(x.t) && x.t > now)
+        .sort((a, b) => a.t - b.t);
+    return upcoming.length ? upcoming[0] : null;
+}
+
 function syntheticWatchEvent(asset, now = Date.now()) {
     const d = new Date(now);
     d.setUTCHours(0, 0, 0, 0);
@@ -1672,7 +1704,11 @@ function goldBoardState(now = Date.now()) {
                         note: watch.note,
                         stopped: lvl.stopped,
                         tpReached: lvl.tpReached,
-                        missed: lvl.missed
+                        missed: lvl.missed,
+                        orderFilled: lvl.orderFilled,
+                        pnlPct: lvl.pnlPct,
+                        pnlPoints: lvl.pnlPoints,
+                        reverseSetup: lvl.reverseSetup
                     };
                 }
             }
@@ -1700,6 +1736,7 @@ function goldBoardState(now = Date.now()) {
                 status: 'pre', event: label, dir: data.dir, levels: data.levels,
                 note: data.note, buy, sell, locked: data.locked, lockedAt: data.lockedAt, missed: data.missed,
                 stopped: data.stopped, tpReached: data.tpReached, spike,
+                orderFilled: data.orderFilled, pnlPct: data.pnlPct, pnlPoints: data.pnlPoints, reverseSetup: data.reverseSetup,
                 modeLabel: data.basis === 'forecast' || data.basis === 'momentum' ? 'PRE-NEWS' : 'WATCH'
             };
         }
@@ -1713,6 +1750,7 @@ function goldBoardState(now = Date.now()) {
                         status: 'pre', event: label, dir: lvl.dir || watch.dir, levels: lvl.levels,
                         note: watch.note || data.note, buy, sell, locked: false, missed: lvl.missed,
                         stopped: lvl.stopped, tpReached: lvl.tpReached,
+                        orderFilled: lvl.orderFilled, pnlPct: lvl.pnlPct, pnlPoints: lvl.pnlPoints, reverseSetup: lvl.reverseSetup,
                         conf: watch.conf, factors: watch.factors || [], spike: watch.spike || spike,
                         modeLabel: watch.modeLabel || 'PRE-NEWS'
                     };
@@ -1730,6 +1768,7 @@ function goldBoardState(now = Date.now()) {
             status: 'post', event: label, dir: data.dir, changePct: data.movePct, validUntil,
             note: data.note, levels: data.levels, locked: data.locked, lockedAt: data.lockedAt,
             conflict: data.conflict, missed: data.missed, stopped: data.stopped, tpReached: data.tpReached,
+            orderFilled: data.orderFilled, pnlPct: data.pnlPct, pnlPoints: data.pnlPoints, reverseSetup: data.reverseSetup,
             spike
         };
     }
@@ -1743,6 +1782,7 @@ function goldBoardState(now = Date.now()) {
                     status: 'post', event: label, dir: lvl.dir || watch.dir, changePct: watch.movePct ?? data.movePct, validUntil,
                     note: watch.note || data.note, levels: lvl.levels, locked: false,
                     conflict: false, missed: lvl.missed, stopped: lvl.stopped, tpReached: lvl.tpReached,
+                    orderFilled: lvl.orderFilled, pnlPct: lvl.pnlPct, pnlPoints: lvl.pnlPoints, reverseSetup: lvl.reverseSetup,
                     conf: watch.conf, factors: watch.factors || [], spike: watch.spike || spike,
                     modeLabel: watch.modeLabel || 'WATCH'
                 };
@@ -1784,13 +1824,8 @@ function goldBoardHtml(price, state) {
         return `<div class="mb-level ${cls}"><b>${title}</b><span>Entry ${f(o.entry)}</span><span>SL ${f(o.sl)}</span>${tp1}<span>TP ${f(o.tp)}</span>${pb}${btn}</div>`;
     };
     const lockNote = st.locked && st.lockedAt ? ` • entry terkunci ${fmtTime(new Date(st.lockedAt))}` : '';
-    const warn = st.stopped
-        ? `<div class="warning-badge" style="background:rgba(255,100,125,0.25);border-color:var(--red);color:var(--red);">🛑 Stop Loss tersentuh — batalkan order lama / setup selesai.</div>`
-        : (st.tpReached
-            ? `<div class="postnews-badge">🎯 Take Profit tercapai — setup berhasil, amankan profit!</div>`
-            : (st.conflict
-                ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama, jangan flip mengejar harga.</div>`
-                : (st.missed ? `<div class="warning-badge">⚠️ Entry sudah terlewat — jangan kejar harga, tunggu pullback ke entry.</div>` : '')));
+    const statusBadge = orderStatusBadgeHtml(st, 'XAU/USD', 'gold');
+    const warn = statusBadge || (st.missed ? `<div class="warning-badge">⚠️ Entry sudah terlewat — jangan kejar harga, tunggu pullback ke entry.</div>` : '');
 
     if (st.status === 'live') return html + `<div class="mb-meta">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit sebelum entry.</div>`;
     if (st.status === 'watch' && st.dir && st.levels) {
@@ -1865,6 +1900,10 @@ function cryptoBoardState(now = Date.now()) {
             it.missed = data.missed;
             it.stopped = data.stopped;
             it.tpReached = data.tpReached;
+            it.orderFilled = data.orderFilled;
+            it.pnlPct = data.pnlPct;
+            it.pnlPoints = data.pnlPoints;
+            it.reverseSetup = data.reverseSetup;
             it.basis = data.basis;
         }
         const spike = typeof detectPriceSpike === 'function' && typeof assetBars === 'function'
@@ -1892,6 +1931,10 @@ function cryptoBoardState(now = Date.now()) {
                 it.missed = Boolean(lvl && lvl.missed);
                 it.stopped = Boolean(lvl && lvl.stopped);
                 it.tpReached = Boolean(lvl && lvl.tpReached);
+                it.orderFilled = Boolean(lvl && lvl.orderFilled);
+                it.pnlPct = lvl ? lvl.pnlPct : null;
+                it.pnlPoints = lvl ? lvl.pnlPoints : null;
+                it.reverseSetup = lvl ? lvl.reverseSetup : null;
                 it.modeLabel = watch.modeLabel || (wPhase === 'pre' ? 'PRE-NEWS' : 'WATCH');
             } else if (watch.note && !it.note) {
                 it.note = watch.note;
@@ -1943,13 +1986,8 @@ function cryptoBoardHtml(rates, change, state) {
         const spikeHtml = typeof spikeBadgeHtml === 'function' ? spikeBadgeHtml(it.spike) : '';
         const factorsHtml = typeof watchFactorsHtml === 'function' ? watchFactorsHtml(it.factors) : '';
         const lockNote = it.locked && it.lockedAt ? ` • entry terkunci ${fmtTime(new Date(it.lockedAt))}` : '';
-        const warn = it && it.stopped
-            ? `<div class="warning-badge" style="background:rgba(255,100,125,0.25);border-color:var(--red);color:var(--red);">🛑 SL tersentuh — batalkan order.</div>`
-            : (it && it.tpReached
-                ? `<div class="postnews-badge">🎯 TP tercapai — amankan profit!</div>`
-                : (it && it.conflict
-                    ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>`
-                    : (it && it.missed ? `<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>` : '')));
+        const statusBadge = orderStatusBadgeHtml(it, pair, 'crypto');
+        const warn = statusBadge || (it && it.missed ? `<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>` : '');
         let levels;
         if (st.status === 'live') {
             levels = `<div class="idx-note">⏳ Level entry ditahan sampai konfirmasi 15 menit.</div>`;
@@ -2042,6 +2080,7 @@ function forexBoardState(now = Date.now()) {
         let dir = null, note = '', eventLabel = '', phase = '', validUntil = '', noData = false;
         let levels = null, locked = false, lockedAt = null, missed = false, conflict = false, basis = '';
         let stopped = false, tpReached = false, conf = null, factors = [], modeLabel = '';
+        let orderFilled = false, pnlPct = null, pnlPoints = null, pnlPips = null, reverseSetup = null;
         if (next) {
             eventLabel = `${next.e.Event} · ${fmtDate(new Date(next.e.Date))} ${fmtTime(new Date(next.e.Date))}`;
             phase = next.phase;
@@ -2055,6 +2094,11 @@ function forexBoardState(now = Date.now()) {
             conflict = data.conflict;
             stopped = Boolean(data.stopped);
             tpReached = Boolean(data.tpReached);
+            orderFilled = Boolean(data.orderFilled);
+            pnlPct = data.pnlPct;
+            pnlPoints = data.pnlPoints;
+            pnlPips = data.pnlPips;
+            reverseSetup = data.reverseSetup;
             basis = data.basis;
             phase = data.phase || next.phase;
             noData = !dir && (basis === 'no-actual' || basis === 'settling');
@@ -2084,6 +2128,11 @@ function forexBoardState(now = Date.now()) {
                 missed = Boolean(lvl && lvl.missed);
                 stopped = Boolean(lvl && lvl.stopped);
                 tpReached = Boolean(lvl && lvl.tpReached);
+                orderFilled = Boolean(lvl && lvl.orderFilled);
+                pnlPct = lvl ? lvl.pnlPct : null;
+                pnlPoints = lvl ? lvl.pnlPoints : null;
+                pnlPips = lvl ? lvl.pnlPips : null;
+                reverseSetup = lvl ? lvl.reverseSetup : null;
                 modeLabel = watch.modeLabel || (wPhase === 'pre' ? 'PRE-NEWS' : 'WATCH');
             } else if (watch.note && !note) {
                 note = watch.note;
@@ -2093,6 +2142,7 @@ function forexBoardState(now = Date.now()) {
         return {
             pair, rate, dir, note, eventLabel, phase, validUntil, noData,
             levels, locked, lockedAt, missed, conflict, stopped, tpReached, basis,
+            orderFilled, pnlPct, pnlPoints, pnlPips, reverseSetup,
             conf, factors, spike, modeLabel,
             source: quote && quote.source,
             tick: FOREX_TICK[pair] || null,
@@ -2166,13 +2216,8 @@ function forexBoardHtml(state) {
             const sellRef = broker ? Number(broker.bid) : rate - buffer;
             levels = `<div class="fx-levels"><span>BUY ${fmt(buyRef, dec)}</span><span>SELL ${fmt(sellRef, dec)}</span></div>`;
         }
-        const warn = it.stopped
-            ? `<div class="warning-badge" style="background:rgba(255,100,125,0.25);border-color:var(--red);color:var(--red);">🛑 SL tersentuh — batalkan order.</div>`
-            : (it.tpReached
-                ? `<div class="postnews-badge">🎯 TP tercapai — amankan profit!</div>`
-                : (it.conflict
-                    ? `<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>`
-                    : (it.missed ? `<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>` : '')));
+        const statusBadge = orderStatusBadgeHtml(it, it.pair, 'forex');
+        const warn = statusBadge || (it.missed ? `<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>` : '');
         return `<div class="fx-card ${dir}">
             <div class="pair"><span>${esc(it.pair)}</span><span><span class="fx-badge ${dir}">${label}${suffix}</span>${confHtml}</span></div>
             <div class="fx-price">${fmt(rate, dec)}${fxTickHtml(it.tick)}</div>
@@ -2260,6 +2305,10 @@ function indicesBoardState(now = Date.now()) {
             it.missed = data.missed;
             it.stopped = data.stopped;
             it.tpReached = data.tpReached;
+            it.orderFilled = data.orderFilled;
+            it.pnlPct = data.pnlPct;
+            it.pnlPoints = data.pnlPoints;
+            it.reverseSetup = data.reverseSetup;
             it.basis = data.basis;
         }
         const spike = typeof detectPriceSpike === 'function' && typeof assetBars === 'function'
@@ -2287,6 +2336,10 @@ function indicesBoardState(now = Date.now()) {
                 it.missed = Boolean(lvl && lvl.missed);
                 it.stopped = Boolean(lvl && lvl.stopped);
                 it.tpReached = Boolean(lvl && lvl.tpReached);
+                it.orderFilled = Boolean(lvl && lvl.orderFilled);
+                it.pnlPct = lvl ? lvl.pnlPct : null;
+                it.pnlPoints = lvl ? lvl.pnlPoints : null;
+                it.reverseSetup = lvl ? lvl.reverseSetup : null;
                 it.modeLabel = watch.modeLabel || (wPhase === 'pre' ? 'PRE-NEWS' : 'WATCH');
             } else if (watch.note && !it.note) {
                 it.note = watch.note;
@@ -2351,13 +2404,8 @@ function indicesBoardHtml(state) {
         const itemNote = it.note || st.note;
         const lockNote = it.locked && it.lockedAt ? ` • entry terkunci ${fmtTime(new Date(it.lockedAt))}` : '';
         const noteLine = itemNote ? `<div class="idx-note">${esc(itemNote)}${lockNote}</div>` : '';
-        const warn = it.stopped
-            ? '<div class="warning-badge" style="background:rgba(255,100,125,0.25);border-color:var(--red);color:var(--red);">🛑 SL tersentuh — batalkan order.</div>'
-            : (it.tpReached
-                ? '<div class="postnews-badge">🎯 TP tercapai — amankan profit!</div>'
-                : (it.conflict
-                    ? '<div class="warning-badge">⚠️ Arah berbalik — batalkan order lama.</div>'
-                    : (it.missed ? '<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>' : '')));
+        const statusBadge = orderStatusBadgeHtml(it, it.symbol, 'index');
+        const warn = statusBadge || (it.missed ? '<div class="warning-badge">⚠️ Entry terlewat — tunggu pullback.</div>' : '');
         const liveLine = st.status === 'live' ? '<div class="idx-note">⏳ Rilis berlangsung — tunggu konfirmasi 15 menit.</div>' : '';
         const postLine = st.phase === 'post' && st.validUntil ? `<div class="idx-note">Post-news • valid s/d ${esc(st.validUntil)}</div>` : '';
         return `<div class="idx-card ${dir}">
@@ -4504,6 +4552,103 @@ function levelsFromLock(lock, kind) {
     };
 }
 
+function reverseSetupOf(levels, dir, price, asset) {
+    if (!levels || !Number.isFinite(Number(levels.entry)) || !Number.isFinite(Number(levels.sl))) return null;
+    const isBuy = dir === 'long';
+    const risk = Math.abs(Number(levels.entry) - Number(levels.sl));
+    if (!(risk > 0)) return null;
+    const revDir = isBuy ? 'short' : 'long';
+    const revAct = isBuy ? 'SELL' : 'BUY';
+    const revEntry = Number(levels.sl);
+    const revSL = isBuy ? revEntry + risk : revEntry - risk;
+    const revTP = isBuy ? revEntry - risk * 2 : revEntry + risk * 2;
+    const pullback = Number(levels.entry);
+    const dec = Number.isFinite(Number(levels.dec)) ? Number(levels.dec) : (/JPY$/i.test(asset) || /JPY/i.test(asset) ? 3 : (Number(price) < 10 ? 5 : 2));
+    return {
+        dir: revDir,
+        action: revAct,
+        entry: revEntry,
+        sl: revSL,
+        tp: revTP,
+        pullback: pullback,
+        risk: risk,
+        dec: dec
+    };
+}
+
+function orderStatusBadgeHtml(it, asset, kind, now = Date.now()) {
+    if (!it || !it.levels || !it.dir) return '';
+    const dir = it.dir;
+    const act = dir === 'long' ? 'BUY' : 'SELL';
+    const price = Number(it.price || assetPrice(kind, asset));
+    const entry = Number(it.levels.entry);
+    const sl = Number(it.levels.sl);
+    const tp = Number(it.levels.tp);
+    const dec = Number.isFinite(Number(it.levels.dec)) ? Number(it.levels.dec) : (price < 10 ? 5 : 2);
+    const fPrice = n => Number(n).toFixed(dec);
+
+    if (it.stopped) {
+        const rev = it.reverseSetup || reverseSetupOf(it.levels, dir, price, asset);
+        let revHtml = '';
+        if (rev) {
+            const sym = String(asset || '').replace('/', '');
+            const btnMt5 = `<button type="button" class="btn-mt5-exec" style="margin-left:auto;padding:3px 8px;font-size:10px;" onclick="sendOrderToMt5('${sym}','${rev.action}',${rev.entry},${rev.sl},${rev.tp})">⚡ MT5 ${rev.action}</button>`;
+            revHtml = `<div class="rev-grid">
+                <span><b>Reversal Order:</b> ${rev.action} @ ${fPrice(rev.entry)}</span>
+                <span><b>SL:</b> ${fPrice(rev.sl)}</span>
+                <span><b>TP (1:2):</b> ${fPrice(rev.tp)}</span>
+                <span><b>Retest / Pullback:</b> ${fPrice(rev.pullback)}</span>
+                ${btnMt5}
+            </div>`;
+        }
+        return `<div class="sl-reversal-box">
+            <div class="sl-title"><span>🛑 Order Berakhir — Stop Loss Tersentuh @ ${fPrice(sl)}</span></div>
+            <div class="sl-desc">Bias ${act} invalid. Struktur pasar tertembus; tunggu pullback/retest level entry lama atau pertimbangkan skenario kebalikannya (${rev ? rev.action : 'REVERSAL'}) bila momentum konfirmasi breakout.</div>
+            ${revHtml}
+        </div>`;
+    }
+
+    if (it.tpReached) {
+        const targetPnl = Math.abs(tp - entry) / entry * 100;
+        return `<div class="postnews-badge" style="width:100%;margin-bottom:8px;">🎯 Target Profit Tercapai! Keuntungan terkunci +${targetPnl.toFixed(2)}% — Setup Selesai.</div>`;
+    }
+
+    if (it.conflict) {
+        return `<div class="warning-badge" style="width:100%;margin-bottom:8px;">⚠️ Arah berbalik / Reversal terdeteksi — batalkan order lama.</div>`;
+    }
+
+    if (it.orderFilled) {
+        let pnlHtml = '';
+        if (Number.isFinite(it.pnlPct)) {
+            const isPos = it.pnlPct >= 0;
+            pnlHtml = `<span class="pnl-txt ${isPos ? 'pnl-pos' : 'pnl-neg'}">${isPos ? '▲ +' : '▼ '}${Number(it.pnlPct).toFixed(2)}% (${it.pnlPips != null ? (isPos ? '+' : '') + it.pnlPips.toFixed(1) + ' pips' : (isPos ? '+' : '') + fPrice(it.pnlPoints) + ' pt'})</span>`;
+        }
+
+        let expText = '';
+        if (it.validUntil) {
+            expText = `aktif s/d ${it.validUntil}`;
+        } else if (it.expiryTime) {
+            expText = `aktif s/d ${fmtTime(new Date(it.expiryTime))}`;
+        } else {
+            const up = findUpcomingEvent(asset, now);
+            if (up && up.e) {
+                expText = `aktif s/d event news baru (${fmtTime(new Date(up.e.Date))})`;
+            } else {
+                expText = `aktif s/d 6 jam pasca-katalis`;
+            }
+        }
+
+        const labelText = act === 'BUY' ? 'BUY NOW Aktif' : 'SELL NOW Aktif';
+        return `<div class="order-active-badge">
+            <span class="act-txt">🟢 ${labelText}</span>
+            ${pnlHtml}
+            <span class="exp-txt">⌛ ${expText}</span>
+        </div>`;
+    }
+
+    return '';
+}
+
 function missedFromLevels(levels, dir, price) {
     const risk = Math.abs(Number(levels.sl) - Number(levels.entry));
     if (!(risk > 0)) return false;
@@ -4552,6 +4697,12 @@ function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
             const stopped = isBuy ? price <= levels.sl : price >= levels.sl;
             const tpReached = isBuy ? price >= levels.tp : price <= levels.tp;
             const tp1Reached = levels.tp1 ? (isBuy ? price >= levels.tp1 : price <= levels.tp1) : false;
+            const orderFilled = levels ? (isBuy ? price >= levels.entry : price <= levels.entry) && !stopped : false;
+            const pnlPoints = levels ? (isBuy ? price - levels.entry : levels.entry - price) : 0;
+            const pnlPct = levels && levels.entry > 0 ? (pnlPoints / levels.entry) * 100 : 0;
+            const pipSize = /JPY$/i.test(asset) || /JPY/i.test(asset) ? 0.01 : (price < 10 ? 0.0001 : 1);
+            const pnlPips = levels && pipSize > 0 ? pnlPoints / pipSize : null;
+            const reverseSetup = stopped ? reverseSetupOf(levels, held.dir, price, asset) : null;
             return {
                 ...signal,
                 dir: held.dir,
@@ -4564,6 +4715,11 @@ function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
                 stopped,
                 tpReached,
                 tp1Reached,
+                orderFilled,
+                pnlPoints,
+                pnlPct,
+                pnlPips,
+                reverseSetup,
                 carried: true,
                 note: held.phase === 'post'
                     ? 'Sinyal pasca-rilis yang sudah terkonfirmasi tetap aktif sampai batas validitas.'
@@ -4610,6 +4766,12 @@ function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
     const stopped = levels ? (isBuy ? price <= levels.sl : price >= levels.sl) : false;
     const tpReached = levels ? (isBuy ? price >= levels.tp : price <= levels.tp) : false;
     const tp1Reached = levels && levels.tp1 ? (isBuy ? price >= levels.tp1 : price <= levels.tp1) : false;
+    const orderFilled = levels ? (isBuy ? price >= levels.entry : price <= levels.entry) && !stopped : false;
+    const pnlPoints = levels ? (isBuy ? price - levels.entry : levels.entry - price) : 0;
+    const pnlPct = levels && levels.entry > 0 ? (pnlPoints / levels.entry) * 100 : 0;
+    const pipSize = /JPY$/i.test(asset) || /JPY/i.test(asset) ? 0.01 : (price < 10 ? 0.0001 : 1);
+    const pnlPips = levels && pipSize > 0 ? pnlPoints / pipSize : null;
+    const reverseSetup = stopped ? reverseSetupOf(levels, lockedDir, price, asset) : null;
 
     return {
         ...signal,
@@ -4622,7 +4784,12 @@ function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
         missed: missedFromLevels(levels, lockedDir, price),
         stopped,
         tpReached,
-        tp1Reached
+        tp1Reached,
+        orderFilled,
+        pnlPoints,
+        pnlPct,
+        pnlPips,
+        reverseSetup
     };
 }
 
@@ -4718,11 +4885,14 @@ function tpSl(a, e) {
     if (assets.gold) {
         const d = signalCardData(e, 'XAU/USD', 'gold', now);
         if (d.dir && d.levels) {
+            d.validUntil = phase === 'post' ? postValidUntil : validUntil;
+            const statusBadge = orderStatusBadgeHtml(d, 'XAU/USD', 'gold', now);
             const move = d.movePct == null ? '' : ` • reaksi ${d.movePct >= 0 ? '+' : ''}${Number(d.movePct).toFixed(2)}%`;
             const tp1Text = d.levels.tp1 ? `<span><b>TP1</b> ${f(d.levels.tp1)}</span>` : '';
             const pbText = d.levels.pullback ? `<span><b>Retest</b> ${f(d.levels.pullback)}</span>` : '';
             html += `<div style="display:flex; gap:14px; flex-wrap:wrap; background:rgba(43,157,181,.10); border:1px dashed rgba(114,212,228,.35); border-radius:14px; padding:12px 14px;">`;
             html += `<span style="color:#72d4e4; font-weight:bold; width:100%; display:flex; justify-content:space-between; align-items:center;"><span>XAU/USD (Gold) — ${actionOf(d.dir)}${move}</span><button type="button" class="btn-mt5-exec" onclick="sendOrderToMt5('XAUUSD','${actionOf(d.dir)}',${d.levels.entry},${d.levels.sl},${d.levels.tp})">⚡ Kirim ke MT5</button></span>`;
+            if (statusBadge) html += `<div style="width:100%;">${statusBadge}</div>`;
             html += `<span><b>Entry</b> ${f(d.levels.entry)}</span><span><b>SL</b> ${f(d.levels.sl)}</span>${tp1Text}<span><b>TP</b> ${f(d.levels.tp)}</span>${pbText}<span><b>R:R</b> 1:${d.levels.rr || 2}.0</span>`;
             html += `<span style="width:100%;color:var(--muted);font-size:11px;">${esc(noteOf(d, phase === 'post' ? `valid s/d ${postValidUntil}` : ''))}</span>`;
             html += `</div>`;
@@ -4800,6 +4970,8 @@ function tpSl(a, e) {
             const d = signalCardData(e, pair, 'forex', now);
 
             if (d.dir && d.levels) {
+                d.validUntil = phase === 'post' ? postValidUntil : validUntil;
+                const statusBadge = orderStatusBadgeHtml(d, pair, 'forex', now);
                 const lv = d.levels;
                 const ldec = Number.isFinite(Number(lv.dec)) ? Number(lv.dec) : dec;
                 const cls = d.dir;
@@ -4809,7 +4981,7 @@ function tpSl(a, e) {
                 const pbVal = lv.pullback ? `<div class="val" style="color:var(--muted); font-size:10px;">Retest: ${Number(lv.pullback).toFixed(ldec)}</div>` : '';
                 const normPair = String(pair).replace('/', '');
                 const btnExec = `<button type="button" class="btn-mt5-exec" style="margin-top:6px;width:100%;justify-content:center;" onclick="sendOrderToMt5('${normPair}','${actionOf(d.dir)}',${lv.entry},${lv.sl},${lv.tp})">⚡ MT5</button>`;
-                html += `<div class="forex-card ${cls}"><div>${pair} <b>${actionOf(d.dir)}</b>${basisNote}</div><div class="val">Entry: ${Number(lv.entry).toFixed(ldec)}</div><div class="val" style="color:var(--red)">SL: ${Number(lv.sl).toFixed(ldec)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: ${Number(lv.tp).toFixed(ldec)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div>${btnExec}</div>`;
+                html += `<div class="forex-card ${cls}">${statusBadge}<div>${pair} <b>${actionOf(d.dir)}</b>${basisNote}</div><div class="val">Entry: ${Number(lv.entry).toFixed(ldec)}</div><div class="val" style="color:var(--red)">SL: ${Number(lv.sl).toFixed(ldec)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: ${Number(lv.tp).toFixed(ldec)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div>${btnExec}</div>`;
                 return;
             }
 
@@ -4853,12 +5025,14 @@ function tpSl(a, e) {
             const d = signalCardData(e, pair, 'crypto', now);
 
             if (d.dir && d.levels) {
+                d.validUntil = phase === 'post' ? postValidUntil : validUntil;
+                const statusBadge = orderStatusBadgeHtml(d, pair, 'crypto', now);
                 const extra = phase === 'post' ? `valid s/d ${postValidUntil}` : '';
                 const tp1Val = d.levels.tp1 ? `<div class="val" style="color:var(--green)">TP1 (1:1): $${fmt(d.levels.tp1)}</div>` : '';
                 const pbVal = d.levels.pullback ? `<div class="val" style="color:var(--muted); font-size:10px;">Retest: $${fmt(d.levels.pullback)}</div>` : '';
                 const normPair = String(pair).replace('/', '');
                 const btnExec = `<button type="button" class="btn-mt5-exec" style="margin-top:6px;width:100%;justify-content:center;" onclick="sendOrderToMt5('${normPair}','${actionOf(d.dir)}',${d.levels.entry},${d.levels.sl},${d.levels.tp})">⚡ MT5</button>`;
-                html += `<div class="forex-card ${d.dir}" style="border-left-color: ${bColor};"><div>${pair} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: $${fmt(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: $${fmt(d.levels.sl)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: $${fmt(d.levels.tp)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div>${btnExec}</div>`;
+                html += `<div class="forex-card ${d.dir}" style="border-left-color: ${bColor};">${statusBadge}<div>${pair} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: $${fmt(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: $${fmt(d.levels.sl)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: $${fmt(d.levels.tp)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div>${btnExec}</div>`;
                 return;
             }
 
@@ -4892,12 +5066,14 @@ function tpSl(a, e) {
             const d = signalCardData(e, cfg.symbol, 'index', now);
 
             if (d.dir && d.levels) {
+                d.validUntil = phase === 'post' ? postValidUntil : validUntil;
+                const statusBadge = orderStatusBadgeHtml(d, cfg.symbol, 'index', now);
                 const cls = d.dir;
                 const extra = phase === 'post' ? `valid s/d ${postValidUntil}` : '';
                 const tp1Val = d.levels.tp1 ? `<div class="val" style="color:var(--green)">TP1 (1:1): ${fmtIdx(d.levels.tp1)}</div>` : '';
                 const pbVal = d.levels.pullback ? `<div class="val" style="color:var(--muted); font-size:10px;">Retest: ${fmtIdx(d.levels.pullback)}</div>` : '';
                 const btnExec = `<button type="button" class="btn-mt5-exec" style="margin-top:6px;width:100%;justify-content:center;" onclick="sendOrderToMt5('${cfg.symbol}','${actionOf(d.dir)}',${d.levels.entry},${d.levels.sl},${d.levels.tp})">⚡ MT5</button>`;
-                html += `<div class="forex-card ${cls}" style="border-left-color:${d.dir === 'long' ? 'var(--green)' : 'var(--red)'};"><div>${esc(cfg.symbol)} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: ${fmtIdx(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: ${fmtIdx(d.levels.sl)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: ${fmtIdx(d.levels.tp)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div>${btnExec}</div>`;
+                html += `<div class="forex-card ${cls}" style="border-left-color:${d.dir === 'long' ? 'var(--green)' : 'var(--red)'};">${statusBadge}<div>${esc(cfg.symbol)} <b>${actionOf(d.dir)}</b></div><div class="val">Entry: ${fmtIdx(d.levels.entry)}</div><div class="val" style="color:var(--red)">SL: ${fmtIdx(d.levels.sl)}</div>${tp1Val}<div class="val" style="color:var(--green)">TP: ${fmtIdx(d.levels.tp)}</div>${pbVal}<div class="val" style="color:var(--muted); font-size:9px;">${esc(noteOf(d, extra))}</div>${btnExec}</div>`;
                 return;
             }
 
