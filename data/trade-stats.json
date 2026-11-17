@@ -1,0 +1,18 @@
+{
+  "generatedAt": null,
+  "source": "belum ada data",
+  "totals": {
+    "total": 0,
+    "wins": 0,
+    "losses": 0,
+    "win_rate": 0,
+    "profit_factor": null,
+    "gross_win": 0,
+    "gross_loss": 0,
+    "net_pnl": 0,
+    "avg_win": 0,
+    "avg_loss": 0,
+    "expectancy": 0
+  },
+  "byPair": []
+}
