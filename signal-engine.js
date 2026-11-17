@@ -1,5 +1,5 @@
 /*!
- * signal-engine.js  v1.0  —  NewsIntelegence / shidiqpiy XAUUSD News Terminal
+ * signal-engine.js  v1.1  —  NewsIntelegence / shidiqpiy XAUUSD News Terminal
  *
  * Pengganti logika sinyal pasca-news. Satu file, bisa dipakai di browser
  * (window.SignalEngine) maupun Node (require). Tanpa dependensi.
@@ -50,6 +50,8 @@
     cancelOnNewExtreme: true,   // harga lari melewati ujung impuls tanpa pullback
     maxAssetsPerEvent: 3,       // klaster korelasi
     defaultSpreadPct: 0.01,     // % bila spread broker tidak tersedia
+    maxSpreadAtr: 0.6,          // spread > 0.6 x ATR(5m) = kondisi untradeable
+    maxRetraceFrac: 0.85,       // harga sudah retrace > 85% impuls = setup batal
   };
 
   /* Kategori event: tipe + selisih minimum |actual-forecast| (satuan data) */
@@ -222,6 +224,8 @@
     const range = react.impulseHigh - react.impulseLow;
     if (!(range > 0)) return null;
     const buf = cfg.slBufferAtr * atr5;
+    // Spread melebar ekstrem pasca-rilis: RR riil hancur walau arah benar.
+    if (atr5 > 0 && spread > cfg.maxSpreadAtr * atr5) return { skip: 'spread terlalu lebar (> ' + cfg.maxSpreadAtr + ' x ATR5m)' };
 
     let level, entry, sl;
     if (d > 0) {                                       // BUY: entry di ask
@@ -238,6 +242,12 @@
     if (risk > cfg.maxRiskAtr * atr5) return { skip: 'risiko > ' + cfg.maxRiskAtr + ' ATR (RR tidak layak)' };
     // harga sudah menembus asal impuls -> setup batal
     if (d > 0 ? react.price <= sl : react.price >= sl) return { skip: 'impuls sudah gagal' };
+    // harga sudah retrace hampir seluruh impuls: pullback tinggal satu langkah
+    // menjebol origin -> balik arah, jangan pasang limit di jalur kebalikannya.
+    if (d > 0 ? react.price < react.impulseLow + (1 - cfg.maxRetraceFrac) * range
+              : react.price > react.impulseHigh - (1 - cfg.maxRetraceFrac) * range) {
+      return { skip: 'retrace > ' + Math.round(cfg.maxRetraceFrac * 100) + '% impuls (mungkin balik arah)' };
+    }
 
     return {
       eventId: ev.id, title: ev.title, asset, dir: d, side: d > 0 ? 'BUY' : 'SELL',
@@ -419,7 +429,7 @@
 
   return {
     CONFIG, ASSETS, CATEGORIES,
-    parseNum, categoryOf, aggregate, atr, surprise,
+    parseNum, categoryOf, aggregate, atr, atr5mBefore, spreadFor, surprise,
     fundamentalDir, reaction, tradeGate, buildOrder, planEvent,
     simulate, summarize, groupBy, eventClusterStats, backtest,
   };

@@ -1985,7 +1985,9 @@ function goldBoardState(now = Date.now()) {
         };
     }
 
-    if (typeof calibratedWatchSignal === 'function' && typeof resolveSignalLevels === 'function') {
+    // NO TRADE dari engine: jangan biarkan sinyal Watch kalibrasi menimpa
+    // keputusan menahan entry (fakeout / reaksi di bawah 1x ATR5m).
+    if (data.basis !== 'engine-no-trade' && typeof calibratedWatchSignal === 'function' && typeof resolveSignalLevels === 'function') {
         const watch = calibratedWatchSignal({ kind: 'gold', asset: 'XAU/USD', event: pick.e, now, price });
         if (watch.dir) {
             const lvl = resolveSignalLevels(pick.e, 'XAU/USD', 'gold', { ...watch, phase: 'watch' }, now);
@@ -2122,7 +2124,7 @@ function cryptoBoardState(now = Date.now()) {
             ? detectPriceSpike(assetBars(it.pair), it.price)
             : null;
         it.spike = spike;
-        if (!it.dir && typeof calibratedWatchSignal === 'function') {
+        if (!it.dir && it.basis !== 'engine-no-trade' && typeof calibratedWatchSignal === 'function') {
             const watch = calibratedWatchSignal({
                 kind: 'crypto', asset: it.pair, event: pick ? pick.e : null,
                 now, price: it.price, changePct: it.changePct
@@ -2319,7 +2321,7 @@ function forexBoardState(now = Date.now()) {
         let spike = typeof detectPriceSpike === 'function' && typeof assetBars === 'function'
             ? detectPriceSpike(assetBars(pair), rate)
             : null;
-        if (phase !== 'live' && !dir && typeof calibratedWatchSignal === 'function') {
+        if (phase !== 'live' && !dir && basis !== 'engine-no-trade' && typeof calibratedWatchSignal === 'function') {
             const watch = calibratedWatchSignal({
                 kind: 'forex', asset: pair, event: next ? next.e : null,
                 now, price: rate, changePct: quote && quote.changePct
@@ -2527,7 +2529,7 @@ function indicesBoardState(now = Date.now()) {
             ? detectPriceSpike(assetBars(it.symbol), it.price)
             : null;
         it.spike = spike;
-        if (!it.dir && typeof calibratedWatchSignal === 'function') {
+        if (!it.dir && it.basis !== 'engine-no-trade' && typeof calibratedWatchSignal === 'function') {
             const watch = calibratedWatchSignal({
                 kind: 'index', asset: it.symbol, event: pick ? pick.e : null,
                 now, price: it.price, changePct: it.changePct
@@ -3755,6 +3757,84 @@ function mapActualBias(kind, asset, dir, e) {
     return mapAssetBias(kind, asset, dir, e);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// SIGNAL ENGINE BRIDGE — signal-engine.js v1.1
+// Gerbang kualitas pasca-rilis untuk event high-impact (pengganti tangga lama):
+//  • tanpa entry 15 menit pertama (settle) dan tanpa order baru > 90 menit;
+//  • reaksi harga wajib >= 1.0x ATR(5m) PRA-rilis — bukan ambang % kaku;
+//  • arah fundamental (analyze + mapActualBias halaman ini) HARUS searah
+//    dengan reaksi harga — konflik = fakeout = NO TRADE;
+//  • entry LIMIT di retrace 50% impuls, SL struktural di balik asal impuls
+//    + 0.25 ATR(5m), TP1 1R (tutup 50%, SL→BE), TP2 2R;
+//  • order LIMIT hangus 30 menit bila tidak terisi (tidak mengejar harga).
+// Bila engine tidak terpasang / data tidak cukup (return null), tangga lama
+// tetap berjalan — integrasi ini backward-compatible.
+// ═══════════════════════════════════════════════════════════════════════════
+function engineOf() {
+    if (typeof window !== 'undefined' && window.SignalEngine) return window.SignalEngine;
+    if (typeof SignalEngine !== 'undefined') return SignalEngine;
+    return null;
+}
+
+function engineBars(asset) {
+    return barsOf(asset)
+        .map(b => ({ t: Number(b && b.k) * 60000, o: Number(b && b.o), h: Number(b && b.h), l: Number(b && b.l), c: Number(b && b.c) }))
+        .filter(b => [b.t, b.o, b.h, b.l, b.c].every(Number.isFinite) && b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0)
+        .sort((a, b) => a.t - b.t);
+}
+
+function engineDec(asset, price) {
+    return /JPY/i.test(String(asset)) ? 3 : (Number(price) < 10 ? 5 : 2);
+}
+
+function signalEngineSignal(e, asset, kind, dirText, now = Date.now()) {
+    const SE = engineOf();
+    if (!SE) return null;                                  // engine tidak terpasang
+    if (newsPhase(e, now) !== 'post') return null;         // pre/live tetap skenario halaman
+    const impact = +e.Importance || 1;
+    if (impact < SE.CONFIG.minImpact) return null;         // impact < 3: skenario lama boleh
+    const releasedAt = new Date(e.Date).getTime();
+    if (!Number.isFinite(releasedAt)) return null;
+    const minsSince = (now - releasedAt) / 60000;
+    if (minsSince > SE.CONFIG.planUntilMin) return null;   // jendela lewat: lock yang menjaga
+    const bars = engineBars(asset);
+    if (bars.length < 60) return null;                     // data bar kurang -> fallback lama
+    if (minsSince < SE.CONFIG.waitMin) {
+        return { engineReject: `masih dalam masa konfirmasi ${SE.CONFIG.waitMin} menit pasca-rilis (jangan entry di spike)` };
+    }
+    const react = SE.reaction(bars, releasedAt, now);
+    if (!react) return { engineReject: 'reaksi harga belum terukur dari bar 1-menit' };
+    const a5 = SE.atr5mBefore(bars, releasedAt, SE.CONFIG.atrPeriod);
+    if (!a5) return null;                                  // baseline ATR pra-rilis tidak ada
+
+    // Event format engine: { id, title, currency, impact, ts, actual, forecast }
+    const evEng = { id: dateEventKey(e), title: e.Event || e.Category || '', currency: countryCode(e.Country), impact, ts: releasedAt, actual: e.Actual, forecast: e.Forecast };
+    const fundDir = dirText === 'long' ? 1 : dirText === 'short' ? -1 : 0;
+    const g = SE.tradeGate(evEng, asset, { minsSince, react, atr5: a5, fundDir });
+    if (!g.ok) return { engineReject: g.why };
+
+    const price = assetPrice(kind, asset) || react.price;
+    const ex = execEntries(asset, price);
+    const spread = ex && ex.spread > 0 ? ex.spread : price * (SE.CONFIG.defaultSpreadPct / 100);
+    const o = SE.buildOrder(evEng, asset, g.dir, react, a5, spread);
+    if (!o || o.skip) return { engineReject: (o && o.skip) || 'range impuls 0' };
+
+    const dir = g.dir > 0 ? 'long' : 'short';
+    const conf = Math.round(Math.min(92, Math.max(62, 62 + Math.min(20, g.score * 8))));
+    const dec = engineDec(asset, o.entry);
+    const rngLo = Math.min(react.impulseHigh, react.impulseLow), rngHi = Math.max(react.impulseHigh, react.impulseLow);
+    return {
+        phase: 'post', dir, basis: 'engine', conf,
+        movePct: react.movePct, minutes: react.minutes, conflict: false,
+        engineLevels: {
+            entry: o.entry, sl: o.sl, tp: o.tp2, tp1: o.tp1, pullback: o.entry,
+            rr: SE.CONFIG.tp2R / SE.CONFIG.tp1R, kind, dec, stopPips: null, riskPct: null,
+            impulse: { low: rngLo, high: rngHi }
+        },
+        note: `Engine: order LIMIT ${dir === 'long' ? 'BUY' : 'SELL'} di retrace 50% impuls ${o.entry.toFixed(dec)} — jangan kejar harga. SL struktural di balik asal impuls, TP1 1R (SL→BE), TP2 2R. Reaksi ${(react.movePct >= 0 ? '+' : '') + react.movePct.toFixed(2)}% dalam ${react.minutes} mnt ≥ 1.0× ATR(5m), Actual & harga searah. Order hangus ${SE.CONFIG.orderTtlMin} mnt bila tak terisi.`
+    };
+}
+
 function signalDirectionCore(e, asset, kind, now = Date.now()) {
     const phase = newsPhase(e, now);
     if (phase === 'pre') {
@@ -3782,6 +3862,22 @@ function signalDirectionCore(e, asset, kind, now = Date.now()) {
     const a = analyze(e);
     const impact = +e.Importance || 1;
     const actualDir = (a.dir === 'long' || a.dir === 'short') ? mapActualBias(kind, asset, a.dir, e) : null;
+
+    // ═══ SIGNAL ENGINE: gerbang kualitas pasca-rilis (signal-engine.js) ═══
+    // Engine lolos  -> sinyalnya dipakai (entry LIMIT di retrace, SL struktural).
+    // Engine MENOLAK -> NO TRADE: sinyal tangga lama DITAHAN agar tidak
+    // membeli spike/momen kecil yang kemudian berbalik (penyebab winrate rendah).
+    const eng = signalEngineSignal(e, asset, kind, actualDir, now);
+    if (eng && eng.dir) return eng;
+    if (eng && eng.engineReject) {
+        return {
+            phase, dir: null, basis: 'engine-no-trade', movePct: null, minutes: null, conf: null,
+            note: `NO TRADE (engine): ${eng.engineReject}. Tunggu pullback ke level entry atau biarkan order hangus — jangan mengejar harga.`
+        };
+    }
+    // eng === null (engine tidak terpasang / impact < 3 / data kurang)
+    // -> tangga arah lama di bawah tetap berjalan.
+
     const reaction = reactionFor(e, asset);
     const reactionDir = reaction && reaction.dir ? reaction.dir : null;
     const releasedAt = new Date(e.Date).getTime();
@@ -4987,7 +5083,7 @@ function lockFreshEnough(lock, phase, e, now) {
 // Peringkat fase untuk aturan replace: rilis adalah skenario baru yang lebih
 // kuat dari sinyal Watch/kalibrasi. Watch tidak boleh menimpa lock rilis.
 const SIGNAL_PHASE_RANK = { watch: 0, pre: 1, post: 2 };
-const RILIS_BASIS = new Set(['actual', 'reaction', 'momentum', 'forecast']);
+const RILIS_BASIS = new Set(['actual', 'reaction', 'momentum', 'forecast', 'engine']);
 
 function lockShouldReplace(lock, signal) {
     if (!lock) return true;
@@ -5005,9 +5101,12 @@ function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
     // sudah dikonfirmasi tetap berlaku sampai batas validitasnya habis. Tanpa ini
     // level bisa hilang-timbul dan entry yang sudah terpasang jadi tidak cocok.
     if (!signal.dir) {
-        const held = readSignalLock(e, asset);
-        if (held && held.phase === signal.phase && (signal.phase === 'post' || signal.phase === 'watch')
-            && lockFreshEnough(held, held.phase, e, now)) {
+        // NO TRADE dari engine menahan juga sinyal lama yang sudah terkunci:
+        // fakeout/reaksi lemah membatalkan order searah arah lama.
+        if (signal.basis !== 'engine-no-trade') {
+            const held = readSignalLock(e, asset);
+            if (held && held.phase === signal.phase && (signal.phase === 'post' || signal.phase === 'watch')
+                && lockFreshEnough(held, held.phase, e, now)) {
             const levels = levelsFromLock(held, kind);
             const isBuy = held.dir === 'long';
             const stopped = isBuy ? price <= levels.sl : price >= levels.sl;
@@ -5042,6 +5141,7 @@ function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
                     : 'Sinyal Watch yang sudah aktif tetap berlaku — belum melemah, tidak digambar ulang.'
             };
         }
+        }
         return { ...signal, price, levels: null, locked: false };
     }
 
@@ -5065,7 +5165,11 @@ function resolveSignalLevels(e, asset, kind, signal, now = Date.now()) {
     } else if (lock && !replace) {
         levels = levelsFromLock(lock, kind);
     } else {
-        levels = computeSignalLevels(kind, asset, signal.dir, price, e, signal);
+        // Basis 'engine': Entry/SL/TP1/TP2 dari SignalEngine (LIMIT di retrace
+        // impuls + SL struktural), BUKAN formula %/ATR halaman lama.
+        levels = (signal.basis === 'engine' && signal.engineLevels)
+            ? { ...signal.engineLevels }
+            : computeSignalLevels(kind, asset, signal.dir, price, e, signal);
         if (canLock) {
             lock = {
                 ...levels, dir: signal.dir, phase: signal.phase, basis: signal.basis,
@@ -6178,5 +6282,6 @@ setInterval(scanAndAutoTradeFromWeb, 5000);
   </div>
   <div id="mt5ToastContainer" class="mt5-toast-container"></div>
   <script src="scripts/xauusd-price-widget.js?v="></script>
+  <script src="signal-engine.js?v=11"></script>
 </body>
 </html>
