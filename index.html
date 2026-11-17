@@ -1249,7 +1249,10 @@ function evaluateSignalHistory({
                 if (!Number.isFinite(relMs) || relMs + 15 * 60000 < firstMs || relMs + 20 * 60000 >= lastMs) continue;
                 const entryIdx = bars.findIndex(b => Number(b.k) * 60000 >= relMs + 15 * 60000);
                 if (entryIdx < 1 || entryIdx >= bars.length - 1) continue;
-                const sig = typeof signalDirectionCore === 'function' ? signalDirectionCore(ev, asset, kind, relMs + 16 * 60000) : null;
+                // Kirim bar historis yang sedang dievaluasi ke engine. Tanpa ini engine
+                // membaca barsOf() global (hanya ~4.5 jam bar 1m), sehingga event lama
+                // selalu dianggap "bar tidak mencakup rilis" dan NO TRADE / 0 sampel.
+                const sig = typeof signalDirectionCore === 'function' ? signalDirectionCore(ev, asset, kind, relMs + 16 * 60000, bars) : null;
                 // Hanya setup pasca-rilis yang lolos gerbang SignalEngine yang masuk statistik.
                 // Jalur lama (forecast/actual/momentum) dan Watch sengaja tidak diukur:
                 // keduanya terbukti tanpa edge pada data historis halaman ini.
@@ -3805,8 +3808,9 @@ function engineOf() {
     return null;
 }
 
-function engineBars(asset) {
-    return barsOf(asset)
+function engineBars(asset, barsOverride = null) {
+    const src = Array.isArray(barsOverride) ? barsOverride : barsOf(asset);
+    return src
         .map(b => ({ t: Number(b && b.k) * 60000, o: Number(b && b.o), h: Number(b && b.h), l: Number(b && b.l), c: Number(b && b.c) }))
         .filter(b => [b.t, b.o, b.h, b.l, b.c].every(Number.isFinite) && b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0)
         .sort((a, b) => a.t - b.t);
@@ -3816,7 +3820,7 @@ function engineDec(asset, price) {
     return /JPY/i.test(String(asset)) ? 3 : (Number(price) < 10 ? 5 : 2);
 }
 
-function signalEngineSignal(e, asset, kind, dirText, now = Date.now()) {
+function signalEngineSignal(e, asset, kind, dirText, now = Date.now(), barsOverride = null) {
     const SE = engineOf();
     if (!SE) return null;                                  // engine tidak terpasang
     if (newsPhase(e, now) !== 'post') return null;         // pre/live tetap skenario halaman
@@ -3826,8 +3830,8 @@ function signalEngineSignal(e, asset, kind, dirText, now = Date.now()) {
     if (!Number.isFinite(releasedAt)) return null;
     const minsSince = (now - releasedAt) / 60000;
     if (minsSince > SE.CONFIG.planUntilMin) return null;   // jendela lewat: lock yang menjaga
-    const bars = engineBars(asset);
-    if (bars.length < 60) return null;                     // data bar kurang -> fallback lama
+    const bars = engineBars(asset, barsOverride);
+    if (bars.length < 45) return null;                     // data bar kurang -> fallback lama
     // Bar harus MENCAKPI rilis (ada bar pra- & pasca-rilis). Tanpa ini, replay
     // historis (bar hanya menit-menit terakhir) akan salah dinilai NO TRADE.
     const lastT = bars[bars.length - 1].t, firstT = bars[0].t;
@@ -3874,7 +3878,7 @@ function signalEngineSignal(e, asset, kind, dirText, now = Date.now()) {
     };
 }
 
-function signalDirectionCore(e, asset, kind, now = Date.now()) {
+function signalDirectionCore(e, asset, kind, now = Date.now(), barsOverride = null) {
     const phase = newsPhase(e, now);
     if (phase === 'pre') {
         const bias = preNewsBias(e);
@@ -3906,7 +3910,7 @@ function signalDirectionCore(e, asset, kind, now = Date.now()) {
     // Engine lolos  -> sinyalnya dipakai (entry LIMIT di retrace, SL struktural).
     // Engine MENOLAK -> NO TRADE: sinyal tangga lama DITAHAN agar tidak
     // membeli spike/momen kecil yang kemudian berbalik (penyebab winrate rendah).
-    const eng = signalEngineSignal(e, asset, kind, actualDir, now);
+    const eng = signalEngineSignal(e, asset, kind, actualDir, now, barsOverride);
     if (eng && eng.dir) return eng;
     if (eng && eng.engineReject) {
         return {
