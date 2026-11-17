@@ -405,8 +405,9 @@ const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
 const WATCH_LOCK_PREFIX = 'feriha:watch:v1:';
 const WATCH_LOCK_TTL_MS = 4 * 60 * 60 * 1000;
 // Skor minimum untuk MENAHAN sinyal Watch yang sudah aktif (hysteresis): cukup
-// kuat untuk tetap aktif, tetapi re-entry butuh konfluensi penuh (>= 1.25).
-const WATCH_HOLD_SCORE = 0.55;
+// kuat untuk tetap aktif, tetapi re-entry butuh konfluensi penuh (>= 2.2).
+// Dulu 0.55 -> sinyal sekarat ditahan terlalu lama dan jadi fake.
+const WATCH_HOLD_SCORE = 1.8;
 
 // ═════════════════════════════════════════════════════════════════════
 // PARAMETER KALIBRASI WINRATE — sesuaikan ambang kelayakan sinyal di sini.
@@ -414,16 +415,17 @@ const WATCH_HOLD_SCORE = 0.55;
 // ═════════════════════════════════════════════════════════════════════
 const WINRATE_PARAMS = {
     // Skor gabungan minimum agar sinyal WATCH dianggap AKTIF.
-    // Naik dari 1.4 -> 1.6: skor 1.4 masih terlalu sering fake di pasar tenang.
-    minNetScoreActive: 1.6,
-    // Minimal jumlah faktor yang harus searah (aligned) untuk sinyal aktif.
-    // 2 dari 4 cukup — jangan terlalu restrictive agar sinyal tidak mati total.
-    minAlignedFactors: 2,
-    // Jika netScore >= ini, satu faktor yang cukup (aligned >= 1) sudah boleh aktif.
-    strongNetScoreBypass: 2.0,
+    // Backtest: di 1.4-1.6 winrate hanya ~49% (tanpa edge). 2.2 = hanya
+    // konfluensi kuat yang boleh menyalakan sinyal tanpa rilis.
+    minNetScoreActive: 2.2,
+    // Minimal faktor searah: 3 dari 4 (dulu 2) — konfluensi lemah = fake.
+    minAlignedFactors: 3,
+    // Bypass satu faktor DINONAKTIFKAN: spike tunggal sering cuma stop-hunt
+    // yang fade (SPIKE_FADED memberi skor negatifnya hanya setelah fade).
+    strongNetScoreBypass: 999,
     // Confidence minimum agar levels ditampilkan & order dianggap "fillable".
-    // 68 -> 72: bucket 60-70 historis winrate di bawah 50%.
-    minConfidence: 72,
+    // Formula conf = 52 + skor*9 + aligned*3 -> skor 2.2/aligned 3 = ~81.
+    minConfidence: 78,
     // Confidence minimum untuk sinyal pre-news (forecast basis).
     // Entry pra-rilis tanpa konfirmasi harga = sumber loss terbanyak.
     minConfidencePre: 78,
@@ -981,7 +983,7 @@ function writeLiveSignalHistory(list) {
     try { localStorage.setItem(SIGNAL_HISTORY_KEY, JSON.stringify(list.slice(-120))); } catch {}
 }
 
-function simulateTradeOnBars(dir, entry, sl, tp1, tp2, forwardBars, kind = '') {
+function simulateTradeOnBars(dir, entry, sl, tp1, tp2, forwardBars, kind = '', maxFillBars = Infinity) {
     const isBuy = dir === 'long';
     const risk = Math.abs(entry - sl);
     if (!(risk > 0) || !Array.isArray(forwardBars) || !forwardBars.length) {
@@ -1008,6 +1010,11 @@ function simulateTradeOnBars(dir, entry, sl, tp1, tp2, forwardBars, kind = '') {
         const h = Number(b && b.h), l = Number(b && b.l);
         if (!(h > 0 && l > 0)) continue;
         if (!entryFilled) {
+            // Order LIMIT hangus setelah maxFillBars bar tanpa terisi (dunia nyata:
+            // orderTtlMin 30 menit) — jangan hitung fill basi sebagai trade.
+            if (j >= maxFillBars) {
+                return { outcome: 'NOFILL', closed: false, r: 0, tp1Hit: false, exitBarIdx: -1, exitPrice: entry };
+            }
             const filled = isBuy ? h >= entry : l <= entry;
             if (!filled) continue;
             entryFilled = true;
@@ -1247,7 +1254,9 @@ function evaluateSignalHistory({
                         ? computeSignalLevels(kind, asset, rawDir, px, ev, { movePct: sig ? sig.movePct : null })
                         : null);
                 if (!lvl || !lvl.sl || !lvl.tp) continue;
-                const sim = simulateTradeOnBars(rawDir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(entryIdx + 1), kind);
+                // Order LIMIT engine hangus 30 menit: 6 bar @5m, 30 bar @1m.
+                const ttlBars = usedHistory5d ? 6 : 30;
+                const sim = simulateTradeOnBars(rawDir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(entryIdx + 1), kind, sig && sig.basis === 'engine' ? ttlBars : Infinity);
                 trades.push({
                     origin: 'calendar',
                     kind,
@@ -2822,9 +2831,12 @@ async function loadCrypto() {
 // Angka thr/sigma = titik awal kalibrasi (kira-kira 1 sigma surprise historis per
 // indikator). WAJIB divalidasi dengan backtest riwayat rilis Anda sendiri.
 
-// true = Forecast vs Previous yang melewati batas noise memberi bias pra-rilis terkalibrasi.
-// Forecast flat (sama dengan Previous) tetap tidak menghasilkan sinyal sendirian.
-const PRE_NEWS_DIRECTIONAL = true;
+// false = TIDAK ADA entry market pra-rilis. Backtest menunjukkan sinyal basis
+// 'forecast' (Forecast vs Previous, tanpa konfirmasi harga) tidak punya edge:
+// winrate impas 52% dan avg win < avg loss. Pra-rilis tetap menampilkan lean +
+// Straddle OCO, tetapi entry arah baru setelah Actual tercetak dan harga
+// bereaksi (jalur SignalEngine). Set true untuk mengembalikan perilaku lama.
+const PRE_NEWS_DIRECTIONAL = false;
 
 const SOFT_IF_HIGH = /unemployment rate|unemployment|initial claims|continuing claims|jobless|claimant count|job cuts/i;
 const FIRM_IF_HIGH = /\bcpi\b|inflation|\bpce\b|\bppi\b|consumer price|producer price|import price|export price|\bpmi\b|\bism\b|retail sales|consumer confidence|consumer sentiment|michigan|conference board|fed funds|funds rate|interest rate|rate decision|cash rate|bank rate|refinancing rate|jolts|durable goods|non-?farm|\bnfp\b|payroll|\badp\b|employment|hourly earnings|wages|\bgdp\b|trade balance|current account|industrial production|manufacturing production|factory orders|\bifo\b|\bzew\b|sentix|\bkof\b|economic optimism|consumer optimism|building permits|housing starts|existing home sales|new home sales|pending home sales|house price|home price|capacity utilization|leading index/i;
