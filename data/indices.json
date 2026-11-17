@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-11-17T12:12:49.770Z",
+  "generatedAt": "2026-11-17T20:54:06.324Z",
   "items": [
     {
       "symbol": "US500",
       "name": "S&P 500",
       "yahoo": "^GSPC",
-      "price": 7416.59,
-      "previousClose": 7561.67,
-      "changePct": -1.92
+      "price": 7315.35,
+      "previousClose": 7416.59,
+      "changePct": -1.37
     }
   ]
 }
