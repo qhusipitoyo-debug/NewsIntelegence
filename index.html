@@ -393,7 +393,7 @@ let HISTORY_BARS = { generatedAt: null, intervalMin: 5, pairs: {} };
 let LIVE_BARS = {};
 let LIVE_TICKS = {};
 let TRADE_STATS = { generatedAt: null, source: '', totals: { total: 0, wins: 0, losses: 0, win_rate: 0, profit_factor: null, gross_win: 0, gross_loss: 0, net_pnl: 0, avg_win: 0, avg_loss: 0, expectancy: 0 }, byPair: [] };
-const SIGNAL_HISTORY_KEY = 'feriha:sighist:v1';
+const SIGNAL_HISTORY_KEY = 'feriha:sighist:v2';
 const REACTION_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 // Entry/SL/TP yang sudah dikonfirmasi disimpan per event+aset supaya tidak berubah
 // setiap tick. Level yang bergerak-gerak membuat order tidak pernah cocok dengan
@@ -414,16 +414,19 @@ const WATCH_HOLD_SCORE = 0.55;
 // ═════════════════════════════════════════════════════════════════════
 const WINRATE_PARAMS = {
     // Skor gabungan minimum agar sinyal WATCH dianggap AKTIF.
-    minNetScoreActive: 1.4,
+    // Naik dari 1.4 -> 1.6: skor 1.4 masih terlalu sering fake di pasar tenang.
+    minNetScoreActive: 1.6,
     // Minimal jumlah faktor yang harus searah (aligned) untuk sinyal aktif.
     // 2 dari 4 cukup — jangan terlalu restrictive agar sinyal tidak mati total.
     minAlignedFactors: 2,
     // Jika netScore >= ini, satu faktor yang cukup (aligned >= 1) sudah boleh aktif.
     strongNetScoreBypass: 2.0,
     // Confidence minimum agar levels ditampilkan & order dianggap "fillable".
-    minConfidence: 68,
+    // 68 -> 72: bucket 60-70 historis winrate di bawah 50%.
+    minConfidence: 72,
     // Confidence minimum untuk sinyal pre-news (forecast basis).
-    minConfidencePre: 72,
+    // Entry pra-rilis tanpa konfirmasi harga = sumber loss terbanyak.
+    minConfidencePre: 78,
     // Jangan trade saat volatilitas ATR 1 menit melebihi ini (%) — pasar terlalu liar.
     maxAtrPct: { gold: 1.0, forex: 0.08, crypto: 1.5, index: 0.6 },
     // Jangan trade saat ATR di bawah ini — pasar terlalu sepi / noise spread.
@@ -1235,9 +1238,14 @@ function evaluateSignalHistory({
                 const rawDir = (sig && sig.dir) || (bias && typeof mapAssetBias === 'function' ? mapAssetBias(kind, asset, bias.dir, ev) : null);
                 if (!rawDir) continue;
                 const px = Number(bars[entryIdx].c);
-                const lvl = typeof computeSignalLevels === 'function'
-                    ? computeSignalLevels(kind, asset, rawDir, px, ev, { movePct: sig ? sig.movePct : null })
-                    : null;
+                // Basis 'engine' memakai level SignalEngine (LIMIT di retrace impuls
+                // + SL struktural). Tanpa ini statistik mengukur sistem lama, bukan
+                // sistem yang benar-benar berjalan di board.
+                const lvl = (sig && sig.basis === 'engine' && sig.engineLevels)
+                    ? { ...sig.engineLevels }
+                    : (typeof computeSignalLevels === 'function'
+                        ? computeSignalLevels(kind, asset, rawDir, px, ev, { movePct: sig ? sig.movePct : null })
+                        : null);
                 if (!lvl || !lvl.sl || !lvl.tp) continue;
                 const sim = simulateTradeOnBars(rawDir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(entryIdx + 1), kind);
                 trades.push({
@@ -3792,13 +3800,17 @@ function signalEngineSignal(e, asset, kind, dirText, now = Date.now()) {
     if (!SE) return null;                                  // engine tidak terpasang
     if (newsPhase(e, now) !== 'post') return null;         // pre/live tetap skenario halaman
     const impact = +e.Importance || 1;
-    if (impact < SE.CONFIG.minImpact) return null;         // impact < 3: skenario lama boleh
+    if (impact < SE.CONFIG.minImpact) return null;         // impact < 2: skenario lama boleh
     const releasedAt = new Date(e.Date).getTime();
     if (!Number.isFinite(releasedAt)) return null;
     const minsSince = (now - releasedAt) / 60000;
     if (minsSince > SE.CONFIG.planUntilMin) return null;   // jendela lewat: lock yang menjaga
     const bars = engineBars(asset);
     if (bars.length < 60) return null;                     // data bar kurang -> fallback lama
+    // Bar harus MENCAKPI rilis (ada bar pra- & pasca-rilis). Tanpa ini, replay
+    // historis (bar hanya menit-menit terakhir) akan salah dinilai NO TRADE.
+    const lastT = bars[bars.length - 1].t, firstT = bars[0].t;
+    if (firstT > releasedAt - 5 * 60000 || lastT < releasedAt + SE.CONFIG.waitMin * 60000) return null;
     if (minsSince < SE.CONFIG.waitMin) {
         return { engineReject: `masih dalam masa konfirmasi ${SE.CONFIG.waitMin} menit pasca-rilis (jangan entry di spike)` };
     }

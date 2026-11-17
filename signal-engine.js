@@ -32,7 +32,7 @@
   /* KONFIGURASI                                                         */
   /* ------------------------------------------------------------------ */
   const CONFIG = {
-    minImpact: 3,               // hanya High impact
+    minImpact: 2,               // High + Medium impact (impact 1 = skenario halaman)
     waitMin: 15,                // tidak ada entry 15 menit pertama
     reactMaxMin: 45,            // jendela pengukuran reaksi
     planUntilMin: 90,           // setelah ini tidak membuat order baru
