@@ -1167,7 +1167,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "-4.1%",
-    "Actual": ""
+    "Actual": "3.5%"
   },
   {
     "Date": "2026-11-17T07:00:00.000Z",
@@ -1176,7 +1176,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "3%",
-    "Actual": ""
+    "Actual": "3.1%"
   },
   {
     "Date": "2026-11-17T07:00:00.000Z",
@@ -1185,7 +1185,7 @@
     "Importance": 2,
     "Forecast": "3.5%",
     "Previous": "3.7%",
-    "Actual": ""
+    "Actual": "3.6%"
   },
   {
     "Date": "2026-11-17T07:00:00.000Z",
@@ -1194,7 +1194,7 @@
     "Importance": 2,
     "Forecast": "3.6%",
     "Previous": "3.7%",
-    "Actual": ""
+    "Actual": "3.5%"
   },
   {
     "Date": "2026-11-17T07:00:00.000Z",
@@ -1203,7 +1203,7 @@
     "Importance": 2,
     "Forecast": "136",
     "Previous": "102",
-    "Actual": ""
+    "Actual": "156"
   },
   {
     "Date": "2026-11-17T07:00:00.000Z",
@@ -1212,7 +1212,7 @@
     "Importance": 1,
     "Forecast": "4.7%",
     "Previous": "4.7%",
-    "Actual": ""
+    "Actual": "4.6%"
   },
   {
     "Date": "2026-11-17T07:00:00.000Z",
@@ -1221,7 +1221,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "13K",
-    "Actual": ""
+    "Actual": "-34K"
   },
   {
     "Date": "2026-11-17T02:00:00-05:00",
@@ -1233,13 +1233,22 @@
     "Actual": ""
   },
   {
+    "Date": "2026-11-17T08:30:00.000Z",
+    "Event": "Labour Productivity QoQ",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "1.5%",
+    "Actual": "1.7%"
+  },
+  {
     "Date": "2026-11-17T09:00:00.000Z",
     "Event": "Inflation Rate MoM Final",
     "Country": "EUR",
     "Importance": 1,
     "Forecast": "5.4%",
     "Previous": "0.7%",
-    "Actual": ""
+    "Actual": "1%"
   },
   {
     "Date": "2026-11-17T09:00:00.000Z",
@@ -1248,7 +1257,7 @@
     "Importance": 1,
     "Forecast": "5.6%",
     "Previous": "4.2%",
-    "Actual": ""
+    "Actual": "5.6%"
   },
   {
     "Date": "2026-11-17T09:00:00.000Z",
@@ -1257,7 +1266,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "4.1%",
-    "Actual": ""
+    "Actual": "5.4%"
   },
   {
     "Date": "2026-11-17T09:30:00.000Z",
@@ -1266,7 +1275,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "0.5%",
-    "Actual": ""
+    "Actual": "2.5%"
   },
   {
     "Date": "2026-11-17T09:30:00.000Z",
@@ -1275,7 +1284,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "1.6%",
-    "Actual": ""
+    "Actual": "-5.8%"
   },
   {
     "Date": "2026-11-17T10:00:00.000Z",
@@ -1284,7 +1293,7 @@
     "Importance": 3,
     "Forecast": "29",
     "Previous": "28.1",
-    "Actual": ""
+    "Actual": "35.6"
   },
   {
     "Date": "2026-11-17T07:30:00-05:00",
@@ -7097,7 +7106,7 @@
     "Country": "GBP",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "3.1%",
     "Actual": ""
   },
   {
@@ -7106,7 +7115,7 @@
     "Country": "GBP",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "3.6%",
     "Actual": ""
   },
   {
@@ -7115,7 +7124,7 @@
     "Country": "GBP",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "3.5%",
     "Actual": ""
   },
   {
@@ -7124,7 +7133,7 @@
     "Country": "GBP",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "156",
     "Actual": ""
   },
   {
@@ -7133,7 +7142,7 @@
     "Country": "GBP",
     "Importance": 3,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "4.6%",
     "Actual": ""
   },
   {
@@ -7142,7 +7151,7 @@
     "Country": "GBP",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-34K",
     "Actual": ""
   },
   {
@@ -7223,7 +7232,7 @@
     "Country": "EUR",
     "Importance": 3,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "35.6",
     "Actual": ""
   },
   {
@@ -7493,7 +7502,7 @@
     "Country": "JPY",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "3.5%",
     "Actual": ""
   },
   {
@@ -7673,7 +7682,7 @@
     "Country": "EUR",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "1%",
     "Actual": ""
   },
   {
@@ -7682,7 +7691,7 @@
     "Country": "EUR",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "5.6%",
     "Actual": ""
   },
   {
@@ -7691,7 +7700,7 @@
     "Country": "EUR",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "5.4%",
     "Actual": ""
   },
   {
@@ -8455,6 +8464,96 @@
     "Event": "Interest Rate",
     "Country": "JPY",
     "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-18T07:00:00.000Z",
+    "Event": "Retail Sales MoM",
+    "Country": "GBP",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-18T07:00:00.000Z",
+    "Event": "Retail Sales ex Fuel YoY",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-18T07:00:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-18T07:00:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-18T07:00:00.000Z",
+    "Event": "GfK Consumer Confidence",
+    "Country": "EUR",
+    "Importance": 3,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-18T07:45:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-18T07:45:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-18T09:00:00.000Z",
+    "Event": "Current Account s.a",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-18T10:00:00.000Z",
+    "Event": "Construction Output MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-18T11:00:00.000Z",
+    "Event": "CBI Distributive Trades",
+    "Country": "GBP",
+    "Importance": 2,
     "Forecast": "",
     "Previous": "",
     "Actual": ""
