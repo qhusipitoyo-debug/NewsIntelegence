@@ -215,11 +215,6 @@
   </header>
   
   <section class="hero"><article class="intro glass"><div class="eyebrow">Waktu Indonesia Tengah</div><h2>Global-moving news,<br><span>in the right order.</span></h2><p>A chronological monthly calendar focused on Global events that can move XAUUSD. Every scenario is converted to Waktu Indonesia Tengah and explained before a directional bias is shown.</p><div class="stats"><div class="stat"><b id="eventCount">—</b><span>events this month</span></div><div class="stat"><b id="highCount">—</b><span>high-impact releases</span></div><div class="stat"><b>WITA</b><span>Asia/Makassar • UTC+8</span></div></div></article><aside class="next"><div><div class="eyebrow">Next gold catalyst</div><h3 id="nextName">Finding next event…</h3><small id="nextTime">Waktu Indonesia Tengah</small></div><div><div class="countdown" id="countdown">--:--:--</div><small>until scheduled release</small></div></aside></section>
-  <section class="engine-signal-board glass" id="engineSignalBoard" style="margin-bottom:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:rgba(4,15,23,.55);">
-    <div class="eyebrow" style="color:var(--aqua);font-size:10px;letter-spacing:.12em;text-transform:uppercase;">Engine confirmed setup</div>
-    <div id="engineSignalBody" style="margin-top:8px;"></div>
-  </section>
-
   <section class="market-board glass" id="goldBoard">
     <div>
       <div class="eyebrow">Gold watch</div>
@@ -398,12 +393,12 @@ let HISTORY_BARS = { generatedAt: null, intervalMin: 5, pairs: {} };
 let LIVE_BARS = {};
 let LIVE_TICKS = {};
 let TRADE_STATS = { generatedAt: null, source: '', totals: { total: 0, wins: 0, losses: 0, win_rate: 0, profit_factor: null, gross_win: 0, gross_loss: 0, net_pnl: 0, avg_win: 0, avg_loss: 0, expectancy: 0 }, byPair: [] };
-const SIGNAL_HISTORY_KEY = 'feriha:sighist:v2';
+const SIGNAL_HISTORY_KEY = 'feriha:sighist:v3';
 const REACTION_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 // Entry/SL/TP yang sudah dikonfirmasi disimpan per event+aset supaya tidak berubah
 // setiap tick. Level yang bergerak-gerak membuat order tidak pernah cocok dengan
 // harga yang dilihat saat entry.
-const SIGNAL_LOCK_PREFIX = 'feriha:signal:v2:';
+const SIGNAL_LOCK_PREFIX = 'feriha:signal:v3:';
 // Lock untuk sinyal Watch (tanpa rilis) & sinyal pra-rilis dari mesin kalibrasi.
 // Disimpan terpisah supaya order Watch juga terkunci sampai skor melemah, bukan
 // menggambar Entry/SL/TP baru di setiap tick dari harga live.
@@ -434,6 +429,22 @@ const WINRATE_PARAMS = {
     // Confidence minimum untuk sinyal pre-news (forecast basis).
     // Entry pra-rilis tanpa konfirmasi harga = sumber loss terbanyak.
     minConfidencePre: 78,
+    // ── GERBANG SKOR PAIR (v3) ─────────────────────────────────────────
+    // Sinyal pasca-rilis (engine maupun jalur lama) hanya lolos bila skor pair
+    // multi-faktor (Makro + DXY + Risk + Mikro EMA/RSI/ICT + F&G + Spike) SEARAH
+    // dan cukup kuat. Skor melawan / lemah / spike berbalik -> NO TRADE.
+    // minNetSupport: skor bersih minimum searah sinyal. minAligned: jumlah
+    // kelompok faktor (makro, F&G, mikro, spike) yang searah. Titik awal —
+    // kalibrasi ulang dari panel statistik setelah ada sampel closed.
+    pairGate: { enabled: true, minNetSupport: 1.0, minAligned: 2 },
+    // Confidence minimum sinyal pasca-rilis SETELAH penalti/bonus konteks & tren.
+    minConfidencePost: 70,
+    // Jalur arah lama (dipakai bila SignalEngine tidak mengembalikan setup):
+    //   'off'    = NO TRADE (hanya engine)
+    //   'strict' = hanya reaksi harga 1-menit kuat (>=2x noise floor), tidak faded,
+    //              searah Actual, tanpa konflik; momentum-saja / Actual-saja DITOLAK
+    //   'loose'  = perilaku lama (penyebab banyak loss)
+    legacyLadder: 'strict',
     // Jangan trade saat volatilitas ATR 1 menit melebihi ini (%) — pasar terlalu liar.
     maxAtrPct: { gold: 1.0, forex: 0.08, crypto: 1.5, index: 0.6 },
     // Jangan trade saat ATR di bawah ini — pasar terlalu sepi / noise spread.
@@ -1168,6 +1179,7 @@ function syncLiveSignalHistory(now = Date.now()) {
             if (!k || !k.startsWith(SIGNAL_LOCK_PREFIX)) continue;
             const lock = JSON.parse(localStorage.getItem(k) || 'null');
             if (!lock || !lock.dir || !lock.entry || !lock.sl || !lock.tp) continue;
+            if (WINRATE_PARAMS.legacyLadder !== 'loose' && ((lock.phase && lock.phase !== 'post') || !['engine', 'reaction'].includes(lock.basis))) continue;
             const asset = k.split('|').pop();
             const kind = asset === 'XAU/USD' ? 'gold' : FOREX_PAIRS.includes(asset) ? 'forex' : CRYPTO_PAIRS.some(c => c.pair === asset) ? 'crypto' : 'index';
             trackSetup(`lock:${k}`, kind, asset, (lock.phase || 'post').toUpperCase(), lock.dir, lock, lock.at || now);
@@ -1262,6 +1274,23 @@ function evaluateSignalHistory({
                 // Jalur lama (forecast/actual/momentum) dan Watch sengaja tidak diukur:
                 // keduanya terbukti tanpa edge pada data historis halaman ini.
                 if (!sig || sig.basis !== 'engine' || !sig.dir) continue;
+                // Gerbang yang sama dengan live: sesi likuid + skor pair searah (tanpa lookahead).
+                const entryMs = Number(bars[entryIdx].k) * 60000;
+                if (!inActiveUtcSession(entryMs)) continue;
+                if (WINRATE_PARAMS.pairGate && WINRATE_PARAMS.pairGate.enabled) {
+                    const pxG = Number(bars[entryIdx].c);
+                    const pdBar = bars[Math.max(0, entryIdx - (bars.length > 350 ? 288 : 60))];
+                    const rollG = pdBar && pdBar.c > 0 ? ((pxG - pdBar.c) / pdBar.c) * 100 : null;
+                    const snapG = calibratedWatchSignal({
+                        kind, asset, event: null, now: entryMs, price: pxG, changePct: rollG,
+                        bars: bars.slice(Math.max(0, entryIdx - 120), entryIdx + 1),
+                        fg: null, cryptoFg: null, usdChgPct: null,
+                        riskRegime: { regime: 'MIXED', score: 0 },
+                        macroRegime: getMacro(kind === 'forex' ? pairCurrencies(asset) : ['USD'], entryMs),
+                        scoreOnly: true
+                    });
+                    if (!pairScoreGate(sig.dir, snapG).ok) continue;
+                }
                 const rawDir = sig.dir;
                 const px = Number(bars[entryIdx].c);
                 // Pakai level asli engine: LIMIT di retrace impuls + SL struktural + TP1/TP2.
@@ -1865,7 +1894,6 @@ function applyBrokerPayload(j) {
     renderForexBoard();
     if (typeof renderGoldBoard === 'function') renderGoldBoard();
     if (typeof renderCryptoBoard === 'function') renderCryptoBoard();
-    if (typeof renderEngineSignalBoard === 'function') renderEngineSignalBoard();
     return true;
 }
 
@@ -1984,7 +2012,6 @@ function goldBoardState(now = Date.now()) {
                 note: data.note, buy, sell, locked: data.locked, lockedAt: data.lockedAt, missed: data.missed,
                 stopped: data.stopped, tpReached: data.tpReached, spike,
                 orderFilled: data.orderFilled, pnlPct: data.pnlPct, pnlPoints: data.pnlPoints, reverseSetup: data.reverseSetup,
-                basis: data.basis, conf: data.conf,
                 modeLabel: data.basis === 'forecast' || data.basis === 'momentum' ? 'PRE-NEWS' : 'WATCH'
             };
         }
@@ -2017,7 +2044,7 @@ function goldBoardState(now = Date.now()) {
             note: data.note, levels: data.levels, locked: data.locked, lockedAt: data.lockedAt,
             conflict: data.conflict, missed: data.missed, stopped: data.stopped, tpReached: data.tpReached,
             orderFilled: data.orderFilled, pnlPct: data.pnlPct, pnlPoints: data.pnlPoints, reverseSetup: data.reverseSetup,
-            basis: data.basis, conf: data.conf, spike
+            spike
         };
     }
 
@@ -3700,7 +3727,8 @@ function macroImpactAnalysis(now = Date.now()) {
         if (typeof calibratedWatchSignal === 'function' && price) {
             watch = calibratedWatchSignal({
                 kind: cfg.kind, asset: cfg.asset, event: cat ? cat.e : null,
-                now, price, changePct: Number.isFinite(changePct) ? changePct : null
+                now, price, changePct: Number.isFinite(changePct) ? changePct : null,
+                scoreOnly: true
             });
         }
         const spike = typeof detectPriceSpike === 'function' && typeof assetBars === 'function'
@@ -3809,6 +3837,9 @@ function mapActualBias(kind, asset, dir, e) {
 // Bila engine tidak terpasang / data tidak cukup (return null), tangga lama
 // tetap berjalan — integrasi ini backward-compatible.
 // ═══════════════════════════════════════════════════════════════════════════
+window.addEventListener('load', () => {
+    if (!engineOf()) console.warn('[NewsIntelegence] signal-engine.js tidak termuat (404?). Semua sinyal lewat jalur lama; mode legacyLadder="' + (WINRATE_PARAMS.legacyLadder || 'strict') + '" membatasinya.');
+});
 function engineOf() {
     if (typeof window !== 'undefined' && window.SignalEngine) return window.SignalEngine;
     if (typeof SignalEngine !== 'undefined') return SignalEngine;
@@ -3926,7 +3957,15 @@ function signalDirectionCore(e, asset, kind, now = Date.now(), barsOverride = nu
         };
     }
     // eng === null (engine tidak terpasang / impact < 3 / data kurang)
-    // -> tangga arah lama di bawah tetap berjalan.
+    // -> tangga arah lama di bawah berjalan sesuai WINRATE_PARAMS.legacyLadder.
+    const ladderMode = WINRATE_PARAMS.legacyLadder || 'strict';
+    const engineMissingNote = engineOf() ? '' : ' [signal-engine.js tidak termuat — cek 404 di Console]';
+    if (ladderMode === 'off') {
+        return {
+            phase, dir: null, basis: 'engine-no-trade', movePct: null, minutes: null, conf: null,
+            note: `NO TRADE: SignalEngine tidak menghasilkan setup dan jalur lama dimatikan.${engineMissingNote}`
+        };
+    }
 
     const reaction = reactionFor(e, asset);
     const reactionDir = reaction && reaction.dir ? reaction.dir : null;
@@ -3945,10 +3984,22 @@ function signalDirectionCore(e, asset, kind, now = Date.now(), barsOverride = nu
         if (reactionDir || strongMomentum) {
             const mv = Math.abs(reactionDir ? reaction.movePct : mom.changePct);
             const conflict = Boolean(actualDir && actualDir !== priceDir);
+            // Mode strict: hanya reaksi harga 1-menit yang kuat, tidak faded, searah
+            // Actual. Momentum-saja dan reaksi lemah/berkonflik = penyebab loss terbanyak.
+            const strictFail = ladderMode !== 'strict' ? null
+                : !reactionDir ? 'momentum tanpa reaksi 1-menit terkonfirmasi'
+                : (reaction && reaction.faded) ? 'spike awal sudah berbalik (fade)'
+                : impact < 2 ? 'event impact rendah'
+                : mv < floor * 2 ? `reaksi ${mv.toFixed(2)}% < 2× noise floor (${(floor * 2).toFixed(2)}%)`
+                : conflict ? 'reaksi harga berlawanan dengan Actual'
+                : (!actualDir && mv < floor * 3) ? `tanpa Actual, reaksi harus ≥ 3× noise floor (${(floor * 3).toFixed(2)}%)`
+                : null;
             if (impact < 2 && mv < floor * 2) {
                 blocked = 'Event low-impact: gerak harga belum cukup besar (butuh ≥ 2× noise floor).';
             } else if (conflict && mv < floor * 2) {
                 blocked = 'KONFLIK/FAKEOUT: harga berlawanan dengan surprise Actual dan geraknya belum cukup kuat → WAIT.';
+            } else if (strictFail) {
+                blocked = `NO TRADE (mode ketat): ${strictFail}.${engineMissingNote}`;
             } else {
                 const agree = Boolean(actualDir && actualDir === priceDir);
                 let conf = (reactionDir ? 62 : 54) + Math.min(20, Math.max(0, (mv / floor - 1) * 8)) + (agree ? 8 : 0) - (conflict ? 10 : 0) - (reaction && reaction.faded ? 8 : 0);
@@ -3974,6 +4025,9 @@ function signalDirectionCore(e, asset, kind, now = Date.now(), barsOverride = nu
 
     // Actual dipakai bila tidak ada arah harga sama sekali, hanya event impact >= 2 dan
     // hanya 3 jam pertama (setelahnya sinyal yang sudah terkonfirmasi dibawa signal lock).
+    if (!blocked && ladderMode === 'strict' && actualDir && impact >= 2 && ageMin <= 180) {
+        blocked = `NO TRADE (mode ketat): Actual tanpa konfirmasi reaksi harga 1-menit tidak diperdagangkan.${engineMissingNote}`;
+    }
     if (!blocked && actualDir && impact >= 2 && ageMin <= 180) {
         return {
             phase, dir: actualDir, basis: 'actual', movePct: null, minutes: null, conf: a.score,
@@ -3994,7 +4048,25 @@ function signalDirectionCore(e, asset, kind, now = Date.now(), barsOverride = nu
 // Lapisan konteks pasar: sentimen (Fear & Greed) + USD sintetis + Trend & Structure Teknikal.
 // Basis lemah (Actual/momentum/forecast) yang MELAWAN tren teknikal atau konteks dibatalkan;
 // sinyal yang SEARAH tren teknikal diperkuat konfluensinya.
-function applyMarketContext(sig, kind, asset) {
+// Gerbang skor pair: murni (tanpa side effect). snap = keluaran calibratedWatchSignal({scoreOnly:true}).
+function pairScoreGate(dir, snap) {
+    const pg = WINRATE_PARAMS.pairGate;
+    if (!pg || !pg.enabled) return { ok: true, reason: 'gate-off' };
+    if (dir !== 'long' && dir !== 'short') return { ok: false, reason: 'tanpa arah' };
+    if (!snap || !Number.isFinite(Number(snap.netScore))) return { ok: false, reason: 'skor pair belum bisa dihitung (data belum lengkap)' };
+    if (snap.spike && snap.spike.state === 'SPIKE_FADED' && snap.spike.fadedDir === dir) {
+        return { ok: false, reason: 'spike berbalik (fakeout) melawan arah sinyal' };
+    }
+    if (snap.candidateDir !== dir) {
+        return { ok: false, reason: `skor pair ${Number(snap.netScore) >= 0 ? '+' : ''}${Number(snap.netScore).toFixed(2)} tidak mendukung ${dir === 'long' ? 'BUY' : 'SELL'}` };
+    }
+    const sup = Math.abs(Number(snap.netScore));
+    if (sup < pg.minNetSupport) return { ok: false, reason: `skor ${sup.toFixed(2)} < minimum ${pg.minNetSupport}` };
+    if ((snap.aligned || 0) < pg.minAligned) return { ok: false, reason: `hanya ${snap.aligned || 0} faktor searah (butuh ${pg.minAligned})` };
+    return { ok: true, reason: 'valid' };
+}
+
+function applyMarketContext(sig, kind, asset, now = Date.now()) {
     if (!sig || (sig.dir !== 'long' && sig.dir !== 'short') || (sig.phase !== 'post' && sig.phase !== 'pre')) return sig;
 
     // Filter volatilitas ATR — jangan trade saat terlalu sepi atau terlalu liar.
@@ -4008,6 +4080,18 @@ function applyMarketContext(sig, kind, asset) {
     if (!inActiveUtcSession()) {
         return { ...sig, dir: null, blocked: true, basis: 'session-block', ctx: null, conf: null,
             note: 'Sinyal dibatalkan: di luar sesi likuransi tinggi (UTC 07–21).' };
+    }
+
+    // Gerbang skor pair (Makro + DXY + Risk + Mikro + F&G + Spike) — wajib searah & valid.
+    if (WINRATE_PARAMS.pairGate && WINRATE_PARAMS.pairGate.enabled && typeof calibratedWatchSignal === 'function') {
+        const snap = calibratedWatchSignal({ kind, asset, event: null, now, scoreOnly: true });
+        const g = pairScoreGate(sig.dir, snap);
+        if (!g.ok) {
+            return { ...sig, dir: null, blocked: true, basis: 'pair-score-block', ctx: null, conf: null,
+                pairScore: snap && Number.isFinite(snap.netScore) ? snap.netScore : null,
+                note: `NO TRADE (skor pair): ${g.reason}.${snap && snap.factors && snap.factors.length ? ' Faktor: ' + snap.factors.slice(0, 5).join(' · ') : ''}` };
+        }
+        sig = { ...sig, pairScore: snap.netScore, pairAligned: snap.aligned };
     }
 
     const usd = typeof usdBias === 'function' ? usdBias() : null;
@@ -4062,11 +4146,15 @@ function applyMarketContext(sig, kind, asset) {
 
     const confBoost = trendBonus + ctxPenalty + (ctx.align === 'with' && trendBonus <= 0 ? 6 : 0);
     const conf = Number.isFinite(sig.conf) ? Math.round(clampNum(sig.conf + confBoost, 30, 95)) : sig.conf;
+    if (sig.phase === 'post' && Number.isFinite(conf) && conf < WINRATE_PARAMS.minConfidencePost) {
+        return { ...sig, dir: null, blocked: true, basis: 'conf-block', ctx, conf: null,
+            note: `NO TRADE: confidence ${conf}% < minimum ${WINRATE_PARAMS.minConfidencePost}% setelah penyesuaian konteks & tren.${ctxNote}${techNote}` };
+    }
     return { ...sig, ctx, conf, sizeFactor: ctx.size, note: `${sig.note || ''}${ctxNote}${techNote}${ctx.size < 1 ? ` • ukuran posisi ${ctx.size}× (melawan konteks)` : ''}` };
 }
 
 function signalDirection(e, asset, kind, now = Date.now()) {
-    return applyMarketContext(signalDirectionCore(e, asset, kind, now), kind, asset);
+    return applyMarketContext(signalDirectionCore(e, asset, kind, now), kind, asset, now);
 }
 
 // Cek regime volatilitas ATR 1 menit: jangan trade saat terlalu sepi (noise)
@@ -4097,7 +4185,7 @@ function calibratedWatchSignal({
     kind, asset, event = null, now = Date.now(),
     price = null, changePct = null, bars = null,
     fg = null, cryptoFg = null, usdChgPct = null,
-    riskRegime = null, macroRegime = null, preBias = undefined
+    riskRegime = null, macroRegime = null, preBias = undefined, scoreOnly = false
 } = {}) {
     const px = Number.isFinite(Number(price)) && Number(price) > 0
         ? Number(price)
@@ -4123,7 +4211,7 @@ function calibratedWatchSignal({
     // Watch tanpa rilis sudah terbukti tanpa edge (WR turun 55.6% -> 49.2% -> 42.6%
     // saat ambangnya dinaikkan). Fungsi ini tetap mengembalikan konteks spike untuk
     // ditampilkan, tetapi TIDAK boleh menghasilkan arah entry lagi.
-    if (WINRATE_PARAMS.watchEnabled === false) {
+    if (WINRATE_PARAMS.watchEnabled === false && !scoreOnly) {
         return {
             dir: null, basis: 'watch-disabled', spike,
             note: 'Watch tanpa rilis dinonaktifkan — hanya setup pasca-rilis terkonfirmasi (SignalEngine) yang ditrade.',
@@ -4280,6 +4368,30 @@ function calibratedWatchSignal({
         microScore * sign >= 0.35,
         spikeScore * sign >= 0.40
     ].filter(Boolean).length;
+
+    // Mode skor-saja: dipakai gerbang skor pair & panel "Pair yang Terdampak".
+    // Tidak menulis/menghapus lock Watch dan tidak menghasilkan order.
+    if (scoreOnly) {
+        const snap = {
+            candidateDir, netScore, aligned, macroScore, fgScore, microScore, spikeScore,
+            trendBull: (emaFast != null && emaSlow != null) ? emaFast > emaSlow : null,
+            spike, factors
+        };
+        const gate = candidateDir ? pairScoreGate(candidateDir, snap) : { ok: false, reason: 'skor netral' };
+        const confS = Math.round(clampNum(52 + Math.abs(netScore) * 9 + aligned * 3, 52, 88));
+        return {
+            dir: gate.ok ? candidateDir : null,
+            candidateDir, phase: event ? newsPhase(event, now) : 'watch',
+            basis: gate.ok ? 'pair-score' : 'pair-score-weak',
+            modeLabel: gate.ok ? 'SKOR VALID' : 'WAIT',
+            conf: gate.ok ? confS : null,
+            netScore, aligned, macroScore, fgScore, microScore, spikeScore,
+            trendBull: snap.trendBull, spike, factors, gate,
+            note: gate.ok
+                ? `Skor pair valid (${netScore >= 0 ? '+' : ''}${netScore.toFixed(2)}, ${aligned} faktor searah): ${factors.join(' · ')}`
+                : `Skor pair belum valid — ${gate.reason}${factors.length ? ': ' + factors.join(' · ') : ''}`
+        };
+    }
 
     const wKey = watchLockKey(event, kind, asset);
 
@@ -5122,88 +5234,6 @@ function orderStatusBadgeHtml(it, asset, kind, now = Date.now()) {
     return '';
 }
 
-// ── Sinyal eksekusi dari SignalEngine ────────────────────────────────────────
-// Hanya setup yang benar-benar lolos gerbang engine (basis 'engine') yang boleh
-// menampilkan BUY NOW / SELL NOW. Watch, forecast, dan jalur lama TIDAK pernah
-// masuk sini. Entry tetap LIMIT di retrace — "NOW" berarti order siap dipasang,
-// bukan menyuruh market-chase di ujung impuls.
-function fmtEnginePx(asset, v) {
-    const n = Number(v);
-    if (!Number.isFinite(n)) return '—';
-    const s = String(asset || '');
-    if (s.includes('/') && !s.includes('XAU') && !s.includes('BTC') && !s.includes('ETH')) return n > 10 ? n.toFixed(3) : n.toFixed(5);
-    if (/JPY/i.test(s)) return n.toFixed(3);
-    return n.toFixed(2);
-}
-
-function engineSetupRows(now = Date.now()) {
-    const rows = [];
-    const MIN_ENGINE_SCORE = 70;
-    const add = (kind, asset, it) => {
-        if (!it || it.basis !== 'engine' || !it.dir || !it.levels) return;
-        if (Number(it.conf) < MIN_ENGINE_SCORE) return;
-        if (it.missed || it.stopped || it.tpReached) return;
-        const lv = it.levels;
-        if (!(Number(lv.entry) > 0 && Number(lv.sl) > 0 && Number(lv.tp) > 0)) return;
-        rows.push({
-            kind, asset, dir: it.dir, levels: lv,
-            conf: Number.isFinite(Number(it.conf)) ? Number(it.conf) : null,
-            note: it.note || '', event: it.event || ''
-        });
-    };
-    try { const g = typeof goldBoardState === 'function' ? goldBoardState(now) : null; add('gold', 'XAU/USD', g); } catch {}
-    try {
-        const c = typeof cryptoBoardState === 'function' ? cryptoBoardState(now) : null;
-        (c && Array.isArray(c.items) ? c.items : []).forEach(it => add('crypto', it.pair, it));
-    } catch {}
-    try {
-        const f = typeof forexBoardState === 'function' ? forexBoardState(now) : null;
-        (f && Array.isArray(f.items) ? f.items : []).forEach(it => add('forex', it.pair, it));
-    } catch {}
-    try {
-        const x = typeof indicesBoardState === 'function' ? indicesBoardState(now) : null;
-        (x && Array.isArray(x.items) ? x.items : []).forEach(it => add('index', it.symbol, it));
-    } catch {}
-    return rows;
-}
-
-function renderEngineSignalBoard() {
-    const el = $('#engineSignalBody');
-    if (!el) return;
-    const rows = engineSetupRows();
-    if (!rows.length) {
-        el.innerHTML = `<div style="font-size:11px;color:var(--muted);">Belum ada setup yang lolos skor engine. <b style="color:var(--amber);">NO TRADE</b> — tunggu Actual + reaksi ≥ 1.5× ATR(5m) dalam jendela 90 menit pasca-rilis.</div>`;
-        return;
-    }
-    el.innerHTML = rows.map(r => {
-        const buy = r.dir === 'long';
-        const act = buy ? 'BUY' : 'SELL';
-        const color = buy ? 'var(--green)' : 'var(--red)';
-        const lv = r.levels;
-        const fmt = v => fmtEnginePx(r.asset, v);
-        const tp1 = Number(lv.tp1) > 0 ? `<span>TP1 <b style="color:var(--green);">${fmt(lv.tp1)}</b></span>` : '';
-        const score = r.conf != null ? ` • SKOR <b>${r.conf}</b>` : '';
-        const symbol = String(r.asset).replace('/', '');
-        const execBtn = typeof sendOrderToMt5 === 'function'
-            ? `<button type="button" class="btn-mt5-exec" onclick="sendOrderToMt5('${esc(symbol)}','${act}',${Number(lv.entry)},${Number(lv.sl)},${Number(lv.tp)})">⚡ MT5</button>`
-            : '';
-        return `<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;border-left:3px solid ${color};background:rgba(0,0,0,.25);border-radius:10px;padding:10px 12px;margin-top:8px;">
-            <div style="min-width:190px;">
-                <div style="font-size:14px;font-weight:800;color:${color};">${buy ? '🟢' : '🔴'} ${act} NOW <span style="color:var(--text);font-size:11px;font-weight:600;">${esc(r.asset)}</span></div>
-                <div style="font-size:10px;color:var(--muted);margin-top:2px;">ENGINE POST-NEWS${score}${r.event ? ' • ' + esc(r.event) : ''}</div>
-            </div>
-            <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;">
-                <span>Entry LIMIT <b>${fmt(lv.entry)}</b></span>
-                <span>SL <b style="color:var(--red);">${fmt(lv.sl)}</b></span>
-                ${tp1}
-                <span>TP2 <b style="color:var(--green);">${fmt(lv.tp)}</b></span>
-            </div>
-            <div style="font-size:10px;color:var(--amber);max-width:250px;">${esc(r.note || 'Pasang LIMIT di entry, jangan kejar harga. Order hangus 30 menit bila tak terisi.')}</div>
-            ${execBtn}
-        </div>`;
-    }).join('');
-}
-
 function missedFromLevels(levels, dir, price) {
     const risk = Math.abs(Number(levels.sl) - Number(levels.entry));
     if (!(risk > 0)) return false;
@@ -5869,7 +5899,6 @@ function render() {
     renderForexBoard();
     renderCryptoBoard();
     renderIndicesBoard();
-    if (typeof renderEngineSignalBoard === 'function') renderEngineSignalBoard();
     if (typeof renderTechBoard === 'function') renderTechBoard();
     if (typeof renderMacroBoard === 'function') renderMacroBoard();
     if (typeof renderMacroImpact === 'function') renderMacroImpact();
@@ -5929,7 +5958,6 @@ renderGoldBoard();
 renderCryptoBoard();
 renderForexBoard();
 renderIndicesBoard();
-if (typeof renderEngineSignalBoard === 'function') renderEngineSignalBoard();
 if (typeof renderTechBoard === 'function') renderTechBoard();
 if (typeof renderMacroBoard === 'function') renderMacroBoard();
 if (typeof renderMacroImpact === 'function') renderMacroImpact();
