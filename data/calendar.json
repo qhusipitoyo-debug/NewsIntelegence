@@ -1473,7 +1473,7 @@
     "Importance": 2,
     "Forecast": "-0.5",
     "Previous": "8.97",
-    "Actual": ""
+    "Actual": "5.28"
   },
   {
     "Date": "2026-11-17T21:30:00.000Z",
@@ -1482,7 +1482,7 @@
     "Importance": 1,
     "Forecast": "1.07",
     "Previous": "1.51",
-    "Actual": ""
+    "Actual": "0.35"
   },
   {
     "Date": "2026-11-17T21:30:00.000Z",
@@ -1491,7 +1491,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "0.43",
-    "Actual": ""
+    "Actual": "-0.27"
   },
   {
     "Date": "2026-11-17T21:30:00.000Z",
@@ -1500,7 +1500,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "0.24",
-    "Actual": ""
+    "Actual": "-0.18"
   },
   {
     "Date": "2026-11-17T16:45:00-05:00",
@@ -1518,7 +1518,7 @@
     "Importance": 2,
     "Forecast": "20%",
     "Previous": "16.5%",
-    "Actual": ""
+    "Actual": "20.5%"
   },
   {
     "Date": "2026-11-17T23:50:00.000Z",
@@ -1527,7 +1527,7 @@
     "Importance": 1,
     "Forecast": "-0.90T",
     "Previous": "-0.70T",
-    "Actual": ""
+    "Actual": "-476.5"
   },
   {
     "Date": "2026-11-18T00:00:00.000Z",
@@ -1536,7 +1536,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "-0.06%",
-    "Actual": ""
+    "Actual": "-0.03%"
   },
   {
     "Date": "2026-11-17T19:30:00-05:00",
@@ -1545,7 +1545,7 @@
     "Importance": 2,
     "Forecast": "1.0%",
     "Previous": "0.8%",
-    "Actual": ""
+    "Actual": "1.1%"
   },
   {
     "Date": "2026-11-18T06:00:00.000Z",
@@ -1858,7 +1858,7 @@
     "Event": "Pending Home Sales m/m",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "-1.8%",
+    "Forecast": "-2.0%",
     "Previous": "-7.3%",
     "Actual": ""
   },
@@ -1948,7 +1948,7 @@
     "Event": "Crude Oil Inventories",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "-0.3M",
+    "Forecast": "0.4M",
     "Previous": "4.7M",
     "Actual": ""
   },
@@ -2182,7 +2182,7 @@
     "Event": "Philly Fed Manufacturing Index",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "19.2",
+    "Forecast": "20.6",
     "Previous": "20.9",
     "Actual": ""
   },
@@ -2218,7 +2218,7 @@
     "Event": "IPPI m/m",
     "Country": "CAD",
     "Importance": 1,
-    "Forecast": "1.2%",
+    "Forecast": "0.4%",
     "Previous": "2.0%",
     "Actual": ""
   },
@@ -2281,7 +2281,7 @@
     "Event": "Unemployment Claims",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "199K",
+    "Forecast": "198K",
     "Previous": "200K",
     "Actual": ""
   },
@@ -2335,7 +2335,7 @@
     "Event": "Natural Gas Storage",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "25B",
     "Previous": "61B",
     "Actual": ""
   },
@@ -2641,7 +2641,7 @@
     "Event": "Revised UoM Consumer Sentiment",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "52.1",
+    "Forecast": "51.7",
     "Previous": "51.0",
     "Actual": ""
   },
@@ -3182,7 +3182,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "5.28",
     "Actual": ""
   },
   {
@@ -3191,7 +3191,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.35",
     "Actual": ""
   },
   {
@@ -3200,7 +3200,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-0.27",
     "Actual": ""
   },
   {
@@ -3209,7 +3209,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-0.18",
     "Actual": ""
   },
   {
@@ -7439,7 +7439,7 @@
     "Country": "JPY",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "20.5%",
     "Actual": ""
   },
   {
@@ -7448,7 +7448,7 @@
     "Country": "JPY",
     "Importance": 3,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-476.5",
     "Actual": ""
   },
   {
@@ -7466,7 +7466,7 @@
     "Country": "AUD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-0.03%",
     "Actual": ""
   },
   {
