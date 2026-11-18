@@ -5467,6 +5467,7 @@ function tpSl(a, e) {
     const f = n => Number(n).toFixed(2);
     const validUntil = fmtDate(new Date(e.Date)) + ' pukul ' + fmtTime(new Date(e.Date));
     const postValidUntil = fmtDate(postNewsExpiry(e)) + ' ' + fmtTime(postNewsExpiry(e));
+    const postNoTradeFinal = phase === 'post' && !(focusData && focusData.dir);
     const basisText = basis => ({
         reaction: 'reaksi harga 1 menit',
         momentum: 'momentum pra-rilis',
@@ -5564,25 +5565,43 @@ function tpSl(a, e) {
             const slDist = buffer * 1.5, tpDist = buffer * 3.0;
             const ex = execEntries('XAU/USD', LIVE_PRICE);
             const buyEntry = (ex ? ex.buy : LIVE_PRICE) + buffer, sellEntry = (ex ? ex.sell : LIVE_PRICE) - buffer;
-            if (impact >= 3) html += `<div class="warning-badge">⚠️ HIGH IMPACT NEWS: Spread melebar — tunggu candle konfirmasi.</div>`;
-            html += `<div class="exec-box">
-                <h5>POST-NEWS BREAKOUT (OCO)</h5>
-                <div class="exec-grid">
-                    <div class="exec-card buy">
-                        <b>BUY</b>
-                        <div class="val">Entry: ${f(buyEntry)}</div>
-                        <div class="val" style="color:var(--red)">SL: ${f(buyEntry - slDist)}</div>
-                        <div class="val" style="color:var(--green)">TP: ${f(buyEntry + tpDist)}</div>
+            if (postNoTradeFinal) {
+                html += `<div class="postnews-badge">ℹ️ No trade Final. Impact/news belum terkonfirmasi — harga market tetap stable/OCO (referensi, bukan sinyal).</div>`;
+                html += `<div class="exec-box" style="opacity:.92;">
+                    <h5>STABLE / OCO (REFERENSI)</h5>
+                    <div class="exec-grid">
+                        <div class="exec-card buy">
+                            <b>BUY (OCO)</b>
+                            <div class="val">Level: ${f(buyEntry)}</div>
+                        </div>
+                        <div class="exec-card sell">
+                            <b>SELL (OCO)</b>
+                            <div class="val">Level: ${f(sellEntry)}</div>
+                        </div>
                     </div>
-                    <div class="exec-card sell">
-                        <b>SELL</b>
-                        <div class="val">Entry: ${f(sellEntry)}</div>
-                        <div class="val" style="color:var(--red)">SL: ${f(sellEntry + slDist)}</div>
-                        <div class="val" style="color:var(--green)">TP: ${f(sellEntry - tpDist)}</div>
+                    <div class="oco-note">*Referensi level OCO; tidak ada sinyal trade karena impact belum terkonfirmasi.</div>
+                </div>`;
+            } else {
+                if (impact >= 3) html += `<div class="warning-badge">⚠️ HIGH IMPACT NEWS: Spread melebar — tunggu candle konfirmasi.</div>`;
+                html += `<div class="exec-box">
+                    <h5>POST-NEWS BREAKOUT (OCO)</h5>
+                    <div class="exec-grid">
+                        <div class="exec-card buy">
+                            <b>BUY</b>
+                            <div class="val">Entry: ${f(buyEntry)}</div>
+                            <div class="val" style="color:var(--red)">SL: ${f(buyEntry - slDist)}</div>
+                            <div class="val" style="color:var(--green)">TP: ${f(buyEntry + tpDist)}</div>
+                        </div>
+                        <div class="exec-card sell">
+                            <b>SELL</b>
+                            <div class="val">Entry: ${f(sellEntry)}</div>
+                            <div class="val" style="color:var(--red)">SL: ${f(sellEntry + slDist)}</div>
+                            <div class="val" style="color:var(--green)">TP: ${f(sellEntry - tpDist)}</div>
+                        </div>
                     </div>
-                </div>
-                <div class="oco-note">*OCO: Jika salah satu arah tersentuh, batalkan arah lainnya.</div>
-            </div>`;
+                    <div class="oco-note">*OCO: Jika salah satu arah tersentuh, batalkan arah lainnya.</div>
+                </div>`;
+            }
         }
     }
 
@@ -5628,14 +5647,22 @@ function tpSl(a, e) {
             const sellEntry = ex ? ex.sell : rate;
             const buySl = buyEntry - slDist, buyTp = buyEntry + tpDist;
             const sellSl = sellEntry + slDist, sellTp = sellEntry - tpDist;
-            const label = phase === 'pre' ? 'STRADDLE' : 'BREAKOUT';
+            const label = phase === 'pre' ? 'STRADDLE' : (postNoTradeFinal ? 'STABLE/OCO' : 'BREAKOUT');
 
-            html += `<div class="forex-card" style="border-left-color: var(--amber);">
-                <div>${pair} <b style="color:var(--amber)">${label}</b></div>
-                <div class="val" style="color:var(--green); font-size:11px;">BUY: ${buyEntry.toFixed(dec)} → TP ${buyTp.toFixed(dec)}</div>
-                <div class="val" style="color:var(--red); font-size:11px;">SELL: ${sellEntry.toFixed(dec)} → TP ${sellTp.toFixed(dec)}</div>
-                <div class="val" style="color:var(--muted); font-size:9px;">SL: ${buySl.toFixed(dec)} / ${sellSl.toFixed(dec)} • SL/TP ${Math.round(slPips)}/${Math.round(tpPips)} pips</div>
-            </div>`;
+            if (postNoTradeFinal) {
+                html += `<div class="forex-card" style="border-left-color: var(--amber); opacity:.92;">
+                    <div>${pair} <b style="color:var(--amber)">${label}</b> <span style="color:var(--muted);font-size:10px;">(referensi, bukan sinyal)</span></div>
+                    <div class="val" style="color:var(--green); font-size:11px;">BUY level: ${buyEntry.toFixed(dec)}</div>
+                    <div class="val" style="color:var(--red); font-size:11px;">SELL level: ${sellEntry.toFixed(dec)}</div>
+                </div>`;
+            } else {
+                html += `<div class="forex-card" style="border-left-color: var(--amber);">
+                    <div>${pair} <b style="color:var(--amber)">${label}</b></div>
+                    <div class="val" style="color:var(--green); font-size:11px;">BUY: ${buyEntry.toFixed(dec)} → TP ${buyTp.toFixed(dec)}</div>
+                    <div class="val" style="color:var(--red); font-size:11px;">SELL: ${sellEntry.toFixed(dec)} → TP ${sellTp.toFixed(dec)}</div>
+                    <div class="val" style="color:var(--muted); font-size:9px;">SL: ${buySl.toFixed(dec)} / ${sellSl.toFixed(dec)} • SL/TP ${Math.round(slPips)}/${Math.round(tpPips)} pips</div>
+                </div>`;
+            }
         });
         html += `</div>`;
     }
@@ -5672,13 +5699,21 @@ function tpSl(a, e) {
             const ex = execEntries(pair, rate);
             const buyEntry = (ex ? ex.buy : rate) * (1 + bufferPct / 100);
             const sellEntry = (ex ? ex.sell : rate) * (1 - bufferPct / 100);
-            const label = phase === 'pre' ? 'STRADDLE' : 'BREAKOUT';
-            html += `<div class="forex-card" style="border-left-color: var(--amber);">
-                <div>${pair} <b style="color:var(--amber)">${label}</b></div>
-                <div class="val" style="color:var(--green); font-size:11px;">BUY: $${fmt(buyEntry)} → TP $${fmt(buyEntry * (1 + tpPct / 100))}</div>
-                <div class="val" style="color:var(--red); font-size:11px;">SELL: $${fmt(sellEntry)} → TP $${fmt(sellEntry * (1 - tpPct / 100))}</div>
-                <div class="val" style="color:var(--muted); font-size:9px;">SL/TP: ${slPct.toFixed(1)}% / ${tpPct.toFixed(1)}%</div>
-            </div>`;
+            const label = phase === 'pre' ? 'STRADDLE' : (postNoTradeFinal ? 'STABLE/OCO' : 'BREAKOUT');
+            if (postNoTradeFinal) {
+                html += `<div class="forex-card" style="border-left-color: var(--amber); opacity:.92;">
+                    <div>${pair} <b style="color:var(--amber)">${label}</b> <span style="color:var(--muted);font-size:10px;">(referensi, bukan sinyal)</span></div>
+                    <div class="val" style="color:var(--green); font-size:11px;">BUY level: $${fmt(buyEntry)}</div>
+                    <div class="val" style="color:var(--red); font-size:11px;">SELL level: $${fmt(sellEntry)}</div>
+                </div>`;
+            } else {
+                html += `<div class="forex-card" style="border-left-color: var(--amber);">
+                    <div>${pair} <b style="color:var(--amber)">${label}</b></div>
+                    <div class="val" style="color:var(--green); font-size:11px;">BUY: $${fmt(buyEntry)} → TP $${fmt(buyEntry * (1 + tpPct / 100))}</div>
+                    <div class="val" style="color:var(--red); font-size:11px;">SELL: $${fmt(sellEntry)} → TP $${fmt(sellEntry * (1 - tpPct / 100))}</div>
+                    <div class="val" style="color:var(--muted); font-size:9px;">SL/TP: ${slPct.toFixed(1)}% / ${tpPct.toFixed(1)}%</div>
+                </div>`;
+            }
         });
         html += `</div>`;
     }
@@ -5712,13 +5747,21 @@ function tpSl(a, e) {
             const ex = execEntries(cfg.symbol, rate);
             const buyEntry = (ex ? ex.buy : rate) * (1 + buffer / 100);
             const sellEntry = (ex ? ex.sell : rate) * (1 - buffer / 100);
-            const label = phase === 'pre' ? 'STRADDLE' : 'BREAKOUT';
-            html += `<div class="forex-card" style="border-left-color: var(--amber);">
-                <div>${esc(cfg.symbol)} <b style="color:var(--amber)">${label}</b></div>
-                <div class="val" style="color:var(--green); font-size:11px;">BUY &gt; ${fmtIdx(buyEntry)}</div>
-                <div class="val" style="color:var(--red); font-size:11px;">SELL &lt; ${fmtIdx(sellEntry)}</div>
-                <div class="val" style="color:var(--muted); font-size:9px;">SL/TP ${cfg.slPct}% / ${cfg.tpPct}%</div>
-            </div>`;
+            const label = phase === 'pre' ? 'STRADDLE' : (postNoTradeFinal ? 'STABLE/OCO' : 'BREAKOUT');
+            if (postNoTradeFinal) {
+                html += `<div class="forex-card" style="border-left-color: var(--amber); opacity:.92;">
+                    <div>${esc(cfg.symbol)} <b style="color:var(--amber)">${label}</b> <span style="color:var(--muted);font-size:10px;">(referensi, bukan sinyal)</span></div>
+                    <div class="val" style="color:var(--green); font-size:11px;">BUY level &gt; ${fmtIdx(buyEntry)}</div>
+                    <div class="val" style="color:var(--red); font-size:11px;">SELL level &lt; ${fmtIdx(sellEntry)}</div>
+                </div>`;
+            } else {
+                html += `<div class="forex-card" style="border-left-color: var(--amber);">
+                    <div>${esc(cfg.symbol)} <b style="color:var(--amber)">${label}</b></div>
+                    <div class="val" style="color:var(--green); font-size:11px;">BUY &gt; ${fmtIdx(buyEntry)}</div>
+                    <div class="val" style="color:var(--red); font-size:11px;">SELL &lt; ${fmtIdx(sellEntry)}</div>
+                    <div class="val" style="color:var(--muted); font-size:9px;">SL/TP ${cfg.slPct}% / ${cfg.tpPct}%</div>
+                </div>`;
+            }
         });
         html += `</div>`;
     }
