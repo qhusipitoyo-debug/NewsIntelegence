@@ -2351,7 +2351,11 @@ function forexSourceText(meta) {
 
 function forexBoardState(now = Date.now()) {
     const items = FOREX_PAIRS.map(pair => {
-        const rate = pairRate(pair);
+        const broker = brokerQuoteFor(pair, now);
+        const brokerMid = broker && !broker.stale && Number.isFinite(Number(broker.bid)) && Number.isFinite(Number(broker.ask))
+            ? (Number(broker.bid) + Number(broker.ask)) / 2
+            : null;
+        const rate = pairRate(pair) || brokerMid;
         const quote = FOREX_QUOTES[pair] || null;
         const next = nextPairCatalyst(pair, now);
         let dir = null, note = '', eventLabel = '', phase = '', validUntil = '', noData = false;
@@ -2424,7 +2428,7 @@ function forexBoardState(now = Date.now()) {
             source: quote && quote.source,
             tick: FOREX_TICK[pair] || null,
             crossCheckPct: quote && quote.crossCheckPct,
-            broker: brokerQuoteFor(pair, now)
+            broker
         };
     });
     const source = forexSourceText(FOREX_META);
@@ -5406,10 +5410,40 @@ function pairRateFrom(rates, pair) {
 
 function pairRate(pair) {
     const key = String(pair).toUpperCase();
+
+    // 1. Langsung dari FOREX_QUOTES (scanner TradingView)
     const quote = typeof FOREX_QUOTES === 'object' && FOREX_QUOTES ? FOREX_QUOTES[key] : null;
     const live = Number(quote && quote.price);
     if (Number.isFinite(live) && live > 0) return live;
-    return pairRateFrom(FOREX_RATES, pair);
+
+    // 2. Dari FOREX_RATES (rata mata uang individual vs USD)
+    const computed = pairRateFrom(FOREX_RATES, pair);
+    if (Number.isFinite(computed) && computed > 0) return computed;
+
+    // 3. Cross-computation dari pair yang diketahui di FOREX_QUOTES
+    //    Contoh: EUR/GBP = EUR/USD ÷ GBP/USD
+    const [base, quoteCur] = key.split('/');
+    if (!base || !quoteCur) return null;
+
+    // base/USD × USD/quoteCur
+    const q1 = rateFromQuotesOnly(base + '/USD');
+    const q2 = rateFromQuotesOnly('USD/' + quoteCur);
+    if (q1 && q2) return q1 * q2;
+
+    // quoteCur/USD → USB/base (inverse)
+    const q3 = rateFromQuotesOnly(quoteCur + '/USD');
+    const q4 = rateFromQuotesOnly('USD/' + base);
+    if (q3 && q4) return q4 / q3;
+
+    return null;
+}
+
+// Helper: ambil harga langsung dari FOREX_QUOTES tanpa rekursi
+function rateFromQuotesOnly(pair) {
+    const key = String(pair).toUpperCase();
+    const quote = typeof FOREX_QUOTES === 'object' && FOREX_QUOTES ? FOREX_QUOTES[key] : null;
+    const live = Number(quote && quote.price);
+    return (Number.isFinite(live) && live > 0) ? live : null;
 }
 
 function tpSl(a, e) {
