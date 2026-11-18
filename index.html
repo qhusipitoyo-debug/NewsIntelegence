@@ -3842,9 +3842,11 @@ function mapActualBias(kind, asset, dir, e) {
 // Bila engine tidak terpasang / data tidak cukup (return null), tangga lama
 // tetap berjalan — integrasi ini backward-compatible.
 // ═══════════════════════════════════════════════════════════════════════════
-window.addEventListener('load', () => {
-    if (!engineOf()) console.warn('[NewsIntelegence] signal-engine.js tidak termuat (404?). Semua sinyal lewat jalur lama; mode legacyLadder="' + (WINRATE_PARAMS.legacyLadder || 'strict') + '" membatasinya.');
-});
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    window.addEventListener('load', () => {
+        if (!engineOf()) console.warn('[NewsIntelegence] signal-engine.js tidak termuat (404?). Semua sinyal lewat jalur lama; mode legacyLadder="' + (WINRATE_PARAMS.legacyLadder || 'strict') + '" membatasinya.');
+    });
+}
 function engineOf() {
     if (typeof window !== 'undefined' && window.SignalEngine) return window.SignalEngine;
     if (typeof SignalEngine !== 'undefined') return SignalEngine;
@@ -5504,7 +5506,7 @@ function tpSl(a, e) {
     if (phase === 'post') {
         html += focusData && focusData.dir
             ? `<div class="postnews-badge">✅ POST-NEWS ${actionOf(focusData.dir)} • arah dari ${basisText(focusData.basis)} • valid s/d ${postValidUntil}</div>`
-            : `<div class="postnews-badge">⏳ POST-NEWS — arah belum terkonfirmasi. Level breakout OCO ditampilkan sampai reaksi harga jelas.</div>`;
+            : `<div class="postnews-badge">⏳ POST-NEWS — No trade Final. Tidak ada sinyal; impact/news belum terkonfirmasi. Harga market tetap stable/OCO.</div>`;
     } else if (focusData && focusData.dir) {
         html += `<div class="validity">⚠️ Entry pasar riil ${actionOf(focusData.dir)} — valid hingga ${validUntil}</div>`;
     }
@@ -5588,7 +5590,7 @@ function tpSl(a, e) {
     if (Object.keys(FOREX_RATES).length > 0) {
         const fxStatus = focusData && focusData.dir
             ? `(${actionOf(focusData.dir)} • ${basisText(focusData.basis)})`
-            : phase === 'post' ? '(menunggu konfirmasi harga)' : '(straddle level)';
+            : phase === 'post' ? '(No trade Final • stable/OCO)' : '(straddle level)';
         html += `<div class="forex-container"><span style="color:#72d4e4; font-weight:bold; width:100%;">Forex Majors ${fxStatus}</span>`;
         assets.forex.forEach(pair => {
             const rate = pairRate(pair);
@@ -5642,7 +5644,7 @@ function tpSl(a, e) {
     if (assets.crypto && Object.keys(CRYPTO_RATES).length > 0) {
         const cryptoStatus = focusData && focusData.dir
             ? `(${actionOf(focusData.dir)} • ${basisText(focusData.basis)})`
-            : phase === 'post' ? '(menunggu konfirmasi harga)' : '(straddle level)';
+            : phase === 'post' ? '(No trade Final • stable/OCO)' : '(straddle level)';
         html += `<div class="forex-container" style="border-top: 1px dashed rgba(255,255,255,.1); margin-top: 10px; padding-top: 10px;"><span style="color:#f7931a; font-weight:bold; width:100%;">Crypto Markets ${cryptoStatus}</span>`;
         ['BTC/USD', 'ETH/USD'].forEach(pair => {
             const rate = Number(CRYPTO_RATES[pair]);
@@ -5685,7 +5687,7 @@ function tpSl(a, e) {
     if (assets.indices && Object.keys(INDEX_RATES).length > 0) {
         const idxStatus = focusData && focusData.dir
             ? `(${actionOf(focusData.dir)} • ${basisText(focusData.basis)})`
-            : phase === 'post' ? '(menunggu konfirmasi harga)' : '(breakout level)';
+            : phase === 'post' ? '(No trade Final • stable/OCO)' : '(breakout level)';
         const fmtIdx = n => Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         html += `<div class="forex-container" style="border-top: 1px dashed rgba(255,255,255,.1); margin-top: 10px; padding-top: 10px;"><span style="color:#8bd4ff; font-weight:bold; width:100%;">Indices (S&amp;P 500) ${idxStatus}</span>`;
         INDICES.forEach(cfg => {
@@ -5791,17 +5793,32 @@ function card(e) {
     const techNote = techConfluenceText(focus.kind, focus.pair);
     if (techNote) reason += techNote;
     // Rilis lama (> 3 jam): tampilkan hasil final, bukan WAIT tanpa kesimpulan.
+    // Untuk rilis pasca-news yang impact/arahnya belum terkonfirmasi, tampilkan
+    // No trade Final agar kartu dan harga market tidak memberi sinyal arah semu.
     const ageMinFinal = (now - new Date(e.Date).getTime()) / 60000;
     let finalBadge = '';
+    const postUnconfirmed = phase === 'post' && !(focusData && focusData.dir);
     if (phase === 'post' && Number.isFinite(ageMinFinal) && ageMinFinal > 180) {
         const fin = (focusData && focusData.dir)
             ? { dir: focusData.dir, conf: focusData.conf, why: focusData.note || '', locked: true }
             : finalVerdict(e);
         signalDir = fin.dir || 'wait';
         signalLabel = fin.dir === 'long' ? 'BUY' : fin.dir === 'short' ? 'SELL' : 'NO TRADE';
-        signalNote = fin.dir ? `FINAL • ${fin.locked ? 'sinyal terkunci' : 'Actual vs Forecast (retrospektif)'}` : 'FINAL • tidak ada sinyal';
+        signalNote = fin.dir ? `FINAL • ${fin.locked ? 'sinyal terkunci' : 'Actual vs Forecast (retrospektif)'}` : 'No trade Final. Tidak ada sinyal';
         meterScore = fin.dir && Number.isFinite(fin.conf) ? fin.conf : null;
-        reason = `HASIL FINAL ${signalLabel}. ${fin.why} Entry/SL/TP tidak ditampilkan untuk rilis lama karena harga sudah berubah.`;
+        reason = fin.dir
+            ? `HASIL FINAL ${signalLabel}. ${fin.why} Entry/SL/TP tidak ditampilkan untuk rilis lama karena harga sudah berubah.`
+            : `HASIL FINAL NO TRADE. ${fin.why || (focusData && focusData.note) || 'Impact/news belum terkonfirmasi, tidak ada sinyal.'} Harga market yang terimbas tetap stable/OCO.`;
+        finalBadge = ' <span class="impact" style="background:rgba(145,174,184,.18);color:var(--muted)">FINAL</span>';
+    } else if (postUnconfirmed) {
+        // Impact/news belum terkonfirmasi: jangan tampilkan WAIT seolah menunggu sinyal,
+        // tapi tandai No trade Final dan biarkan level market tetap stable/OCO.
+        signalDir = 'wait';
+        signalLabel = 'NO TRADE';
+        signalNote = 'No trade Final. Tidak ada sinyal';
+        meterScore = null;
+        const unconfirmedWhy = (focusData && focusData.note) || a.reason || 'Impact/news belum terkonfirmasi.';
+        reason = `HASIL FINAL NO TRADE. ${unconfirmedWhy} Tidak ada sinyal; harga market yang terimbas tetap stable/OCO.`;
         finalBadge = ' <span class="impact" style="background:rgba(145,174,184,.18);color:var(--muted)">FINAL</span>';
     }
     const color = signalDir === 'long' ? 'var(--green)' : signalDir === 'short' ? 'var(--red)' : 'var(--amber)';
