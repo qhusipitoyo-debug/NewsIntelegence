@@ -215,6 +215,11 @@
   </header>
   
   <section class="hero"><article class="intro glass"><div class="eyebrow">Waktu Indonesia Tengah</div><h2>Global-moving news,<br><span>in the right order.</span></h2><p>A chronological monthly calendar focused on Global events that can move XAUUSD. Every scenario is converted to Waktu Indonesia Tengah and explained before a directional bias is shown.</p><div class="stats"><div class="stat"><b id="eventCount">—</b><span>events this month</span></div><div class="stat"><b id="highCount">—</b><span>high-impact releases</span></div><div class="stat"><b>WITA</b><span>Asia/Makassar • UTC+8</span></div></div></article><aside class="next"><div><div class="eyebrow">Next gold catalyst</div><h3 id="nextName">Finding next event…</h3><small id="nextTime">Waktu Indonesia Tengah</small></div><div><div class="countdown" id="countdown">--:--:--</div><small>until scheduled release</small></div></aside></section>
+  <section class="engine-signal-board glass" id="engineSignalBoard" style="margin-bottom:14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:rgba(4,15,23,.55);">
+    <div class="eyebrow" style="color:var(--aqua);font-size:10px;letter-spacing:.12em;text-transform:uppercase;">Engine confirmed setup</div>
+    <div id="engineSignalBody" style="margin-top:8px;"></div>
+  </section>
+
   <section class="market-board glass" id="goldBoard">
     <div>
       <div class="eyebrow">Gold watch</div>
@@ -1860,6 +1865,7 @@ function applyBrokerPayload(j) {
     renderForexBoard();
     if (typeof renderGoldBoard === 'function') renderGoldBoard();
     if (typeof renderCryptoBoard === 'function') renderCryptoBoard();
+    if (typeof renderEngineSignalBoard === 'function') renderEngineSignalBoard();
     return true;
 }
 
@@ -1978,6 +1984,7 @@ function goldBoardState(now = Date.now()) {
                 note: data.note, buy, sell, locked: data.locked, lockedAt: data.lockedAt, missed: data.missed,
                 stopped: data.stopped, tpReached: data.tpReached, spike,
                 orderFilled: data.orderFilled, pnlPct: data.pnlPct, pnlPoints: data.pnlPoints, reverseSetup: data.reverseSetup,
+                basis: data.basis, conf: data.conf,
                 modeLabel: data.basis === 'forecast' || data.basis === 'momentum' ? 'PRE-NEWS' : 'WATCH'
             };
         }
@@ -2010,7 +2017,7 @@ function goldBoardState(now = Date.now()) {
             note: data.note, levels: data.levels, locked: data.locked, lockedAt: data.lockedAt,
             conflict: data.conflict, missed: data.missed, stopped: data.stopped, tpReached: data.tpReached,
             orderFilled: data.orderFilled, pnlPct: data.pnlPct, pnlPoints: data.pnlPoints, reverseSetup: data.reverseSetup,
-            spike
+            basis: data.basis, conf: data.conf, spike
         };
     }
 
@@ -5115,6 +5122,88 @@ function orderStatusBadgeHtml(it, asset, kind, now = Date.now()) {
     return '';
 }
 
+// ── Sinyal eksekusi dari SignalEngine ────────────────────────────────────────
+// Hanya setup yang benar-benar lolos gerbang engine (basis 'engine') yang boleh
+// menampilkan BUY NOW / SELL NOW. Watch, forecast, dan jalur lama TIDAK pernah
+// masuk sini. Entry tetap LIMIT di retrace — "NOW" berarti order siap dipasang,
+// bukan menyuruh market-chase di ujung impuls.
+function fmtEnginePx(asset, v) {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return '—';
+    const s = String(asset || '');
+    if (s.includes('/') && !s.includes('XAU') && !s.includes('BTC') && !s.includes('ETH')) return n > 10 ? n.toFixed(3) : n.toFixed(5);
+    if (/JPY/i.test(s)) return n.toFixed(3);
+    return n.toFixed(2);
+}
+
+function engineSetupRows(now = Date.now()) {
+    const rows = [];
+    const MIN_ENGINE_SCORE = 70;
+    const add = (kind, asset, it) => {
+        if (!it || it.basis !== 'engine' || !it.dir || !it.levels) return;
+        if (Number(it.conf) < MIN_ENGINE_SCORE) return;
+        if (it.missed || it.stopped || it.tpReached) return;
+        const lv = it.levels;
+        if (!(Number(lv.entry) > 0 && Number(lv.sl) > 0 && Number(lv.tp) > 0)) return;
+        rows.push({
+            kind, asset, dir: it.dir, levels: lv,
+            conf: Number.isFinite(Number(it.conf)) ? Number(it.conf) : null,
+            note: it.note || '', event: it.event || ''
+        });
+    };
+    try { const g = typeof goldBoardState === 'function' ? goldBoardState(now) : null; add('gold', 'XAU/USD', g); } catch {}
+    try {
+        const c = typeof cryptoBoardState === 'function' ? cryptoBoardState(now) : null;
+        (c && Array.isArray(c.items) ? c.items : []).forEach(it => add('crypto', it.pair, it));
+    } catch {}
+    try {
+        const f = typeof forexBoardState === 'function' ? forexBoardState(now) : null;
+        (f && Array.isArray(f.items) ? f.items : []).forEach(it => add('forex', it.pair, it));
+    } catch {}
+    try {
+        const x = typeof indicesBoardState === 'function' ? indicesBoardState(now) : null;
+        (x && Array.isArray(x.items) ? x.items : []).forEach(it => add('index', it.symbol, it));
+    } catch {}
+    return rows;
+}
+
+function renderEngineSignalBoard() {
+    const el = $('#engineSignalBody');
+    if (!el) return;
+    const rows = engineSetupRows();
+    if (!rows.length) {
+        el.innerHTML = `<div style="font-size:11px;color:var(--muted);">Belum ada setup yang lolos skor engine. <b style="color:var(--amber);">NO TRADE</b> — tunggu Actual + reaksi ≥ 1.5× ATR(5m) dalam jendela 90 menit pasca-rilis.</div>`;
+        return;
+    }
+    el.innerHTML = rows.map(r => {
+        const buy = r.dir === 'long';
+        const act = buy ? 'BUY' : 'SELL';
+        const color = buy ? 'var(--green)' : 'var(--red)';
+        const lv = r.levels;
+        const fmt = v => fmtEnginePx(r.asset, v);
+        const tp1 = Number(lv.tp1) > 0 ? `<span>TP1 <b style="color:var(--green);">${fmt(lv.tp1)}</b></span>` : '';
+        const score = r.conf != null ? ` • SKOR <b>${r.conf}</b>` : '';
+        const symbol = String(r.asset).replace('/', '');
+        const execBtn = typeof sendOrderToMt5 === 'function'
+            ? `<button type="button" class="btn-mt5-exec" onclick="sendOrderToMt5('${esc(symbol)}','${act}',${Number(lv.entry)},${Number(lv.sl)},${Number(lv.tp)})">⚡ MT5</button>`
+            : '';
+        return `<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;border-left:3px solid ${color};background:rgba(0,0,0,.25);border-radius:10px;padding:10px 12px;margin-top:8px;">
+            <div style="min-width:190px;">
+                <div style="font-size:14px;font-weight:800;color:${color};">${buy ? '🟢' : '🔴'} ${act} NOW <span style="color:var(--text);font-size:11px;font-weight:600;">${esc(r.asset)}</span></div>
+                <div style="font-size:10px;color:var(--muted);margin-top:2px;">ENGINE POST-NEWS${score}${r.event ? ' • ' + esc(r.event) : ''}</div>
+            </div>
+            <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;">
+                <span>Entry LIMIT <b>${fmt(lv.entry)}</b></span>
+                <span>SL <b style="color:var(--red);">${fmt(lv.sl)}</b></span>
+                ${tp1}
+                <span>TP2 <b style="color:var(--green);">${fmt(lv.tp)}</b></span>
+            </div>
+            <div style="font-size:10px;color:var(--amber);max-width:250px;">${esc(r.note || 'Pasang LIMIT di entry, jangan kejar harga. Order hangus 30 menit bila tak terisi.')}</div>
+            ${execBtn}
+        </div>`;
+    }).join('');
+}
+
 function missedFromLevels(levels, dir, price) {
     const risk = Math.abs(Number(levels.sl) - Number(levels.entry));
     if (!(risk > 0)) return false;
@@ -5780,6 +5869,7 @@ function render() {
     renderForexBoard();
     renderCryptoBoard();
     renderIndicesBoard();
+    if (typeof renderEngineSignalBoard === 'function') renderEngineSignalBoard();
     if (typeof renderTechBoard === 'function') renderTechBoard();
     if (typeof renderMacroBoard === 'function') renderMacroBoard();
     if (typeof renderMacroImpact === 'function') renderMacroImpact();
@@ -5839,6 +5929,7 @@ renderGoldBoard();
 renderCryptoBoard();
 renderForexBoard();
 renderIndicesBoard();
+if (typeof renderEngineSignalBoard === 'function') renderEngineSignalBoard();
 if (typeof renderTechBoard === 'function') renderTechBoard();
 if (typeof renderMacroBoard === 'function') renderMacroBoard();
 if (typeof renderMacroImpact === 'function') renderMacroImpact();
