@@ -2031,7 +2031,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "279.2",
-    "Actual": ""
+    "Actual": "155.3"
   },
   {
     "Date": "2026-11-18T16:15:00-05:00",
@@ -2058,7 +2058,7 @@
     "Importance": 1,
     "Forecast": "-1650M",
     "Previous": "-1971M",
-    "Actual": ""
+    "Actual": "-2.77"
   },
   {
     "Date": "2026-11-18T23:50:00.000Z",
@@ -2067,7 +2067,7 @@
     "Importance": 2,
     "Forecast": "-0.5%",
     "Previous": "5.2%",
-    "Actual": ""
+    "Actual": "-0.3%"
   },
   {
     "Date": "2026-11-18T23:50:00.000Z",
@@ -2076,7 +2076,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "1.37K",
-    "Actual": ""
+    "Actual": "650.1"
   },
   {
     "Date": "2026-11-18T23:50:00.000Z",
@@ -2085,7 +2085,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "-643.9",
-    "Actual": ""
+    "Actual": "363.1"
   },
   {
     "Date": "2026-11-19T00:30:00.000Z",
@@ -2094,7 +2094,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "118.77",
-    "Actual": ""
+    "Actual": "118.77"
   },
   {
     "Date": "2026-11-19T00:30:00.000Z",
@@ -2103,7 +2103,7 @@
     "Importance": 3,
     "Forecast": "25.5K",
     "Previous": "-39.3K",
-    "Actual": ""
+    "Actual": "-43.5"
   },
   {
     "Date": "2026-11-19T00:30:00.000Z",
@@ -2112,7 +2112,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "34.4",
-    "Actual": ""
+    "Actual": "-2.9"
   },
   {
     "Date": "2026-11-19T00:30:00.000Z",
@@ -2121,7 +2121,7 @@
     "Importance": 3,
     "Forecast": "4.7%",
     "Previous": "4.7%",
-    "Actual": ""
+    "Actual": "4.9%"
   },
   {
     "Date": "2026-11-19T05:30:00.000Z",
@@ -3677,7 +3677,7 @@
     "Country": "JPY",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "650.1",
     "Actual": ""
   },
   {
@@ -3686,7 +3686,7 @@
     "Country": "JPY",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "363.1",
     "Actual": ""
   },
   {
@@ -7403,7 +7403,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "155.3",
     "Actual": ""
   },
   {
@@ -7493,7 +7493,7 @@
     "Country": "JPY",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-0.3%",
     "Actual": ""
   },
   {
@@ -8033,7 +8033,7 @@
     "Country": "AUD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "118.77",
     "Actual": ""
   },
   {
@@ -8042,7 +8042,7 @@
     "Country": "AUD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-43.5",
     "Actual": ""
   },
   {
@@ -8051,7 +8051,7 @@
     "Country": "AUD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "4.9%",
     "Actual": ""
   },
   {
@@ -8447,7 +8447,7 @@
     "Country": "NZD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-2.77",
     "Actual": ""
   },
   {
