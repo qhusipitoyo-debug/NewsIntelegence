@@ -6125,20 +6125,27 @@ function render() {
     events.forEach(rememberPreNewsPrice);
 
     // Berita medium/high impact tetap tampil 6 jam setelah rilis agar sinyal BUY/SELL pasca-news bisa dieksekusi.
+    // Restore 60 hari rilis lampau menambah ribuan kartu historis — untuk tab
+    // "Full month" tampilkan HANYA bulan berjalan (WITA) sesuai label tab;
+    // riwayat 60 hari tetap masuk ke engine (makro/kalender/regresi) lewat events[].
+    const monthKey = new Intl.DateTimeFormat('en-CA', { timeZone: WITA, year: 'numeric', month: '2-digit' });
+    const currentMonth = monthKey.format(now);
     let list = events.filter(e => {
         const eventTime = new Date(e.Date).getTime();
         const keepMs = (e.Importance >= 2 ? 6 : 2) * 60 * 60 * 1000;
         const isStale = now.getTime() > eventTime + keepMs;
         const isActualMissing = !String(e.Actual ?? '').trim();
-        
+
         if (isStale && isActualMissing) return false;
 
-        return filter === 'all' || (filter === 'upcoming' && new Date(e.Date) >= now) || (filter === 'high' && e.Importance >= 3);
+        return filter === 'all'
+            ? monthKey.format(new Date(e.Date)) === currentMonth
+            : (filter === 'upcoming' && new Date(e.Date) >= now) || (filter === 'high' && e.Importance >= 3);
     });
 
-    $('#eventCount').textContent = events.length;
-    $('#highCount').textContent = events.filter(e => e.Importance >= 3).length;
-    $('#monthTitle').textContent = new Intl.DateTimeFormat('en-IN', { timeZone: WITA, month: 'long', year: 'numeric' }).format(events[0] ? new Date(events[0].Date) : now) + ' calendar';
+    $('#eventCount').textContent = list.length;
+    $('#highCount').textContent = list.filter(e => e.Importance >= 3).length;
+    $('#monthTitle').textContent = new Intl.DateTimeFormat('en-IN', { timeZone: WITA, month: 'long', year: 'numeric' }).format(now) + ' calendar';
 
     // Halaman: render sebagian kartu saja supaya UI tetap responsif.
     const totalMatching = list.length;
