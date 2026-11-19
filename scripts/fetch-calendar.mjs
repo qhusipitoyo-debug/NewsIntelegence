@@ -107,6 +107,40 @@ async function readCalendar() {
   }
 }
 
+// Gabungkan baris kembar (FF + TradingView mencantumkan rilis yang sama beberapa
+// menit terpisah, mis. "ADP Weekly Employment Change" 08:14 & 08:15). Pemenang =
+// baris dengan data terlengkap (Actual > Forecast > Previous, lalu importance);
+// kolom yang kosong diisi dari baris yang kalah supaya tidak ada data yang hilang.
+export function dedupeCalendarEvents(events) {
+  const list = (Array.isArray(events) ? events : []).filter(Boolean);
+  const out = [];
+  const score = e => (String(e.Actual ?? '').trim() ? 4 : 0) + (String(e.Forecast ?? '').trim() ? 2 : 0) + (String(e.Previous ?? '').trim() ? 1 : 0) + ((+e.Importance || 1) >= 3 ? 0.5 : 0);
+  for (const ev of list) {
+    const t = minuteOf(ev.Date);
+    let twinIdx = -1;
+    if (t !== null) {
+      twinIdx = out.findIndex(o => {
+        const ot = minuteOf(o.Date);
+        return ot !== null && Math.abs(ot - t) <= TV_TIME_TOLERANCE_MS && areEventsMatching(ev, o);
+      });
+    }
+    if (twinIdx < 0) { out.push({ ...ev }); continue; }
+    const cur = out[twinIdx];
+    const keep = score(ev) > score(cur) ? ev : cur;
+    const drop = keep === ev ? cur : ev;
+    out[twinIdx] = {
+      ...keep,
+      Forecast: keep.Forecast || drop.Forecast || '',
+      Previous: keep.Previous || drop.Previous || '',
+      Actual: keep.Actual || drop.Actual || '',
+      Importance: Math.max(+keep.Importance || 1, +drop.Importance || 1),
+      Event: keep.Event || drop.Event,
+      Date: keep.Date || drop.Date
+    };
+  }
+  return out;
+}
+
 // ---- Backfill nilai Actual ----------------------------------------------------
 // Export JSON/XML publik ForexFactory tidak memuat kolom actual sama sekali, jadi
 // tanpa langkah ini kalender tidak pernah punya Actual dan sinyal pasca-rilis tidak
@@ -180,6 +214,9 @@ export function eventIsoHint(title) {
 export function titleTokens(title) {
   return String(title || '')
     .toLowerCase()
+    // "Non-Manufacturing" adalah nama lama survei jasa ISM; samakan dengan
+    // "Services" supaya pasangan FF/TV tetap cocok dan seri ini tidak pecah dua.
+    .replace(/non[-\s]?manufactur(ing)?/g, 'services')
     .replace(/&/g, ' ')
     .replace(/[^a-z0-9]+/g, ' ')
     .split(' ')
@@ -309,10 +346,40 @@ function overlapScore(ffTokens, candidateTokens) {
   return common / Math.max(ffTokens.length, candidateTokens.size);
 }
 
+// Qualifier pembeda seri: bila satu judul memuat penanda ini dan judul lain tidak,
+// keduanya BUKAN rilis yang sama (mis. "GDP Growth Rate" vs "GDP Price Index" vs
+// "GDP Sales", atau "Durable Goods Orders" vs "ex Defense"). Tanpa penanda ini,
+// overlap token ≥ 0.6 menyatukan seri yang berbeda dan event penting seperti
+// GDP Growth Rate tertelan diam-diam ke baris GDP Price Index.
+const QUALIFIER_PATTERNS = [
+  /\bcore\b/i, /\btrimmed\b/i, /\bmedian\b/i, /\bfinal\b/i, /\b(flash|prelim|preliminary)\b/i,
+  /\bgrowth\b/i, /\bprice\b/i, /\bsales\b/i, /\bspending\b/i, /\bincome\b/i, /\borders\b/i,
+  /\bex\b/i, /\bexcl(uding)?\b/i, /\bdefense\b/i, /\btransp(ort)?\b/i, /\bautos?\b/i,
+  /\b(adv|advance)\b/i, /\bopenings\b/i, /\bquits\b/i, /\baverage\b/i, /\bgas\b/i,
+  /\bnatural\b/i, /\bcrude\b/i, /\b(employment|payrolls?)\b/i, /\bbusiness\b/i, /\bweekly\b/i, /\bhourly\b/i,
+  /\bprices?\b/i, /\byoy\b/i, /\bmom\b/i, /\bqoq\b/i
+];
+// Produk manufaktur vs jasa: dinormalisasi dulu ("Non-Manufacturing" == Services)
+// supaya FF "ISM Non-Manufacturing PMI" tetap dikenali sebagai seri yang sama dengan
+// TV "ISM Services PMI", tetapi tidak pernah menyatu dengan "ISM Manufacturing PMI".
+const QUALIFIER_MFG_SVS = [/\bmanufacturing\b/i, /\bservices?\b/i];
+
 function qualifierConflict(ffTitle, tvTitle) {
-  const ffFinal = /final/i.test(ffTitle);
-  const tvFinal = /final/i.test(tvTitle);
-  return ffFinal !== tvFinal;
+  const norm = s => String(s || '').toLowerCase()
+    .replace(/non[-\s]?manufactur(ing)?/g, 'services')
+    // Samakan penulisan periode: FF "m/m"/"y/y"/"q/q" == TV "MoM"/"YoY"/"QoQ".
+    .replace(/\bm\/m\b/g, 'mom').replace(/\by\/y\b/g, 'yoy').replace(/\bq\/q\b/g, 'qoq');
+  const a = norm(ffTitle), b = norm(tvTitle);
+  const aFinal = /final/i.test(a);
+  const bFinal = /final/i.test(b);
+  if (aFinal !== bFinal) return true;
+  for (const re of QUALIFIER_PATTERNS) {
+    if (re.test(a) !== re.test(b)) return true;
+  }
+  for (const re of QUALIFIER_MFG_SVS) {
+    if (re.test(a) !== re.test(b)) return true;
+  }
+  return false;
 }
 
 // ForexFactory memakai kode mata uang dan menyebut agregat zona euro hanya "EUR",
@@ -548,12 +615,9 @@ export function areEventsMatching(a, b) {
   const bTitle = String(b.Event || '').toLowerCase();
   if (aTitle === bTitle) return true;
 
-  // Qualifier checks: seri berbeda di menit yang sama (Core vs Headline, Final vs Flash, dll)
-  if (/\bcore\b/i.test(aTitle) !== /\bcore\b/i.test(bTitle)) return false;
-  if (/\btrimmed\b/i.test(aTitle) !== /\btrimmed\b/i.test(bTitle)) return false;
-  if (/\bmedian\b/i.test(aTitle) !== /\bmedian\b/i.test(bTitle)) return false;
-  if (/\bfinal\b/i.test(aTitle) !== /\bfinal\b/i.test(bTitle)) return false;
-  if (/\b(flash|prelim|preliminary)\b/i.test(aTitle) !== /\b(flash|prelim|preliminary)\b/i.test(bTitle)) return false;
+  // Qualifier checks: seri berbeda di menit yang sama (Core vs Headline, Final vs
+  // Flash, Growth vs Price vs Sales, ex- vs total) tidak boleh disatukan.
+  if (qualifierConflict(aTitle, bTitle)) return false;
 
   const aTokens = titleTokens(a.Event);
   const bTokens = new Set(titleTokens(b.Event));
@@ -580,12 +644,15 @@ async function backfillActuals(events, now = Date.now()) {
 }
 
 // 1. AMBIL DATA KALENDER (ForexFactory + TradingView realtime minggu depan & bulan depan)
-async function fetchCalendar() {
+export async function fetchCalendar() {
   const now = Date.now();
   const existing = await readCalendar();
 
-  // Pertahankan berita 30 hari ke belakang agar regresi & analisis historis tidak hilang
-  const pastHoldMs = 30 * 24 * 60 * 60 * 1000;
+  // Pertahankan berita 60 hari ke belakang agar rilis besar (NFP, CPI, PCE, FOMC)
+  // yang sebelumnya hilang dari kalender tidak terjatuh saat refresh berikutnya.
+  // Jendela 60 hari juga dipakai untuk meng-INSERT event TradingView yang pernah
+  // rilis tetapi belum ada di kalender (lihat langkah B2).
+  const pastHoldMs = 60 * 24 * 60 * 60 * 1000;
   const baseEvents = existing.filter(e => {
     const t = Date.parse(e && e.Date);
     return Number.isFinite(t) && t >= now - pastHoldMs;
@@ -631,7 +698,7 @@ async function fetchCalendar() {
   }
 
   // C. Gabungkan data secara cerdas (ForexFactory + TradingView + Riwayat)
-  const merged = [...baseEvents];
+  let merged = [...baseEvents];
 
   // 1. Masukkan / perbarui dari ForexFactory
   for (const fe of ffEvents) {
@@ -666,10 +733,40 @@ async function fetchCalendar() {
     }
   }
 
+  // B2. Masukkan rilis TradingView 60 hari ke BELAKANG yang belum ada di kalender.
+  // Sebelumnya hanya Actual untuk baris yang sudah ada yang diisi dari TradingView,
+  // sehingga NFP 6 Nov 2026, Jobless Claims, CPI/PCE & FOMC lampau ikut HILANG saat
+  // jendela kalender tertarik ke depan. Importance/waktu/judul dari TradingView
+  // sudah terfilter sama seperti B.
+  let tvPastAdded = 0;
+  try {
+    const pastFrom = now - pastHoldMs;
+    const pastRows = await fetchTradingViewCalendar(pastFrom, now + 5 * 60 * 1000);
+    for (const te of parseTradingViewEvents(pastRows)) {
+      const t = Date.parse(te.Date);
+      if (!Number.isFinite(t) || t > now) continue;
+      const idx = merged.findIndex(m => areEventsMatching(te, m));
+      if (idx >= 0) {
+        const ev = merged[idx];
+        if (!ev.Forecast && te.Forecast) ev.Forecast = te.Forecast;
+        if (!ev.Previous && te.Previous) ev.Previous = te.Previous;
+        if (!ev.Actual && te.Actual) ev.Actual = te.Actual;
+        continue;
+      }
+      merged.push(te);
+      tvPastAdded++;
+    }
+  } catch (err) {
+    console.error('TradingView kalender lampau dilewati:', err && err.message || err);
+  }
+
   if (!merged.length) {
     console.error('Semua sumber kalender kosong; calendar.json lama dipertahankan.');
     return existing;
   }
+
+  // Gabungkan baris kembar FF/TV sebelum Actual di-backfill.
+  merged = dedupeCalendarEvents(merged);
 
   // Urutkan berdasarkan tanggal rilis
   merged.sort((a, b) => new Date(a.Date) - new Date(b.Date));
@@ -682,7 +779,7 @@ async function fetchCalendar() {
   if (payload !== previous) {
     await fs.writeFile('data/calendar.json', payload);
   }
-  console.log(`Berhasil menyimpan calendar.json dengan ${finalized.length} berita (${tvAdded} berita baru dari TradingView untuk minggu & bulan depan).`);
+  console.log(`Berhasil menyimpan calendar.json dengan ${finalized.length} berita (${tvAdded} berita baru TradingView ke depan, ${tvPastAdded} event TradingView lampau yang dikembalikan).`);
   return finalized;
 }
 
