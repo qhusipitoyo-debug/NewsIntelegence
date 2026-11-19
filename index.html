@@ -2913,6 +2913,10 @@ const SURPRISE_SPECS = [
     [/\bppi\b|producer price/, { thr: 0.2, sigma: 0.25 }],
     [/\bcpi\b|\bpce\b|inflation|consumer price|import price|export price/, { thr: 0.1, sigma: 0.12 }],
     [/retail sales/, { thr: 0.3, sigma: 0.45 }],
+    [/employment change/, { thr: 10000, sigma: 25000 }],
+    [/claimant count/, { thr: 5000, sigma: 10000 }],
+    [/durable goods/, { thr: 0.5, sigma: 1.0 }],
+    [/industrial production|manufacturing production/, { thr: 0.1, sigma: 0.25 }],
     [/\bgdp\b/, n => /m\/m/.test(n) ? { thr: 0.1, sigma: 0.15 } : { thr: 0.2, sigma: 0.35 }],
     [/\bism\b|\bpmi\b|\bifo\b/, { thr: 1.0, sigma: 1.5 }],
     [/\bzew\b|sentix|\bkof\b/, { thr: 5, sigma: 8 }],
@@ -3008,6 +3012,63 @@ function contextAlignment({ kind, asset, dir, fg, cryptoFg, usdChgPct }) {
     }
     const align = score >= 1 ? 'with' : score <= -1 ? 'against' : 'neutral';
     return { align, score, size: score <= -2 ? 0.25 : score <= -1 ? 0.5 : 1, notes };
+}
+
+// ── KONFLUENSI TEGAS (pasca-rilis) ─────────────────────────────────────────
+// Satu skor bertanda [-1..+1] dari 4 sumber. Bobot = titik awal kalibrasi,
+// validasi dengan backtest riwayat rilis (lihat calibrate() di test-confluence.mjs).
+//   Fundamental (Actual vs Forecast, z) 0.40 | Reaksi harga 15–45 mnt 0.35
+//   Teknikal (EMA/RSI/pola/ICT)         0.15 | Konteks (DXY, F&G)      0.10
+// Aturan keputusan:
+//   • < 15 menit pasca-rilis            -> WAIT (jangan entry di spike)
+//   • Actual vs reaksi berlawanan       -> NO TRADE (fakeout)
+//   • |skor| >= 0.30 & >= 2 sumber searah -> BUY/SELL (tinggi >= 0.60, sedang >= 0.45)
+//   • tanpa fundamental, reaksi valid & tidak faded -> ikut reaksi (keyakinan rendah)
+//   • rilis lama (> 3 jam)              -> retrospektif: arah Actual vs Forecast
+const CONFLUENCE = { wFund: 0.40, wReact: 0.35, wTech: 0.15, wCtx: 0.10, minScore: 0.30, reactOnlyScore: 0.15, waitMin: 15, zFull: 1.5 };
+
+function confluenceVerdict(inp) {
+    const C = CONFLUENCE;
+    const sgn = d => (d === 'long' || d === 'buy' || d > 0) ? 1 : (d === 'short' || d === 'sell' || d < 0) ? -1 : 0;
+    const clip = (x, lo, hi) => Math.max(lo, Math.min(hi, x));
+    const act = dir => ({ action: dir > 0 ? 'BUY' : 'SELL', dir: dir > 0 ? 'long' : 'short' });
+    const mins = Number(inp.minsSince);
+    const none = (action, why, extra) => Object.assign({ action, dir: null, score: 0, conf: null, size: 0, why }, extra || {});
+    if (Number.isFinite(mins) && mins < 0) return none('WAIT', 'Belum rilis — tidak ada arah; Straddle OCO opsional.');
+    if (Number.isFinite(mins) && mins < C.waitMin) return none('WAIT', `Tahan entry: baru ${Math.max(0, Math.floor(mins))} mnt pasca-rilis (tunggu ${C.waitMin} mnt agar spike pertama lewat).`);
+
+    const f = sgn(inp.fundDir), r = sgn(inp.reactDir);
+    const fundMag = f ? clip(Math.abs(Number(inp.fundZ) || 0) / C.zFull, 0.4, 1) : 0;
+    const reactMag = r ? clip(Number(inp.reactStrength) || 0.5, 0.4, 1) * (inp.reactFaded ? 0.5 : 1) : 0;
+
+    if (f && r && f !== r) return none('NO TRADE', 'Actual vs reaksi harga berlawanan (fakeout) — tidak ada edge.', { conflict: true });
+
+    if (inp.stale) {
+        if (!f) return none('NO TRADE', 'Rilis lama: Actual/pemetaan arah tidak tersedia.');
+        const mag = fundMag;
+        return Object.assign(act(f), { score: +(f * mag).toFixed(2), conf: mag >= 1 ? 'tinggi' : mag >= 0.6 ? 'sedang' : 'rendah', size: 0, retro: true,
+            why: `Final (retrospektif): Actual vs Forecast ${f > 0 ? 'mendorong naik' : 'mendorong turun'}${r === f ? ', reaksi harga searah' : ''}.` });
+    }
+
+    const buys = Number(inp.techBuys) || 0, sells = Number(inp.techSells) || 0;
+    const t = (buys + sells) ? (buys - sells) / Math.max(buys + sells, 3) : 0;
+    const c = clip((Number(inp.ctxScore) || 0) / 2, -1, 1);
+    const parts = { fund: f * fundMag, react: r * reactMag, tech: t, ctx: c };
+    const score = C.wFund * parts.fund + C.wReact * parts.react + C.wTech * parts.tech + C.wCtx * parts.ctx;
+    const dir = sgn(score);
+    const txt = `Fund ${f ? (f > 0 ? '▲' : '▼') : '–'} · Reaksi ${r ? (r > 0 ? '▲' : '▼') : '–'}${inp.reactFaded ? ' (faded)' : ''} · Teknikal ${buys}B/${sells}S · Konteks ${c > 0.1 ? '▲' : c < -0.1 ? '▼' : '–'} · skor ${score >= 0 ? '+' : ''}${score.toFixed(2)}`;
+    if (!dir) return none('NO TRADE', `Konfluensi nol. ${txt}`, { score: +score.toFixed(2), parts });
+
+    const agree = [f, r, Math.abs(t) >= 0.34 ? sgn(t) : 0].filter(x => x === dir).length;
+    const sizeOf = k => k === 'tinggi' ? 1 : k === 'sedang' ? 0.5 : 0.25;
+    if (Math.abs(score) >= C.minScore && agree >= 2) {
+        const conf = Math.abs(score) >= 0.60 && agree >= 3 ? 'tinggi' : Math.abs(score) >= 0.45 ? 'sedang' : 'rendah';
+        return Object.assign(act(dir), { score: +score.toFixed(2), conf, size: sizeOf(conf), parts, why: `Konfluensi ${agree}/3 sumber searah. ${txt}` });
+    }
+    if (!f && r && !inp.reactFaded && Math.abs(score) >= C.reactOnlyScore && t * r >= 0) {
+        return Object.assign(act(r), { score: +score.toFixed(2), conf: 'rendah', size: 0.25, parts, why: `Tanpa pemetaan Actual untuk aset ini — ikut reaksi harga (keyakinan rendah). ${txt}` });
+    }
+    return none('NO TRADE', `Konfluensi belum cukup (butuh skor ≥ ${C.minScore} dan ≥ 2 sumber searah). ${txt}`, { score: +score.toFixed(2), parts });
 }
 // END CALIBRATION CORE
 
@@ -3379,7 +3440,11 @@ function technicalViewUncached(kind, asset) {
     const votes = [];
     if (emaFast && emaSlow) votes.push(emaFast > emaSlow ? 'buy' : 'sell');
     if (emaFast && price) votes.push(price > emaFast ? 'buy' : 'sell');
-    if (rsi !== null) { if (rsi <= 35) votes.push('buy'); else if (rsi >= 65) votes.push('sell'); }
+    if (rsi !== null) {
+        if (rsi <= 35) votes.push('buy'); else if (rsi >= 65) votes.push('sell');
+        else if (rsi >= 55 && emaFast && emaSlow && emaFast > emaSlow) votes.push('buy');   // momentum searah tren naik
+        else if (rsi <= 45 && emaFast && emaSlow && emaFast < emaSlow) votes.push('sell');  // momentum searah tren turun
+    }
     candles.forEach(p => { if (p.dir !== 'wait') votes.push(p.dir); });
     ict.forEach(p => votes.push(p.dir));
     if (spike.dir) votes.push(spike.dir === 'long' ? 'buy' : 'sell');
@@ -3388,7 +3453,7 @@ function technicalViewUncached(kind, asset) {
     const dir = buys >= 3 && buys > sells ? 'buy' : sells >= 3 && sells > buys ? 'sell' : 'wait';
     const trendText = emaFast && emaSlow
         ? (emaFast > emaSlow ? 'tren naik (EMA20 > EMA50)' : 'tren turun (EMA20 < EMA50)') : 'tren n/a';
-    const rsiText = rsi === null ? 'RSI n/a' : `RSI ${rsi.toFixed(0)}${rsi <= 30 ? ' oversold' : rsi >= 70 ? ' overbought' : ' netral'}`;
+    const rsiText = rsi === null ? 'RSI n/a' : `RSI ${rsi.toFixed(0)}${rsi <= 30 ? ' oversold' : rsi >= 70 ? ' overbought' : rsi >= 55 ? ' momentum bullish' : rsi <= 45 ? ' momentum bearish' : ' netral'}`;
     const tags = [...candles.map(p => p.tag), ...ict.map(p => p.tag)];
     return { price, emaFast, emaSlow, rsi, atrPct: info ? info.atrPct : spike.atrPct, candles, ict, spike, dir, buys, sells, trendText, rsiText, tags, bars: bars.length };
 }
@@ -5769,6 +5834,87 @@ function tpSl(a, e) {
     html += `</div>`;
     return html;
 }
+
+// Teks keterangan pra-rilis yang JUJUR: lean dari Forecast vs Previous hanya bila memang ada,
+// bukan kalimat "flat" yang di-hardcode.
+function pendingReason(e, focus) {
+    const f = num(e.Forecast || e.TEForecast), p = num(e.Previous);
+    const fcst = f === null ? 'n/a' : (e.Forecast || e.TEForecast), prev = p === null ? 'n/a' : e.Previous;
+    const bias = preNewsBias(e);
+    const lean = bias && focus && focus.kind !== 'none' ? mapAssetBias(focus.kind, focus.pair, bias.dir, e) : null;
+    let t = `Belum rilis. Forecast ${fcst} vs Previous ${prev}: `;
+    if (lean) {
+        t += `lean pra-rilis ${lean === 'long' ? 'BUY' : 'SELL'} ${focus.pair}${bias.source ? ` (dipinjam dari ${bias.source})` : ''} — hanya skenario, tanpa edge terbukti. `;
+    } else if (f === null || p === null) {
+        t += 'data konsensus belum lengkap, belum ada lean. ';
+    } else {
+        t += 'sama/di bawah batas noise, tidak ada lean. ';
+    }
+    t += 'Arah BUY/SELL baru ditetapkan 15 menit setelah Actual tercetak, dari konfluensi Actual + reaksi harga + teknikal + konteks. Sebelum itu: Straddle (OCO) opsional.';
+    return t;
+}
+
+// Ringkasan rilis: Actual vs Forecast (vs Previous) + arti kejutannya.
+function releaseSummary(e) {
+    const name = String(e.Event || e.Category || '').toLowerCase();
+    const a = num(e.Actual), f = num(e.Forecast || e.TEForecast);
+    if (a === null) return '';
+    let t = `📊 Rilis: Actual ${e.Actual} vs Forecast ${e.Forecast || e.TEForecast || 'n/a'}${e.Previous ? ` (Previous ${e.Previous})` : ''}`;
+    if (f === null) return t + ' — kejutan tak terukur tanpa Forecast.';
+    const c = surpriseCalc(name, a, f), sign = usdSign(name), cur = countryCode(e.Country);
+    if (c.flat) return t + ' — sesuai perkiraan (di bawah batas noise), tanpa edge berita.';
+    if (sign === null) return t + ' — bukan katalis makro utama.';
+    const hawk = sign * c.surprise > 0;
+    return t + ` — ${hawk ? 'hawkish' : 'dovish'} untuk ${cur} (z=${(sign * c.surprise / c.spec.sigma).toFixed(2)}).`;
+}
+
+function affectedAssetsFor(e) {
+    const ea = eventAssets(e), out = [];
+    if (ea.gold) out.push({ asset: 'XAU/USD', kind: 'gold' });
+    ea.forex.forEach(p => out.push({ asset: p, kind: 'forex' }));
+    if (ea.crypto) out.push({ asset: 'BTC/USD', kind: 'crypto' }, { asset: 'ETH/USD', kind: 'crypto' });
+    if (ea.indices) out.push({ asset: 'US500', kind: 'index' });
+    return out;
+}
+
+// Verdict konfluensi satu aset untuk satu event (menyatukan jalur sinyal yang sudah ada).
+function pairConfluence(e, a, asset, kind, now = Date.now()) {
+    const rel = new Date(e.Date).getTime();
+    const minsSince = (now - rel) / 60000;
+    const stale = minsSince > 180;
+    const fundDir = a && (a.dir === 'long' || a.dir === 'short') ? mapAssetBias(kind, asset, a.dir, e) : null;
+    const rx = reactionFor(e, asset);
+    const tech = stale ? null : technicalView(kind, asset);
+    let ctxScore = 0;
+    const tentative = fundDir || (rx && rx.dir) || null;
+    if (!stale && tentative) {
+        const fgInfo = typeof effectiveFearGreed === 'function' ? effectiveFearGreed() : null;
+        const usd = typeof usdBias === 'function' ? usdBias() : null;
+        ctxScore = contextAlignment({
+            kind, asset, dir: tentative,
+            fg: fgInfo ? fgInfo.primaryScore : NaN,
+            cryptoFg: fgInfo && fgInfo.crypto ? fgInfo.crypto.score : NaN,
+            usdChgPct: usd ? usd.changePct : NaN
+        }).score;
+    }
+    const v = confluenceVerdict({
+        minsSince, stale, fundDir, fundZ: a && Number.isFinite(a.z) ? a.z : 0,
+        reactDir: rx && rx.dir, reactStrength: rx && rx.dir && rx.floor ? Math.abs(rx.movePct) / (rx.floor * 2) : 0, reactFaded: !!(rx && rx.faded),
+        techBuys: tech ? tech.buys : 0, techSells: tech ? tech.sells : 0, ctxScore
+    });
+    return Object.assign({ asset, kind }, v);
+}
+
+function confluenceBlockHtml(e, a, now = Date.now()) {
+    if ((+e.Importance || 1) < 2) return '';
+    const rel = new Date(e.Date).getTime();
+    if (!Number.isFinite(rel) || now < rel || !String(e.Actual ?? '').trim()) return '';
+    const rows = affectedAssetsFor(e).map(x => pairConfluence(e, a, x.asset, x.kind, now));
+    if (!rows.length) return '';
+    const cls = r => r.action === 'BUY' ? 'buy' : r.action === 'SELL' ? 'sell' : 'wait';
+    const li = rows.map(r => `<li style="margin:3px 0"><span class="fx-badge ${cls(r)}">${esc(r.action)}</span> <b>${esc(r.asset)}</b>${r.conf ? ` <span style="color:var(--muted)">(${esc(r.conf)}${r.size ? `, size ${r.size}×` : ''})</span>` : ''} <span style="color:var(--muted);font-size:11px">— ${esc(r.why)}</span></li>`).join('');
+    return `<div class="reason" style="grid-column:1/-1"><b>Konfluensi per pair terdampak</b><ul style="margin:6px 0 0;padding-left:18px;color:var(--text)">${li}</ul></div>`;
+}
 // Ringkasan konfluensi teknikal per pair fokus — dipakai di kartu berita.
 // Hanya dipanggil dari card() (bukan dari fungsi yang diekstrak test).
 function techConfluenceText(kind, pair) {
@@ -5776,10 +5922,10 @@ function techConfluenceText(kind, pair) {
     const v = technicalView(kind, pair);
     if (!v) return '';
     const dirText = v.dir === 'buy' ? 'BUY' : v.dir === 'sell' ? 'SELL' : 'WAIT';
-    const conf = v.dir === 'buy' ? v.buys : v.sells;
+    const conf = v.dir === 'buy' ? `${v.buys} indikator` : v.dir === 'sell' ? `${v.sells} indikator` : `${v.buys} BUY vs ${v.sells} SELL, butuh ≥ 3 searah`;
     const align = v.dir === 'buy' ? 'mendukung sinyal beli' : v.dir === 'sell' ? 'mendukung sinyal jual' : 'belum searah (netral)';
     const topTags = v.tags.slice(0, 2).join('; ');
-    return ` Konfluensi teknikal ${pair}: ${dirText} (${conf} indikator) — ${v.trendText}, ${v.rsiText}, ${align}${topTags ? `, pola: ${topTags}` : ''}.`;
+    return ` Konfluensi teknikal ${pair}: ${dirText} (${conf}) — ${v.trendText}, ${v.rsiText}, ${align}${topTags ? `, pola: ${topTags}` : ''}.`;
 }
 
 // Hasil FINAL untuk rilis yang sudah lewat (> 3 jam). Sinyal live (reaksi harga 45 mnt,
@@ -5829,10 +5975,12 @@ function card(e) {
         ? (Number.isFinite(focusData.conf) ? focusData.conf : 50)
         : (phase === 'pre' ? 50 : null);
     let reason = signalDir === 'wait'
-        ? `${a.reason || 'Arah belum terkonfirmasi.'}${phase === 'post' ? ' Arah pasca-rilis diambil dari Actual atau reaksi harga; bila belum jelas, level breakout OCO ditampilkan.' : ' Forecast vs Previous flat; strategi pending order Straddle (OCO) siap dipasang sebelum rilis.'}`
+        ? (phase === 'pre' ? pendingReason(e, focus) : `${releaseSummary(e) || a.reason || 'Arah belum terkonfirmasi.'}${phase === 'live' ? ' Menunggu konfirmasi 15 menit pasca-rilis sebelum arah BUY/SELL ditetapkan.' : ' Arah pasca-rilis ditetapkan dari konfluensi Actual + reaksi harga + teknikal + konteks.'}`)
         : phase === 'post'
             ? `Arah ${signalLabel} untuk ${focus.pair || 'aset terkait'} diambil dari ${basisLabel(focusData.basis)}${focusData.note ? ` (${focusData.note})` : ''}. Entry/SL/TP dikunci saat sinyal pertama terkonfirmasi.`
             : `Bias pra-rilis ${signalLabel} untuk ${focus.pair || 'aset terkait'} dari ${basisLabel(focusData.basis)}${focusData.note ? ` (${focusData.note})` : ''}. Ini skenario sampai rilis tercetak, bukan kepastian.`;
+    const relSum = releaseSummary(e);
+    if (relSum && signalDir !== 'wait' && !reason.includes('📊 Rilis')) reason = relSum + ' ' + reason;
     const techNote = techConfluenceText(focus.kind, focus.pair);
     if (techNote) reason += techNote;
     // Rilis lama (> 3 jam): tampilkan hasil final, bukan WAIT tanpa kesimpulan.
@@ -5864,6 +6012,23 @@ function card(e) {
         reason = `HASIL FINAL NO TRADE. ${unconfirmedWhy} Tidak ada sinyal; harga market yang terimbas tetap stable/OCO.`;
         finalBadge = ' <span class="impact" style="background:rgba(145,174,184,.18);color:var(--muted)">FINAL</span>';
     }
+    // Verdict konfluensi tegas untuk pair fokus: menggantikan WAIT/NO TRADE bila ada arah valid.
+    let cfBlock = '';
+    if (phase !== 'pre' && (+e.Importance || 1) >= 2 && focus.kind !== 'none') {
+        const cf = pairConfluence(e, a, focus.pair, focus.kind, now);
+        if ((cf.action === 'BUY' || cf.action === 'SELL') && !(focusData && focusData.dir)) {
+            signalDir = cf.dir; signalLabel = cf.action;
+            if (!cf.retro) finalBadge = '';
+            signalNote = `${cf.retro ? 'FINAL' : 'KONFLUENSI'} • keyakinan ${cf.conf}${cf.size ? ` • size ${cf.size}×` : ''}`;
+            meterScore = Math.round(Math.min(95, 50 + Math.abs(cf.score) * 60));
+            reason = cf.retro
+                ? `HASIL FINAL ${cf.action}. ${releaseSummary(e)} ${focus.pair}: ${cf.why} Entry/SL/TP tidak ditampilkan untuk rilis lama karena harga sudah berubah.`
+                : `${releaseSummary(e)} ${cf.action} ${focus.pair}: ${cf.why}${techNote}`;
+        } else if (cf.action === 'NO TRADE' && cf.conflict && !(focusData && focusData.dir)) {
+            reason = `${releaseSummary(e)} NO TRADE ${focus.pair}: ${cf.why}`;
+        }
+        cfBlock = confluenceBlockHtml(e, a, now);
+    }
     const color = signalDir === 'long' ? 'var(--green)' : signalDir === 'short' ? 'var(--red)' : 'var(--amber)';
     return `<article class="event glass">
         <div class="event-title">
@@ -5880,6 +6045,7 @@ function card(e) {
         <div class="expand">
             <div class="reason"><b>shidiqpiy scenario</b><p>${esc(reason)}</p></div>
             <div class="meter-row"><div class="meter"><i style="--score:${meterScore == null ? 0 : meterScore}%;--meter:${color}"></i></div><span class="score" style="--meter:${color}">${meterScore == null ? '—' : meterScore}</span></div>
+            ${cfBlock}
         </div>
         ${tpSl(a, e)}
     </article>`;
