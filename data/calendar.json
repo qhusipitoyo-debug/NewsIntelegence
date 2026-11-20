@@ -1,14 +1,5 @@
 [
   {
-    "Date": "2026-09-21T00:01:00.000Z",
-    "Event": "Consumer Confidence",
-    "Country": "EUR",
-    "Importance": 1,
-    "Forecast": "",
-    "Previous": "63.2",
-    "Actual": "61.1"
-  },
-  {
     "Date": "2026-09-21T05:00:00.000Z",
     "Event": "PPI MoM",
     "Country": "EUR",
@@ -14181,7 +14172,7 @@
     "Importance": 1,
     "Forecast": "-22",
     "Previous": "-24",
-    "Actual": ""
+    "Actual": "-22"
   },
   {
     "Date": "2026-11-20T00:01:00.000Z",
@@ -15583,7 +15574,7 @@
     "Event": "Tokyo Core CPI YoY",
     "Country": "JPY",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "3%",
     "Previous": "2.6%",
     "Actual": ""
   },
@@ -21227,7 +21218,7 @@
     "Country": "GBP",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-22",
     "Actual": ""
   },
   {
