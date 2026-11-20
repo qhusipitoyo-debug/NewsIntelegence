@@ -3926,7 +3926,22 @@ function renderIpoBoard() {
     ];
     let html = '';
     for (const c of cards) {
-        html += `<div class="macro-card"><h5>${c.h}</h5><div class="big ${dirOf(c.v)}">${c.v > 0.25 ? 'BUY' : c.v < -0.25 ? 'SELL' : 'WAIT'}</div><div class="meta">Sentimen IPO Anthropic: skor ${c.v.toFixed(2)} — ${c.note}</div></div>`;
+        const dir = dirOf(c.v);
+        const act = dir === 'buy' ? 'BUY' : dir === 'sell' ? 'SELL' : 'WAIT';
+        let lv = null;
+        if (dir === 'buy' || dir === 'sell') {
+            const price = Number(assetPrice(c.kind, c.asset)) || 0;
+            const ev = { Event: 'IPO Anthropic', Country: 'US', Importance: 2, Date: new Date().toISOString() };
+            const sig = { movePct: Math.abs(c.v) * 25, conf: 78 };
+            lv = computeSignalLevels(c.kind, c.asset, dir === 'buy' ? 'long' : 'short', price, ev, sig);
+        }
+        const lvHtml = lv ? `<div class="tpsl"><div><b>Entry:</b> ${Number(lv.entry).toFixed(2)}</div><div><b>SL:</b> ${Number(lv.sl).toFixed(2)}</div><div><b>TP:</b> ${Number(lv.tp).toFixed(2)}</div><div><b>TP1:</b> ${Number(lv.tp1).toFixed(2)}</div></div><div class="oco-note">Masa expired: ${new Date(Date.now() + 15 * 60000).toISOString()} (window post-IPO watch)</div>` : '';
+        html += `<div class="macro-card">
+<h5>${c.h}</h5>
+<div class="big ${dir}">${act}</div>
+<div class="meta">Sentimen IPO Anthropic: skor ${c.v.toFixed(2)} — ${c.note}</div>
+${lvHtml}
+</div>`;
     }
     body.innerHTML = html;
 }
