@@ -1,68 +1,5 @@
 [
   {
-    "Date": "2026-09-21T05:00:00.000Z",
-    "Event": "PPI MoM",
-    "Country": "EUR",
-    "Importance": 1,
-    "Forecast": "",
-    "Previous": "-0.6%",
-    "Actual": "1.4%"
-  },
-  {
-    "Date": "2026-09-21T05:00:00.000Z",
-    "Event": "PPI YoY",
-    "Country": "EUR",
-    "Importance": 1,
-    "Forecast": "",
-    "Previous": "3.5%",
-    "Actual": "3.3%"
-  },
-  {
-    "Date": "2026-09-21T07:00:00.000Z",
-    "Event": "Current Account to GDP",
-    "Country": "EUR",
-    "Importance": 1,
-    "Forecast": "",
-    "Previous": "1.7%",
-    "Actual": "-4.7%"
-  },
-  {
-    "Date": "2026-09-21T10:00:00.000Z",
-    "Event": "PPI MoM",
-    "Country": "EUR",
-    "Importance": 1,
-    "Forecast": "",
-    "Previous": "-0.1%",
-    "Actual": "0.6%"
-  },
-  {
-    "Date": "2026-09-21T10:00:00.000Z",
-    "Event": "PPI YoY",
-    "Country": "EUR",
-    "Importance": 1,
-    "Forecast": "",
-    "Previous": "3.3%",
-    "Actual": "2.7%"
-  },
-  {
-    "Date": "2026-09-21T12:30:00.000Z",
-    "Event": "Chicago Fed National Activity Index",
-    "Country": "USD",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "0.12",
-    "Actual": "-0.08"
-  },
-  {
-    "Date": "2026-09-21T12:30:00.000Z",
-    "Event": "New Housing Price Index MoM",
-    "Country": "CAD",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "-0.1%",
-    "Actual": "-0.1%"
-  },
-  {
     "Date": "2026-09-21T15:30:00.000Z",
     "Event": "3-Month Bill Auction Allotted at High",
     "Country": "USD",
@@ -12756,8 +12693,8 @@
     "Date": "2026-11-17T07:00:00.000Z",
     "Event": "HMRC Payrolls Change",
     "Country": "GBP",
-    "Importance": 2,
-    "Forecast": "",
+    "Importance": 1,
+    "Forecast": "9K",
     "Previous": "13K",
     "Actual": "-34K"
   },
@@ -13020,7 +12957,7 @@
     "Importance": 1,
     "Forecast": "5.2%",
     "Previous": "5.2%",
-    "Actual": ""
+    "Actual": "5.2%"
   },
   {
     "Date": "2026-11-17T14:25:00-05:00",
@@ -14190,7 +14127,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "-34",
-    "Actual": ""
+    "Actual": "-32"
   },
   {
     "Date": "2026-11-20T06:00:00.000Z",
@@ -14199,7 +14136,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "1.4%",
-    "Actual": ""
+    "Actual": "1.1%"
   },
   {
     "Date": "2026-11-20T06:00:00.000Z",
@@ -14208,7 +14145,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "4.2%",
-    "Actual": ""
+    "Actual": "5%"
   },
   {
     "Date": "2026-11-20T07:00:00.000Z",
@@ -14217,7 +14154,7 @@
     "Importance": 2,
     "Forecast": "0.0%",
     "Previous": "-0.4%",
-    "Actual": ""
+    "Actual": "0.7%"
   },
   {
     "Date": "2026-11-20T07:00:00.000Z",
@@ -14226,7 +14163,7 @@
     "Importance": 1,
     "Forecast": "1.8%",
     "Previous": "0.8%",
-    "Actual": ""
+    "Actual": "2.5%"
   },
   {
     "Date": "2026-11-20T07:00:00.000Z",
@@ -14235,7 +14172,7 @@
     "Importance": 1,
     "Forecast": "0.9%",
     "Previous": "1.9%",
-    "Actual": ""
+    "Actual": "1.4%"
   },
   {
     "Date": "2026-11-20T07:00:00.000Z",
@@ -14244,7 +14181,7 @@
     "Importance": 2,
     "Forecast": "7.2%",
     "Previous": "6.7%",
-    "Actual": ""
+    "Actual": "8.1%"
   },
   {
     "Date": "2026-11-20T07:00:00.000Z",
@@ -14253,7 +14190,7 @@
     "Importance": 2,
     "Forecast": "1.7%",
     "Previous": "0.8%",
-    "Actual": ""
+    "Actual": "2.3%"
   },
   {
     "Date": "2026-11-20T07:00:00.000Z",
@@ -14262,7 +14199,7 @@
     "Importance": 1,
     "Forecast": "-0.1%",
     "Previous": "-0.7%",
-    "Actual": ""
+    "Actual": "0.9%"
   },
   {
     "Date": "2026-11-20T07:45:00.000Z",
@@ -14271,7 +14208,7 @@
     "Importance": 2,
     "Forecast": "102",
     "Previous": "105",
-    "Actual": ""
+    "Actual": "104"
   },
   {
     "Date": "2026-11-20T03:15:00-05:00",
@@ -14289,7 +14226,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "-13",
-    "Actual": ""
+    "Actual": "-13"
   },
   {
     "Date": "2026-11-20T08:25:00-05:00",
@@ -14307,7 +14244,7 @@
     "Importance": 1,
     "Forecast": "0.7%",
     "Previous": "1.2%",
-    "Actual": ""
+    "Actual": "0.8%"
   },
   {
     "Date": "2026-11-20T08:30:00-05:00",
@@ -14325,7 +14262,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "1.2%",
-    "Actual": ""
+    "Actual": "1%"
   },
   {
     "Date": "2026-11-20T13:30:00.000Z",
@@ -14334,7 +14271,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "5.35%",
-    "Actual": ""
+    "Actual": "7.5%"
   },
   {
     "Date": "2026-11-20T15:00:00.000Z",
@@ -14388,6 +14325,15 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "4.3%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-20T12:00:00-05:00",
+    "Event": "President Trump Speaks",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
     "Actual": ""
   },
   {
@@ -14503,7 +14449,7 @@
     "Event": "S&P Global Manufacturing PMI Flash",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "49.8",
     "Previous": "",
     "Actual": ""
   },
@@ -14512,7 +14458,7 @@
     "Event": "S&P Global Services PMI Flash",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "46.9",
     "Previous": "",
     "Actual": ""
   },
@@ -14521,7 +14467,7 @@
     "Event": "S&P Global Composite PMI Flash",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "53.2",
     "Previous": "",
     "Actual": ""
   },
@@ -14530,7 +14476,7 @@
     "Event": "S&P Global Manufacturing PMI Flash",
     "Country": "EUR",
     "Importance": 3,
-    "Forecast": "",
+    "Forecast": "54",
     "Previous": "",
     "Actual": ""
   },
@@ -14539,7 +14485,7 @@
     "Event": "S&P Global Services PMI Flash",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "52.1",
     "Previous": "",
     "Actual": ""
   },
@@ -14548,7 +14494,7 @@
     "Event": "S&P Global Composite PMI Flash",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "51.6",
     "Previous": "",
     "Actual": ""
   },
@@ -14557,7 +14503,7 @@
     "Event": "S&P Global Manufacturing PMI Flash",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "52.8",
     "Previous": "",
     "Actual": ""
   },
@@ -14566,7 +14512,7 @@
     "Event": "S&P Global Services PMI Flash",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "51.5",
     "Previous": "",
     "Actual": ""
   },
@@ -14575,7 +14521,7 @@
     "Event": "S&P Global Composite PMI Flash",
     "Country": "GBP",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "53",
     "Previous": "",
     "Actual": ""
   },
@@ -14584,7 +14530,7 @@
     "Event": "S&P Global Manufacturing PMI Flash",
     "Country": "GBP",
     "Importance": 3,
-    "Forecast": "",
+    "Forecast": "53",
     "Previous": "",
     "Actual": ""
   },
@@ -14593,7 +14539,7 @@
     "Event": "S&P Global Services PMI Flash",
     "Country": "GBP",
     "Importance": 3,
-    "Forecast": "",
+    "Forecast": "53",
     "Previous": "",
     "Actual": ""
   },
@@ -14647,7 +14593,7 @@
     "Event": "S&P Global Services PMI Flash",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "56.4",
     "Previous": "",
     "Actual": ""
   },
@@ -14665,7 +14611,7 @@
     "Event": "S&P Global Manufacturing PMI Flash",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "54.8",
     "Previous": "",
     "Actual": ""
   },
@@ -14827,7 +14773,7 @@
     "Event": "S&P/Case-Shiller 20-City Home Price MoM s.a",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "0.2%",
     "Previous": "0.3%",
     "Actual": ""
   },
@@ -15151,7 +15097,7 @@
     "Event": "Personal Spending MoM",
     "Country": "USD",
     "Importance": 3,
-    "Forecast": "",
+    "Forecast": "0.4%",
     "Previous": "0.5%",
     "Actual": ""
   },
@@ -15187,7 +15133,7 @@
     "Event": "Core PCE Prices QoQ 2nd Est",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "2.5%",
     "Previous": "3.6%",
     "Actual": ""
   },
@@ -15241,7 +15187,7 @@
     "Event": "Initial Jobless Claims",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "200K",
     "Previous": "203K",
     "Actual": ""
   },
@@ -15250,7 +15196,7 @@
     "Event": "Personal Income MoM",
     "Country": "USD",
     "Importance": 3,
-    "Forecast": "",
+    "Forecast": "0.4%",
     "Previous": "0.2%",
     "Actual": ""
   },
@@ -15295,7 +15241,7 @@
     "Event": "Durable Goods Orders Ex Transp MoM",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "0.5%",
     "Previous": "0.5%",
     "Actual": ""
   },
@@ -15322,7 +15268,7 @@
     "Event": "PCE Price Index YoY",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "3.8%",
     "Previous": "3.6%",
     "Actual": ""
   },
@@ -15556,7 +15502,7 @@
     "Event": "M3 Money Supply Annual Growth",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "3.5%",
     "Previous": "3.5%",
     "Actual": ""
   },
@@ -15781,7 +15727,7 @@
     "Event": "Unemployment Rate",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "6.4%",
     "Previous": "6.4%",
     "Actual": ""
   },
@@ -15790,7 +15736,7 @@
     "Event": "Unemployment Change",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "5",
     "Previous": "4",
     "Actual": ""
   },
@@ -15844,7 +15790,7 @@
     "Event": "Economic Sentiment",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "96.9",
     "Previous": "96.9",
     "Actual": ""
   },
@@ -15934,7 +15880,7 @@
     "Event": "Goods Trade Balance Adv",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "-130.15",
     "Previous": "-134.9",
     "Actual": ""
   },
@@ -20579,7 +20525,7 @@
     "Country": "EUR",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "5.2%",
     "Actual": ""
   },
   {
@@ -20687,7 +20633,7 @@
     "Country": "EUR",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "104",
     "Actual": ""
   },
   {
@@ -20804,7 +20750,7 @@
     "Country": "EUR",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-13",
     "Actual": ""
   },
   {
@@ -21236,7 +21182,7 @@
     "Country": "GBP",
     "Importance": 3,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.7%",
     "Actual": ""
   },
   {
@@ -21245,7 +21191,7 @@
     "Country": "GBP",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "2.5%",
     "Actual": ""
   },
   {
@@ -21254,7 +21200,7 @@
     "Country": "EUR",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "1.4%",
     "Actual": ""
   },
   {
@@ -21263,7 +21209,7 @@
     "Country": "EUR",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "8.1%",
     "Actual": ""
   },
   {
@@ -21281,7 +21227,7 @@
     "Country": "GBP",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "2.3%",
     "Actual": ""
   },
   {
@@ -21290,7 +21236,7 @@
     "Country": "GBP",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.9%",
     "Actual": ""
   },
   {
@@ -21353,7 +21299,7 @@
     "Country": "CAD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "1%",
     "Actual": ""
   },
   {
@@ -21371,7 +21317,7 @@
     "Country": "CAD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.8%",
     "Actual": ""
   },
   {
@@ -21399,6 +21345,78 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "89.5",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-21T05:30:00.000Z",
+    "Event": "Consumer Confidence",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-32",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-21T06:00:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.1%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-21T06:00:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-21T08:00:00.000Z",
+    "Event": "Current Account to GDP",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-4.7%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-21T11:00:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-21T11:00:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-21T11:00:00.000Z",
+    "Event": "CBI Industrial Trends Orders",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-12",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-21T13:30:00.000Z",
+    "Event": "Chicago Fed National Activity Index",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
     "Actual": ""
   },
   {
