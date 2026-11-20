@@ -13,6 +13,8 @@
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);font:15px/1.55 "DM Sans",sans-serif;background:#03080d;min-height:100vh;overflow-x:hidden}
     body:before{content:"";position:fixed;inset:0;z-index:-2;background:radial-gradient(circle at 9% 8%,rgba(12,92,125,.34) 0,transparent 34%),radial-gradient(circle at 90% 22%,rgba(17,64,96,.3) 0,transparent 29%),linear-gradient(150deg,#02070c 5%,#07151e 52%,#02070c 100%)}
     body:after{content:"";position:fixed;inset:0;z-index:-1;opacity:.12;background-image:radial-gradient(#43c8dc 1px,transparent 1px);background-size:24px 24px;mask-image:linear-gradient(to bottom,black,transparent 85%)}
+    @keyframes bgDrift{0%{background-position:0% 0%,0% 0%,0% 0}50%{background-position:42px 20px,-58px -30px,28px 10px}100%{background-position:84px 40px,-116px -60px,56px 20px}}
+    body:before,body:after{animation:bgDrift 34s ease-in-out infinite}
     button,select{font:inherit}.shell{width:min(1380px,calc(100% - 32px));margin:auto;padding:22px 0 54px}.glass{background:var(--glass);border:1px solid rgba(94,199,222,.18);box-shadow:var(--shadow);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
     header{border-radius:28px;padding:24px 28px;display:flex;justify-content:space-between;gap:24px;align-items:center;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:14px}.logo{width:52px;height:52px;border-radius:18px;display:grid;place-items:center;background:linear-gradient(145deg,#17c5c2,#20749c);color:#fff;font:800 22px Manrope;box-shadow:0 10px 28px rgba(32,185,210,.25)}.brand h1{font:800 clamp(20px,3vw,28px) Manrope;margin:0;letter-spacing:-.8px}.brand p{margin:2px 0 0;color:var(--muted)}.live{display:flex;align-items:center;gap:9px;color:var(--green);font-weight:700}.dot{width:9px;height:9px;border-radius:50%;background:currentColor;box-shadow:0 0 0 7px rgba(24,209,154,.1);animation:pulse 1.8s infinite}@keyframes pulse{50%{box-shadow:0 0 0 12px transparent}}
     .hero{margin:22px 0;display:grid;grid-template-columns:1.5fr .8fr;gap:18px}.intro{border-radius:28px;padding:32px}.eyebrow{color:var(--aqua);text-transform:uppercase;font-size:12px;letter-spacing:1.6px;font-weight:800}.intro h2{font:800 clamp(30px,5vw,55px)/1.05 Manrope;margin:12px 0;letter-spacing:-2.3px;max-width:760px}.intro h2 span{color:var(--blue)}.intro p{color:var(--muted);max-width:690px;font-size:16px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:26px}.stat{padding:15px;border-radius:18px;background:rgba(4,15,23,.38);border:1px solid var(--line)}.stat b{display:block;font:700 20px Manrope}.stat span{color:var(--muted);font-size:12px}.next{border-radius:28px;padding:28px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(145deg,rgba(18,115,145,.68),rgba(8,151,159,.62));border:1px solid rgba(100,226,236,.24);color:#fff}.next .eyebrow{color:#c9ffff}.next h3{font:800 26px Manrope;margin:12px 0}.countdown{font:800 clamp(31px,5vw,48px) Manrope;letter-spacing:1px}.next small{color:#d7fbff}.toolbar{border-radius:22px;padding:14px 18px;display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:center;position:sticky;top:10px;z-index:5}.filters{display:flex;gap:9px;flex-wrap:wrap}.chip,.refresh{border:1px solid var(--line);background:rgba(5,17,25,.48);color:var(--ink);padding:9px 14px;border-radius:999px;cursor:pointer;font-weight:700}.chip.active{background:rgba(34,178,202,.25);color:#fff;border-color:rgba(80,210,226,.35)}.refresh{color:var(--blue)}.status{color:var(--muted);font-size:13px}
@@ -146,6 +148,8 @@
     .macro-card h5 { margin: 0 0 6px; font: 800 12px Manrope; color: #dff5fb; }
     .macro-card .big { font: 800 20px Manrope; }
     .macro-card .big.buy { color: var(--green); } .macro-card .big.sell { color: var(--red); } .macro-card .big.wait { color: var(--amber); }
+    .big.bigFlash{animation:bigFlash 1.15s ease-out}
+    @keyframes bigFlash{0%{box-shadow:0 0 0 0 rgba(39,213,224,.55)}55%{box-shadow:0 0 46px 7px rgba(39,213,224,0)}100%{box-shadow:0 0 0 0 rgba(39,213,224,0)}}
     .macro-bar { height: 10px; background: rgba(117,164,177,.16); border-radius: 99px; overflow: hidden; margin: 8px 0 4px; position: relative; }
     .macro-bar i { position: absolute; top: 0; bottom: 0; background: var(--amber); border-radius: inherit; }
     .macro-card .meta { color: var(--muted); font-size: 10.5px; line-height: 1.5; }
@@ -214,7 +218,7 @@
     </div>
   </header>
   
-  <section class="hero"><article class="intro glass"><div class="eyebrow">Waktu Indonesia Tengah</div><h2>Global-moving news,<br><span>in the right order.</span></h2><p>A chronological monthly calendar focused on Global events that can move XAUUSD. Every scenario is converted to Waktu Indonesia Tengah and explained before a directional bias is shown.</p><div class="stats"><div class="stat"><b id="eventCount">—</b><span>events this month</span></div><div class="stat"><b id="highCount">—</b><span>high-impact releases</span></div><div class="stat"><b>WITA</b><span>Asia/Makassar • UTC+8</span></div></div></article><aside class="next"><div><div class="eyebrow">Next gold catalyst</div><h3 id="nextName">Finding next event…</h3><small id="nextTime">Waktu Indonesia Tengah</small></div><div><div class="countdown" id="countdown">--:--:--</div><small>until scheduled release</small></div></aside></section>
+  <section class="hero"><article class="intro glass"><div class="eyebrow">Waktu Indonesia Tengah</div><h2>Global-moving news,<br><span>in the right order.</span></h2><p>A chronological monthly calendar focused on Global events that can move XAUUSD. Every scenario is converted to Waktu Indonesia Tengah and explained before a directional bias is shown.</p><div class="stats"><div class="stat"><b id="eventCount">—</b><span>events this month</span></div><div class="stat"><b id="highCount">—</b><span>high-impact releases</span></div><div class="stat"><b>WITA</b><span>Asia/Makassar • UTC+8</span></div></div></article><aside class="next"><div><div class="eyebrow">Next gold catalyst</div><h3 id="nextName">Finding next event…</h3><small id="nextTime">Waktu Indonesia Tengah</small></div><div><div class="countdown" id="countdown">--:--:--</div><small>until scheduled release</small></div><div class="wita-clock"><span id="witaClock">--:--:--</span><small>WITA · UTC+8</small></div></aside></section>
   <section class="market-board glass" id="goldBoard">
     <div>
       <div class="eyebrow">Gold watch</div>
@@ -3778,7 +3782,12 @@ function macroPanelHtml() {
 
 function renderMacroBoard() {
     const body = $('#macroBody');
-    if (body) body.innerHTML = macroPanelHtml();
+    if (body) {
+        body.innerHTML = macroPanelHtml();
+        if (body.querySelectorAll) {
+            body.querySelectorAll('.big').forEach(el => { el.classList.remove('bigFlash'); void el.offsetWidth; el.classList.add('bigFlash'); });
+        }
+    }
 }
 
 // ═════════════════════════════════════════════════════════════════════════════
@@ -6232,6 +6241,7 @@ function updateCountdown(next) {
     clearInterval(timer);
     if (!next) { $('#countdown').textContent = '--:--:--'; return; }
     const tick = () => {
+        $('#witaClock').textContent = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Makassar', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date());
         const ms = new Date(next.Date) - new Date();
         if (ms <= 0) { $('#countdown').textContent = 'LIVE'; return; }
         const h = Math.floor(ms / 36e5), m = Math.floor(ms % 36e5 / 6e4), s = Math.floor(ms % 6e4 / 1e3);
