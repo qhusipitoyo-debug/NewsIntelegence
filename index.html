@@ -267,6 +267,14 @@
     </div>
     <div class="tech-grid" id="macroImpactGrid"></div>
   </section>
+  <section class="tech-board glass" id="ipoBoard">
+    <div>
+      <div class="eyebrow">IPO Watch</div>
+      <h3>IPO Anthropic &amp; Sentimen Dampak</h3>
+      <p>Sentimen pasar terhadap IPO Anthropic → dampak terhadap emas / indeks / pair. Blend rezim risk, Fear &amp; Greed dan DXY sintetis; angka dihitung ulang dari feed live — bukan opini.</p>
+    </div>
+    <div class="macro-body" id="ipoBody"></div>
+  </section>
   <section class="tech-board glass" id="techBoard">
     <div>
       <div class="eyebrow">AI Technical &amp; Spike Suite</div>
@@ -471,7 +479,7 @@ const WINRATE_PARAMS = {
     // setup pasca-rilis terkonfirmasi (SignalEngine).
     // Set true untuk mengembalikan perilaku lama.
     // ═══════════════════════════════════════════════════════════════
-    watchEnabled: false,
+    watchEnabled: true,
     // Model exit: porsi posisi yang ditutup di TP1 (sisanya lari ke TP2 dengan SL di BE).
     tp1Fraction: 0.5,
     // Jarak TP1 dalam kelipatan R (1.0 = 1:1). Dipakai computeSignalLevels DAN simulasi.
@@ -3891,6 +3899,38 @@ function renderMacroImpact() {
     grid.innerHTML = macroImpactHtml(macroImpactAnalysis(now), now);
 }
 
+// ─── IPO WATCH · Anthropic Sentiment Impact ─────────────────────────────────────────────────────────────────
+// Sentimen terhadap IPO Anthropic → dampak terhadap emas / indeks / pair.
+// Blend: rezim risk + Fear & Greed ekstrem + DXY sintetis (sumber sentimen
+// pasar yang dipakai board makro). Skor ini = alat kalibrasi; arah akhir tetap
+// dari feed/reaksi aktual pasca-rilis.
+function renderIpoBoard() {
+    const body = $('#ipoBody');
+    if (!body) return;
+    const risk = riskSentimentSnapshot();
+    const usd = usdBias();
+    const fgEff = effectiveFearGreed();
+    const fgScore = fgEff ? fgEff.primaryScore : null;
+    let ipoBias = 0;
+    if (risk.regime === 'RISK-OFF') ipoBias -= 1;
+    else if (risk.regime === 'RISK-ON') ipoBias += 1;
+    const fgn = Number(fgScore);
+    if (Number.isFinite(fgn)) { if (fgn <= 25) ipoBias -= 0.6; else if (fgn >= 75) ipoBias += 0.6; }
+    const usdMlemah = !usd || !Number.isFinite(usd.changePct) || usd.changePct <= -0.08;
+    if (!usdMlemah) ipoBias -= 0.5;
+    const dirOf = v => (v > 0.25 ? 'buy' : v < -0.25 ? 'sell' : 'wait');
+    const cards = [
+        { h: 'XAU/USD (Gold) · Dampak IPO', v: ipoBias * 0.9, note: 'Blend risk/F&G/DXY — emas mengikuti safe-haven & risk sentiment dari sentimen IPO.' },
+        { h: 'US500 (Index) · Dampak IPO', v: ipoBias * 0.7, note: 'Blend risk/F&G/DXY — indeks bereaksi terhadap risk appetite dari sentimen IPO Anthropic.' },
+        { h: 'BTC/USD (Crypto) · Dampak IPO', v: ipoBias * 0.6, note: 'Blend risk/F&G/DXY — crypto mengikuti sentimen risk-on/off dari sentimen IPO.' }
+    ];
+    let html = '';
+    for (const c of cards) {
+        html += `<div class="macro-card"><h5>${c.h}</h5><div class="big ${dirOf(c.v)}">${c.v > 0.25 ? 'BUY' : c.v < -0.25 ? 'SELL' : 'WAIT'}</div><div class="meta">Sentimen IPO Anthropic: skor ${c.v.toFixed(2)} — ${c.note}</div></div>`;
+    }
+    body.innerHTML = html;
+}
+
 // ---------------------------------------------------------------------------
 // Unified signal engine (dipakai oleh kartu event DAN semua board)
 //
@@ -6209,6 +6249,7 @@ function render() {
     if (typeof renderTechBoard === 'function') renderTechBoard();
     if (typeof renderMacroBoard === 'function') renderMacroBoard();
     if (typeof renderMacroImpact === 'function') renderMacroImpact();
+    if (typeof renderIpoBoard === 'function') renderIpoBoard();
     if (typeof renderSignalHistory === 'function') renderSignalHistory();
 
     const totalEl = $('#total-events');
@@ -6269,6 +6310,7 @@ renderIndicesBoard();
 if (typeof renderTechBoard === 'function') renderTechBoard();
 if (typeof renderMacroBoard === 'function') renderMacroBoard();
 if (typeof renderMacroImpact === 'function') renderMacroImpact();
+if (typeof renderIpoBoard === 'function') renderIpoBoard();
 if (typeof renderSignalHistory === 'function') renderSignalHistory();
 loadSentiment();
 load(); loadBrokerForex(); loadForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadTradeStats(); renderTradeStats();
