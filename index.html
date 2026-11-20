@@ -3757,7 +3757,7 @@ function macroPanelHtml() {
     const usdCard = bias
         ? `<div class="macro-card"><h5>DXY sintetis (bias makro USD)</h5>
             <div class="big ${riskUsdTxt === '▲ Dolar Naik' ? 'sell' : riskUsdTxt === '▼ Dolar Turun' ? 'buy' : 'wait'}">${bias.changePct >= 0 ? '+' : ''}${bias.changePct.toFixed(2)}% hari ini <span style="font-size:11px;opacity:0.85;">${riskUsdTxt}</span></div>
-            <div class="meta">${riskUsdTxt === '▲ Dolar Naik' ? 'USD menguat → tekanan jual emas / risk-off, non-USD melemah.' : riskUsdTxt === '▼ Dolar Turun' ? 'USD melemah → support emas / risk-on, non-USD menguat.' : 'USD relatif datar — arah ditentukan katalis & struktur mikro.'}</div></div>`
+            <div class="meta">${riskUsdTxt === '▲ Dolar Naik' ? 'USD menguat → tekanan jual emas / risk-off, non-USD melemah.' : riskUsdTxt === '▼ Dolar Turun' ? (risk.regime === 'RISK-OFF' ? 'USD melemah namun pasar Risk-Off → non-USD tetap tertekan aksi jual risiko / likuiditas.' : 'USD melemah → support emas / risk-on, non-USD menguat.') : 'USD relatif datar — arah ditentukan katalis & struktur mikro.'}</div></div>`
         : `<div class="macro-card"><h5>DXY sintetis (bias makro USD)</h5><div class="big wait">—</div><div class="meta">Menunggu data kurs harian dari scanner…</div></div>`;
 
     const fgScore = fgEff.primaryScore;
@@ -4426,9 +4426,19 @@ function calibratedWatchSignal({
         if (kind === 'index' || kind === 'crypto') {
             macroScore += rSign * 0.65;
             factors.push(risk.regime);
-        } else if (kind === 'forex' && /JPY$/.test(String(asset)) && !/^USD/.test(String(asset))) {
-            macroScore += rSign * 0.55;
-            factors.push(risk.regime);
+        } else if (kind === 'forex') {
+            if (/JPY$/.test(String(asset)) && !/^USD/.test(String(asset))) {
+                macroScore += rSign * 0.55;
+                factors.push(risk.regime);
+            } else if (String(asset).endsWith('/USD')) {
+                // Pasangan pro-cyclical / risk-sensitive (AUD, NZD, GBP, EUR dsb.)
+                // Saat RISK-OFF, likuiditas global keluar dari aset berisiko sehingga non-USD tertekan
+                // meskipun DXY sedang turun/lemah.
+                const isRiskSensitive = /^(AUD|NZD|GBP|CAD)/.test(String(asset));
+                const penalty = isRiskSensitive ? 0.45 : 0.25;
+                macroScore += rSign * penalty;
+                factors.push(`${risk.regime} (fx)`);
+            }
         } else if (kind === 'gold') {
             macroScore += risk.regime === 'RISK-OFF' ? 0.35 : -0.25;
             factors.push(risk.regime);
@@ -4519,6 +4529,14 @@ function calibratedWatchSignal({
     const netScore = Number((macroScore + fgScore + microScore + spikeScore).toFixed(2));
     const candidateDir = netScore > 0 ? 'long' : netScore < 0 ? 'short' : null;
     const sign = candidateDir === 'long' ? 1 : -1;
+
+    // Deteksi divergensi Makro vs Data Riil Mikro:
+    // Jika Makro positif (misal DXY turun) tapi data riil/mikro negatif (market turun),
+    // tandai agar tidak terjadi fakeout atau bias yang salah arah.
+    if ((macroScore >= 0.4 && microScore <= -0.4) || (macroScore <= -0.4 && microScore >= 0.4)) {
+        factors.push('⚠️ Divergensi Makro/Mikro');
+    }
+
     const aligned = [
         macroScore * sign >= 0.35,
         fgScore * sign >= 0.30,
