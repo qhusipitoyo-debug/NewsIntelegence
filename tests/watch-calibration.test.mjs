@@ -300,3 +300,31 @@ test('End-to-end watch boards and HTML render cleanly on real data/* fixtures', 
   assert.ok(elements.get('#techGrid').innerHTML.includes('tech-card'), 'renderTechBoard should render cards');
   assert.ok(elements.get('#macroBody').innerHTML.includes('macro-card'), 'renderMacroBoard should render 6 macro cards');
 });
+
+test('macro risk card and DXY card must share one dollar reading (no contradictory USD narrative)', () => {
+  const { ctx, elements } = createDashboardSandbox();
+
+  vm.runInContext(`
+    INDEX_RATES = { US500: { changePct: -1.0 } };
+    CRYPTO_CHANGE = { 'BTC/USD': -2.8, 'ETH/USD': -3.4 };
+    FOREX_QUOTES = {
+      'EUR/USD': { changePct: 0.15 },
+      'USD/JPY': { changePct: -0.25 },
+      'GBP/USD': { changePct: 0 },
+      'USD/CAD': { changePct: 0.05 },
+      'USD/CHF': { changePct: 0.02 },
+      'EUR/JPY': { changePct: 0 },
+      'GBP/JPY': { changePct: 0 }
+    };
+  `, ctx);
+
+  const risk = vm.runInContext(`riskSentimentSnapshot()`, ctx);
+  assert.equal(risk.regime, 'RISK-OFF');
+
+  vm.runInContext(`renderMacroBoard();`, ctx);
+  const html = elements.get('#macroBody').innerHTML;
+  assert.ok(html.includes('RISK-OFF'), 'risk regime card rendered RISK-OFF');
+  assert.ok(html.includes('▼ Dolar Turun'), 'risk card must derive dollar arrow from DXY bias (USD melemah)');
+  assert.ok(!html.includes('▲ Dolar Naik'), 'risk card must not hardcode USD naik while DXY bias is down');
+  assert.ok(html.includes('USD belum kembali safe-haven'), 'risk card must soften safe-haven claim when USD is weak');
+});

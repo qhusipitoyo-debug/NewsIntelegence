@@ -3730,15 +3730,22 @@ function macroPanelHtml() {
         return { name: c.asset, sp };
     }).filter(x => x.sp.state !== 'NONE');
 
+    // Arah USD dari DXY sintetis — satu sumber bacaan yang dipakai kartu Risiko &
+    // kartu DXY supaya kedua kartu tidak pernah menampilkan narasi USD yang bertentangan.
+    const riskUsdTxt = !bias || !Number.isFinite(bias.changePct)
+        ? (risk.regime === 'RISK-OFF' ? '▲ Dolar Naik' : risk.regime === 'RISK-ON' ? '▼ Dolar Turun' : 'Dolar Datar')
+        : (bias.changePct >= 0.08 ? '▲ Dolar Naik' : bias.changePct <= -0.08 ? '▼ Dolar Turun' : 'Dolar Datar');
+    const riskUsdUp = !bias || !Number.isFinite(bias.changePct) ? risk.regime !== 'RISK-ON' : bias.changePct >= 0.08;
+
     const riskCard = `<div class="macro-card"><h5>Sentimen Pasar &amp; Rezim Makro</h5>
-        <div class="big ${risk.regime === 'RISK-ON' ? 'buy' : risk.regime === 'RISK-OFF' ? 'sell' : 'wait'}">${esc(risk.regime)} <span style="font-size:11px;opacity:0.85;">${risk.regime === 'RISK-OFF' ? '▲ Dolar Naik' : risk.regime === 'RISK-ON' ? '▼ Dolar Turun' : 'Dolar Datar'}</span></div>
-        <div class="meta" style="font-size:11.5px;">${risk.avgPct >= 0 ? '+' : ''}${risk.avgPct.toFixed(2)}% • ${risk.regime === 'RISK-OFF' ? 'Aversi risiko tinggi → USD safe-haven mendekat, emas/indeks/crypto tekanan jual.' : risk.regime === 'RISK-ON' ? 'Selera risiko positif → USD melemah, emas/indeks/crypto dukungan beli.' : 'Sentimen campuran → arah USD tidak jelas, tunggu katalis.'}</div>
+        <div class="big ${risk.regime === 'RISK-ON' ? 'buy' : risk.regime === 'RISK-OFF' ? 'sell' : 'wait'}">${esc(risk.regime)} <span style="font-size:11px;opacity:0.85;">${risk.regime === 'MIXED' ? 'Dolar Datar' : riskUsdTxt}</span></div>
+        <div class="meta" style="font-size:11.5px;">${risk.avgPct >= 0 ? '+' : ''}${risk.avgPct.toFixed(2)}% • ${risk.regime === 'RISK-OFF' ? (riskUsdUp ? 'Aversi risiko tinggi → USD safe-haven mendekat, emas/indeks/crypto tekanan jual.' : 'Aversi risiko tinggi → emas/indeks/crypto tekanan jual, USD belum kembali safe-haven (dolar lemah).') : risk.regime === 'RISK-ON' ? (riskUsdUp ? 'Selera risiko positif → emas/indeks/crypto dukungan beli, USD masih menguat.' : 'Selera risiko positif → USD melemah, emas/indeks/crypto dukungan beli.') : 'Sentimen campuran → arah USD tidak jelas, tunggu katalis.'}</div>
         <div class="meta">${macroUsd ? `Kalender Makro: ${esc(macroUsd.label)}` : 'Belum ada rilis makro Imp ≥ 2 dalam 48 jam terakhir.'}</div></div>`;
 
     const usdCard = bias
         ? `<div class="macro-card"><h5>DXY sintetis (bias makro USD)</h5>
-            <div class="big ${bias.changePct >= 0.08 ? 'sell' : bias.changePct <= -0.08 ? 'buy' : 'wait'}">${bias.changePct >= 0 ? '+' : ''}${bias.changePct.toFixed(2)}% hari ini <span style="font-size:11px;opacity:0.85;">${bias.changePct >= 0.08 ? '▲ Dolar Naik' : bias.changePct <= -0.08 ? '▼ Dolar Turun' : 'Dolar Datar'}</span></div>
-            <div class="meta">${bias.changePct >= 0.08 ? 'USD menguat → tekanan jual emas / risk-off, non-USD melemah.' : bias.changePct <= -0.08 ? 'USD melemah → support emas / risk-on, non-USD menguat.' : 'USD relatif datar — arah ditentukan katalis & struktur mikro.'}</div></div>`
+            <div class="big ${riskUsdTxt === '▲ Dolar Naik' ? 'sell' : riskUsdTxt === '▼ Dolar Turun' ? 'buy' : 'wait'}">${bias.changePct >= 0 ? '+' : ''}${bias.changePct.toFixed(2)}% hari ini <span style="font-size:11px;opacity:0.85;">${riskUsdTxt}</span></div>
+            <div class="meta">${riskUsdTxt === '▲ Dolar Naik' ? 'USD menguat → tekanan jual emas / risk-off, non-USD melemah.' : riskUsdTxt === '▼ Dolar Turun' ? 'USD melemah → support emas / risk-on, non-USD menguat.' : 'USD relatif datar — arah ditentukan katalis & struktur mikro.'}</div></div>`
         : `<div class="macro-card"><h5>DXY sintetis (bias makro USD)</h5><div class="big wait">—</div><div class="meta">Menunggu data kurs harian dari scanner…</div></div>`;
 
     const fgScore = fgEff.primaryScore;
