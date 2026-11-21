@@ -1,50 +1,5 @@
 [
   {
-    "Date": "2026-09-22T04:30:00.000Z",
-    "Event": "Consumer Confidence",
-    "Country": "EUR",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "-34",
-    "Actual": "-33"
-  },
-  {
-    "Date": "2026-09-22T05:00:00.000Z",
-    "Event": "Unemployment Rate",
-    "Country": "EUR",
-    "Importance": 1,
-    "Forecast": "",
-    "Previous": "10.5%",
-    "Actual": "10.1%"
-  },
-  {
-    "Date": "2026-09-22T07:00:00.000Z",
-    "Event": "Hotel Overnight Stays",
-    "Country": "EUR",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "44.85M",
-    "Actual": "48.8M"
-  },
-  {
-    "Date": "2026-09-22T09:00:00.000Z",
-    "Event": "Consumer Confidence",
-    "Country": "EUR",
-    "Importance": 1,
-    "Forecast": "",
-    "Previous": "-7",
-    "Actual": "-10"
-  },
-  {
-    "Date": "2026-09-22T10:00:00.000Z",
-    "Event": "CBI Industrial Trends Orders",
-    "Country": "GBP",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "-25",
-    "Actual": "-9"
-  },
-  {
     "Date": "2026-09-22T12:15:00.000Z",
     "Event": "ADP Employment Change Weekly",
     "Country": "USD",
@@ -21485,6 +21440,114 @@
   {
     "Date": "2026-12-22T00:01:00.000Z",
     "Event": "Consumer Confidence",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-22T05:00:00.000Z",
+    "Event": "New Car Registrations MoM",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-22T05:00:00.000Z",
+    "Event": "New Car Registrations MoM",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-22T05:00:00.000Z",
+    "Event": "New Passenger Car Registrations YoY",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-22T06:00:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-22T06:00:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-22T07:00:00.000Z",
+    "Event": "United Kingdom-GDP Final-Business invest YY",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "5.2%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-22T07:00:00.000Z",
+    "Event": "Current Account",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-19.93",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-22T07:00:00.000Z",
+    "Event": "GDP Growth Rate QoQ Final",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "0.5%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-22T07:00:00.000Z",
+    "Event": "GDP Growth Rate YoY Final",
+    "Country": "GBP",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "1.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-22T08:00:00.000Z",
+    "Event": "Hotel Overnight Stays",
+    "Country": "EUR",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-22T09:00:00.000Z",
+    "Event": "PPI MoM",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-22T09:00:00.000Z",
+    "Event": "PPI YoY",
     "Country": "EUR",
     "Importance": 1,
     "Forecast": "",
