@@ -3997,9 +3997,9 @@ function renderIpoBoard() {
     if (!usdMlemah) ipoBias -= 0.5;
     const dirOf = v => (v > 0.25 ? 'buy' : v < -0.25 ? 'sell' : 'wait');
     const cards = [
-        { h: 'XAU/USD (Gold) · Dampak IPO', v: ipoBias * 0.9, note: 'Blend risk/F&G/DXY — emas mengikuti safe-haven & risk sentiment dari sentimen IPO.' },
-        { h: 'US500 (Index) · Dampak IPO', v: ipoBias * 0.7, note: 'Blend risk/F&G/DXY — indeks bereaksi terhadap risk appetite dari sentimen IPO Anthropic.' },
-        { h: 'BTC/USD (Crypto) · Dampak IPO', v: ipoBias * 0.6, note: 'Blend risk/F&G/DXY — crypto mengikuti sentimen risk-on/off dari sentimen IPO.' }
+        { h: 'XAU/USD (Gold) · Dampak IPO', kind: 'gold', asset: 'XAU/USD', v: ipoBias * 0.9, note: 'Blend risk/F&G/DXY — emas mengikuti safe-haven & risk sentiment dari sentimen IPO.' },
+        { h: 'US500 (Index) · Dampak IPO', kind: 'index', asset: 'US500', v: ipoBias * 0.7, note: 'Blend risk/F&G/DXY — indeks bereaksi terhadap risk appetite dari sentimen IPO Anthropic.' },
+        { h: 'BTC/USD (Crypto) · Dampak IPO', kind: 'crypto', asset: 'BTC/USD', v: ipoBias * 0.6, note: 'Blend risk/F&G/DXY — crypto mengikuti sentimen risk-on/off dari sentimen IPO.' }
     ];
     let html = '';
     for (const c of cards) {

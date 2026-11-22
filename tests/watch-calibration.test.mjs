@@ -347,6 +347,7 @@ test('macro risk card and DXY card must share one dollar reading (no contradicto
   assert.ok(html.includes('RISK-OFF'), 'risk regime card rendered RISK-OFF');
   vm.runInContext(`renderIpoBoard();`, ctx);
   assert.ok(elements.get('#ipoBody').innerHTML.includes('IPO Anthropic'), 'IPO board rendered Anthropic sentiment impact');
+  assert.ok(elements.get('#ipoBody').innerHTML.includes('Entry:'), 'IPO board must render post-IPO levels (Entry/SL/TP) — bukan 0.00');
   assert.ok(html.includes('▼ Dolar Turun'), 'risk card must derive dollar arrow from DXY bias (USD melemah)');
   assert.ok(!html.includes('▲ Dolar Naik'), 'risk card must not hardcode USD naik while DXY bias is down');
   assert.ok(html.includes('USD belum kembali safe-haven'), 'risk card must soften safe-haven claim when USD is weak');
