@@ -209,6 +209,7 @@
     <a class="rail-link" href="#indicesBoard" title="Index watch"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></a>
     <a class="rail-link" href="#macroBoard" title="Macro, micro & sentiment"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 4"/></svg></a>
     <a class="rail-link" href="#techBoard" title="AI technical & spike suite"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 5-8 4 5M3 21h18"/></svg></a>
+    <a class="rail-link" href="#forecastBoard" title="Forecast D/W/M (HTF aligned)"><svg viewBox="0 0 24 24"><path d="M3 18h18M5 15l4-5 3 3 4-7 3 4"/><path d="M3 4v16"/></svg></a>
     <a class="rail-link" href="#calendar" title="Economic calendar"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></a>
     <a class="rail-link" href="#statsPanel" title="Statistik & kalibrasi"><svg viewBox="0 0 24 24"><path d="M4 20h16M6 20V9M11 20V4M16 20v-6M21 20v-9"/></svg></a>
     <div class="rail-spacer"></div>
@@ -230,6 +231,7 @@
       <a class="asset-tab" href="#cryptoBoard">BTC/USD</a>
       <a class="asset-tab" href="#forexBoard">Forex</a>
       <a class="asset-tab" href="#indicesBoard">US500</a>
+      <a class="asset-tab" href="#forecastBoard">Forecast D/W/M</a>
       <a class="asset-tab" href="#calendar">Calendar</a>
     </nav>
 
@@ -307,6 +309,14 @@
       <p>Analisis mikro dari bar 1 menit live (Binance klines / Yahoo / markets.json): EMA 20/50, RSI 14, ATR 1m, pola candle, struktur ICT (FVG, Liquidity Sweep, BOS, zona OTE 0.618–0.79), dan deteksi spike berbasis deviasi ATR.</p>
     </div>
     <div class="tech-grid" id="techGrid"></div>
+  </section>
+  <section class="tech-board glass forecast-board" id="forecastBoard">
+    <div>
+      <div class="eyebrow">Market forecast · Daily / Weekly / Monthly</div>
+      <h3>Arah Pasar HTF — Final Hanya Saat D/W/M Align</h3>
+      <p>Setiap aset dibaca dari data harga harian (Yahoo 1d, 2 tahun) yang diagregasi ke daily/weekly/monthly. Arah dasar memakai engine sentimen yang sama dengan board lain; news/impact dan spike nyata dapat mengubah arah — tetapi <b>final BUY/SELL hanya keluar bila Daily + Weekly + Monthly sepakat</b>, jika tidak final WAIT. Target harga (entry bid/ask live, SL/TP dari ATR tiap timeframe) ikut menyesuaikan arah &amp; kekuatan katalis.</p>
+    </div>
+    <div id="forecastGrid"></div>
   </section>
   
   
@@ -4008,6 +4018,330 @@ function renderMacroImpact() {
     grid.innerHTML = macroImpactHtml(macroImpactAnalysis(now), now);
 }
 
+// ═════════════════════════════════════════════════════════════════════════════
+// FORECAST DAILY / WEEKLY / MONTHLY — HTF aligned
+// Sumber HTF: data/htf.json (bar harian Yahoo, 2 tahun). Weekly/monthly
+// diagregasi di browser dari sumber yang sama. Arah dasar memakai engine
+// sentimen yang sudah ada (calibratedWatchSignal), lalu katalis/news/spike
+// bisa mengubah arah. Final BARU BUY/SELL bila D + W + M searah; selain itu
+// WAIT — tidak ada sinyal walaupun news/spike kuat.
+// ═════════════════════════════════════════════════════════════════════════════
+let HTF = null;
+const HTF_TFS = ['daily', 'weekly', 'monthly'];
+const HTF_CFG = {
+    daily: { fast: 20, slow: 50, mom: 5, min: 30, momMin: 0.20, atrK: 1.8, label: 'DAILY' },
+    weekly: { fast: 8, slow: 20, mom: 4, min: 22, momMin: 0.50, atrK: 2.2, label: 'WEEKLY' },
+    monthly: { fast: 3, slow: 10, mom: 2, min: 12, momMin: 1.00, atrK: 2.8, label: 'MONTHLY' }
+};
+
+function isoWeekOf(dateStr) {
+    const d = new Date(`${String(dateStr || '').slice(0, 10)}T00:00:00Z`);
+    if (!Number.isFinite(d.getTime())) return null;
+    const day = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - day);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    const week = Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+    return `${d.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
+
+function aggregateHtfBars(dailyBars, tf) {
+    const rows = (Array.isArray(dailyBars) ? dailyBars : [])
+        .map(b => ({ t: String(b && b.t || ''), o: Number(b && b.o), h: Number(b && b.h), l: Number(b && b.l), c: Number(b && b.c) }))
+        .filter(b => b.t && b.o > 0 && b.h > 0 && b.l > 0 && b.c > 0)
+        .sort((a, b) => (a.t < b.t ? -1 : a.t > b.t ? 1 : 0));
+    if (tf === 'daily' || !tf || !HTF_CFG[tf]) return rows;
+    const keyOf = tf === 'weekly' ? isoWeekOf : t => String(t || '').slice(0, 7);
+    const out = [];
+    let prevKey = null;
+    for (const b of rows) {
+        const k = keyOf(b.t);
+        if (!k) continue;
+        const last = out[out.length - 1];
+        if (!last || k !== prevKey) {
+            out.push({ t: k, o: b.o, h: b.h, l: b.l, c: b.c });
+            prevKey = k;
+        } else {
+            if (b.h > last.h) last.h = b.h;
+            if (b.l < last.l) last.l = b.l;
+            last.c = b.c;
+        }
+    }
+    return out;
+}
+
+function htfAtrOf(rows) {
+    const r = (rows || []).slice(-60);
+    if (r.length < 3) return null;
+    let sum = 0;
+    for (let i = 1; i < r.length; i++) {
+        sum += Math.max(r[i].h - r[i].l, Math.abs(r[i].h - r[i - 1].c), Math.abs(r[i].l - r[i - 1].c));
+    }
+    const atr = sum / (r.length - 1);
+    const last = r[r.length - 1].c;
+    return atr > 0 && last > 0 ? { atr, atrPct: atr / last * 100 } : null;
+}
+
+function htfDirection(dailyBars, tf, livePrice = null) {
+    const cfg = HTF_CFG[tf] || HTF_CFG.daily;
+    const rows = aggregateHtfBars(dailyBars, tf);
+    if (rows.length < cfg.min) {
+        return { dir: 'wait', buys: 0, sells: 0, rows: rows.length, reason: `Data ${tf} kurang (${rows.length}/${cfg.min} bar)` };
+    }
+    const closes = rows.map(b => b.c);
+    const lastClose = rows[rows.length - 1].c;
+    const price = Number(livePrice) > 0 ? Number(livePrice) : lastClose;
+    const emaFast = typeof emaSeries === 'function' ? emaSeries(closes, cfg.fast) : null;
+    const emaSlow = typeof emaSeries === 'function' ? emaSeries(closes, cfg.slow) : null;
+    const rsi = typeof rsiValue === 'function' ? rsiValue(closes, 14) : null;
+    const prev = rows[rows.length - 1 - cfg.mom];
+    const momPct = prev && prev.c > 0 ? (lastClose - prev.c) / prev.c * 100 : null;
+    const atr = htfAtrOf(rows);
+    const votes = [], notes = [];
+    if (emaFast && emaSlow) {
+        votes.push(emaFast > emaSlow ? 'buy' : 'sell');
+        notes.push(emaFast > emaSlow ? `EMA${cfg.fast}>EMA${cfg.slow}` : `EMA${cfg.fast}<EMA${cfg.slow}`);
+    }
+    if (emaFast) {
+        votes.push(price > emaFast ? 'buy' : 'sell');
+        notes.push(price > emaFast ? `harga > EMA${cfg.fast}` : `harga < EMA${cfg.fast}`);
+    }
+    if (momPct !== null && Math.abs(momPct) >= cfg.momMin) {
+        votes.push(momPct > 0 ? 'buy' : 'sell');
+        notes.push(`${cfg.mom} bar ${momPct >= 0 ? '+' : ''}${momPct.toFixed(2)}%`);
+    }
+    if (rsi !== null) {
+        if (rsi <= 35) { votes.push('buy'); notes.push(`RSI ${rsi.toFixed(0)} oversold`); }
+        else if (rsi >= 65) { votes.push('sell'); notes.push(`RSI ${rsi.toFixed(0)} overbought`); }
+    }
+    const buys = votes.filter(v => v === 'buy').length;
+    const sells = votes.filter(v => v === 'sell').length;
+    const dir = buys >= 2 && buys > sells ? 'buy' : sells >= 2 && sells > buys ? 'sell' : 'wait';
+    return {
+        dir, buys, sells, rows: rows.length, emaFast, emaSlow, rsi, momPct,
+        atrAbs: atr ? atr.atr : null, atrPct: atr ? atr.atrPct : null,
+        lastClose, notes: notes.slice(0, 3),
+        reason: dir === 'wait' ? `Konfluensi ${tf} netral (${buys} BUY vs ${sells} SELL)` : ''
+    };
+}
+
+// Engine memakai long/short, board HTF memakai buy/sell — samakan dulu supaya
+// "SHORT" tidak salah dianggap konflik dengan HTF SELL.
+function fcNormDir(d) {
+    if (d === 'long' || d === 'buy' || d === 'BUY') return 'buy';
+    if (d === 'short' || d === 'sell' || d === 'SELL') return 'sell';
+    return null;
+}
+
+function finalHtfAlignment(daily, weekly, monthly, desiredDir = null) {
+    const dirs = [daily && daily.dir, weekly && weekly.dir, monthly && monthly.dir];
+    const txt = dirs.map(d => d === 'buy' ? 'B' : d === 'sell' ? 'S' : 'W').join('/');
+    const aligned = dirs.every(d => d === 'buy') ? 'buy' : dirs.every(d => d === 'sell') ? 'sell' : null;
+    if (!aligned) return { dir: null, aligned: null, reason: `HTF belum aligned (D/W/M = ${txt}) — final WAIT` };
+    if (desiredDir && desiredDir !== aligned) {
+        return {
+            dir: null, aligned,
+            reason: `HTF ${aligned.toUpperCase()} vs katalis ${desiredDir.toUpperCase()} (D/W/M = ${txt}) — final WAIT sampai searah`
+        };
+    }
+    return { dir: aligned, aligned, reason: `D/W/M aligned ${aligned.toUpperCase()} (${txt})` };
+}
+
+// Katalis news/impact & spike: arah akhir mengikuti harga bila spike/reaksi
+// nyata muncul. Faded spike dibaca sebagai pembalikan arah spike awal.
+function forecastShock(asset, kind, now = Date.now(), price = null) {
+    const px = Number(price) > 0 ? Number(price) : (typeof assetPrice === 'function' ? assetPrice(kind, asset) : null);
+    const cat = typeof macroImpactCatalyst === 'function' ? macroImpactCatalyst(kind, asset, now) : null;
+    let newsDir = null, newsMove = null, newsLabel = '', block = null, basis = '';
+    if (cat && cat.e) {
+        try {
+            const ev = cat.e;
+            const ph = typeof newsPhase === 'function' ? newsPhase(ev, now) : 'post';
+            const imp = +ev.Importance || 1;
+            newsLabel = `${ev.Event} · ${countryCode(ev.Country)} · Imp ${imp}`;
+            if (ph === 'live') block = 'Rilis sedang berlangsung — tunggu konfirmasi 15 menit.';
+            else if (ph === 'pre' && imp >= 3 && Date.parse(ev.Date) - now <= 15 * 60000) {
+                block = 'High-impact < 15 menit — arah ditahan.';
+            } else {
+                const sig = typeof signalDirectionCore === 'function' ? signalDirectionCore(ev, asset, kind, now) : null;
+                if (sig && sig.dir) {
+                    newsDir = sig.dir === 'long' ? 'buy' : 'sell';
+                    newsMove = Number.isFinite(Number(sig.movePct)) ? Number(sig.movePct) : null;
+                    basis = sig.basis || 'news';
+                } else if (sig && sig.lean) {
+                    newsDir = sig.lean === 'long' ? 'buy' : 'sell';
+                    basis = sig.basis || 'pre-news';
+                }
+            }
+        } catch (e) { block = `Katalis gagal dibaca: ${e.message || e}`; }
+    }
+    const spike = typeof detectPriceSpike === 'function' && typeof assetBars === 'function'
+        ? detectPriceSpike(assetBars(asset), px) : null;
+    let dir = newsDir, source = newsDir ? 'news' : null;
+    let label = newsLabel || (spike && spike.label) || '';
+    let move = newsMove;
+    let conflict = false;
+    if (spike && (spike.state === 'SPIKE_UP' || spike.state === 'SPIKE_DOWN' || spike.state === 'SPIKE_FADED')) {
+        const spikeDir = spike.state === 'SPIKE_UP' ? 'buy'
+            : spike.state === 'SPIKE_DOWN' ? 'sell'
+                : (spike.fadedDir === 'long' ? 'sell' : 'buy');
+        conflict = Boolean(newsDir && newsDir !== spikeDir);
+        dir = spikeDir;
+        source = spike.state === 'SPIKE_FADED' ? 'spike-fade' : 'spike';
+        label = spike.label;
+        move = Number.isFinite(Number(spike.move5mPct)) ? Number(spike.move5mPct) : null;
+    }
+    const note = block ? block
+        : conflict ? `News ${newsDir.toUpperCase()} vs spike ${dir.toUpperCase()} — harga/spike yang diikuti`
+            : source === 'spike-fade' ? 'Fakeout spike → arah dibalik mengikuti retrace harga'
+                : source === 'spike' ? 'Spike ATR terkonfirmasi → arah & target mengikuti harga'
+                    : source === 'news' ? `Katalis ${basis}: arah mengikuti reaksi/Actual` : '';
+    return { dir, source, label, movePct: move, spike, catalyst: cat, block, conflict, note };
+}
+
+// Harga forecast: Entry dari bid/ask live, SL/TP dari ATR timeframe bersangkutan.
+// News/spike menambah lebar target (shockBoost) supaya harga ikut berubah saat
+// arah berubah, bukan hanya labelnya.
+function forecastTargets(asset, kind, tf, view, price, dir, shock) {
+    if (!view || !dir || !(Number(price) > 0)) return null;
+    const cfg = HTF_CFG[tf] || HTF_CFG.daily;
+    const isBuy = dir === 'buy';
+    const ex = typeof execEntries === 'function' ? execEntries(asset, Number(price)) : null;
+    const entry = ex ? (isBuy ? ex.buy : ex.sell) : Number(price);
+    const atrPct = Number.isFinite(Number(view.atrPct)) && Number(view.atrPct) > 0 ? Number(view.atrPct) : 0.3;
+    const atrAbs = Number.isFinite(Number(view.atrAbs)) && Number(view.atrAbs) > 0 ? Number(view.atrAbs) : entry * atrPct / 100;
+    const shockMove = shock && Number.isFinite(Number(shock.movePct)) ? Math.abs(Number(shock.movePct)) : 0;
+    const shockBoost = shock && shock.source ? Math.min(1.5, shockMove / Math.max(atrPct, 0.1)) : 0;
+    const riskK = cfg.atrK * (1 + Math.min(0.5, shockBoost * 0.2));
+    let stop = Math.max(entry * 0.0015, Math.min(entry * 0.12, atrAbs * riskK));
+    let reward = Math.max(entry * 0.003, Math.min(entry * 0.30, atrAbs * (riskK * 2 + Math.min(1.2, shockBoost * 0.5))));
+    const sl = isBuy ? entry - stop : entry + stop;
+    const tp = isBuy ? entry + reward : entry - reward;
+    const tp1 = isBuy ? entry + reward * 0.5 : entry - reward * 0.5;
+    const dec = entry > 100 ? 2 : entry > 10 ? 3 : 5;
+    return {
+        entry, sl, tp, tp1, dec,
+        riskPct: stop / entry * 100,
+        targetPct: reward / entry * 100,
+        shockBoost: Number(shockBoost.toFixed(2)),
+        entrySource: ex ? ex.source : 'mid'
+    };
+}
+
+function forecastState(now = Date.now()) {
+    const key = 'forecast|' + (HTF && HTF.asOf ? HTF.asOf : 'none') + '|' + BARS_GEN + '|' + SIGNALS_REV + '|' + bucketOf(now, 60000);
+    const cached = memoGet(key);
+    if (cached !== undefined) return cached;
+    const risk = typeof riskSentimentSnapshot === 'function' ? riskSentimentSnapshot() : { regime: 'MIXED', avgPct: 0, label: '—' };
+    const fgEff = typeof effectiveFearGreed === 'function' ? effectiveFearGreed() : null;
+    const items = MACRO_IMPACT_ASSETS.map(cfg => {
+        const price = typeof assetPrice === 'function' ? assetPrice(cfg.kind, cfg.asset) : null;
+        const sentiment = typeof calibratedWatchSignal === 'function'
+            ? calibratedWatchSignal({ kind: cfg.kind, asset: cfg.asset, now, price, scoreOnly: true })
+            : null;
+        const shock = forecastShock(cfg.asset, cfg.kind, now, price);
+        const dailyBars = HTF && HTF.pairs && HTF.pairs[cfg.asset] && HTF.pairs[cfg.asset].bars;
+        const desired = fcNormDir(shock.dir || (sentiment && sentiment.candidateDir) || null);
+        const tfs = {};
+        HTF_TFS.forEach(tf => {
+            const v = htfDirection(dailyBars, tf, price);
+            v.levels = forecastTargets(cfg.asset, cfg.kind, tf, v, price, v.dir || desired, shock);
+            tfs[tf] = v;
+        });
+        const final = finalHtfAlignment(tfs.daily, tfs.weekly, tfs.monthly, desired);
+        return {
+            ...cfg, price, sentiment, shock, tfs, final,
+            finalLevels: final.dir ? forecastTargets(cfg.asset, cfg.kind, 'daily', tfs.daily, price, final.dir, shock) : null,
+            htfReady: Array.isArray(dailyBars) && dailyBars.length > 0
+        };
+    });
+    const state = {
+        now, asOf: HTF ? HTF.asOf : null, source: HTF ? HTF.source : null,
+        risk, fg: fgEff ? fgEff.label : '—', items,
+        counts: {
+            buy: items.filter(x => x.final.dir === 'buy').length,
+            sell: items.filter(x => x.final.dir === 'sell').length,
+            wait: items.filter(x => !x.final.dir).length
+        }
+    };
+    memoSet(key, state, 60 * 1000);
+    return state;
+}
+
+function fcFmt(n, price) {
+    const v = Number(n);
+    if (!Number.isFinite(v)) return '—';
+    const p = Number(price);
+    const dec = p > 100 ? 2 : p > 10 ? 3 : 5;
+    return v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec });
+}
+
+function forecastHtml(state) {
+    const c = state.counts;
+    const head = `<div class="impact-summary forecast-summary">
+        <span class="fx-badge buy">↑ ${c.buy} ALIGNED BUY</span>
+        <span class="fx-badge sell">↓ ${c.sell} ALIGNED SELL</span>
+        <span class="fx-badge wait">■ ${c.wait} WAIT</span>
+        <span class="watch-factors">${esc(state.asOf ? 'HTF ' + state.asOf : 'HTF menunggu data')} · ${esc(state.risk && state.risk.label ? state.risk.label : 'RISK n/a')} · ${esc(state.fg)}</span>
+    </div>`;
+    const cards = state.items.map(it => {
+        const dirCls = it.final.dir === 'buy' ? 'buy' : it.final.dir === 'sell' ? 'sell' : 'wait';
+        const badge = it.final.dir === 'buy' ? '↑ BUY' : it.final.dir === 'sell' ? '↓ SELL' : 'WAIT · HTF';
+        const score = it.sentiment && Number.isFinite(Number(it.sentiment.netScore))
+            ? `skor ${Number(it.sentiment.netScore) >= 0 ? '+' : ''}${Number(it.sentiment.netScore).toFixed(2)}` : 'skor n/a';
+        const shockHtml = it.shock.dir || it.shock.block
+            ? `<div class="fc-shock ${it.shock.source === 'spike-fade' ? 'fade' : it.shock.dir === 'sell' ? 'sell' : 'buy'}">${it.shock.dir === 'sell' ? '↓' : '↑'} ${esc(it.shock.label || it.shock.block)}${it.shock.note ? ' · ' + esc(it.shock.note) : ''}</div>`
+            : '';
+        const tfs = HTF_TFS.map(tf => {
+            const v = it.tfs[tf];
+            const targetDir = v.dir || fcNormDir(it.shock.dir || (it.sentiment && it.sentiment.candidateDir));
+            const cls = targetDir === 'buy' ? 'buy' : targetDir === 'sell' ? 'sell' : 'wait';
+            const lv = v.levels;
+            const dirTxt = v.dir === 'buy' ? '↑ BUY' : v.dir === 'sell' ? '↓ SELL' : 'WAIT';
+            return `<div class="fc-tf ${cls}">
+                <div class="fc-tf-head"><b>${HTF_CFG[tf].label}</b><span>${dirTxt}${v.dir ? '' : ' · skenario'}</span></div>
+                <div class="fc-tf-price">${lv ? `Target ${fcFmt(lv.tp, it.price)}` : 'Target —'}</div>
+                <div class="fc-tf-sub">${lv ? `Entry ${fcFmt(lv.entry, it.price)} · SL ${fcFmt(lv.sl, it.price)}` : (v.reason || 'Data belum cukup')}</div>
+                <div class="fc-tf-meta">${v.notes && v.notes.length ? esc(v.notes.join(' · ')) : 'Konfluensi netral'}${lv && lv.shockBoost > 0 ? ` · news/spike +${lv.shockBoost.toFixed(2)}` : ''}</div>
+            </div>`;
+        }).join('');
+        const finalTxt = it.finalLevels
+            ? `Final target <b>${fcFmt(it.finalLevels.tp, it.price)}</b> <small>(${it.finalLevels.targetPct.toFixed(2)}% · SL ${fcFmt(it.finalLevels.sl, it.price)})</small>`
+            : 'Final target <b>—</b> <small>belum aligned</small>';
+        const factors = it.sentiment && Array.isArray(it.sentiment.factors) && it.sentiment.factors.length
+            ? it.sentiment.factors.slice(0, 3).map(f => `<span>${esc(f)}</span>`).join('') : '';
+        return `<div class="forecast-card ${dirCls}">
+            <div class="fc-head"><span>${esc(it.label)}</span><span class="fc-final ${dirCls}">${badge}</span></div>
+            <div class="fc-price">${it.price ? fcFmt(it.price, it.price) : '—'} <small>${esc(score)}</small></div>
+            ${shockHtml}
+            <div class="fc-tfs">${tfs}</div>
+            <div class="fc-final-price">${finalTxt}</div>
+            <div class="fc-note">${esc(it.final.reason)}${factors ? '<br>' + factors : ''}</div>
+        </div>`;
+    }).join('');
+    return head + `<div class="forecast-grid">${cards}</div>`;
+}
+
+function renderForecastBoard() {
+    const grid = $('#forecastGrid');
+    if (!grid) return;
+    grid.innerHTML = forecastHtml(forecastState());
+}
+
+async function loadHtf() {
+    try {
+        const r = await fetch(`data/htf.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        if (j && j.pairs && Object.keys(j.pairs).length) HTF = j;
+    } catch (e) {
+        console.log('Data HTF gagal dimuat', e.message || e);
+    }
+    // HTF hanya dipakai panel forecast — cukup gambar ulang panel itu saja.
+    // Memanggil scheduleRender() di sini akan menggambar ulang seluruh kalender
+    // (dan memicu analisis berat) tiap kali data HTF di-refresh.
+    renderForecastBoard();
+}
+
 // ─── IPO WATCH · Anthropic Sentiment Impact ─────────────────────────────────────────────────────────────────
 // Sentimen terhadap IPO Anthropic → dampak terhadap emas / indeks / pair.
 // Blend: rezim risk + Fear & Greed ekstrem + DXY sintetis (sumber sentimen
@@ -6407,6 +6741,7 @@ function render() {
     if (typeof renderTechBoard === 'function') renderTechBoard();
     if (typeof renderMacroBoard === 'function') renderMacroBoard();
     if (typeof renderMacroImpact === 'function') renderMacroImpact();
+    if (typeof renderForecastBoard === 'function') renderForecastBoard();
     if (typeof renderIpoBoard === 'function') renderIpoBoard();
     if (typeof renderSignalHistory === 'function') renderSignalHistory();
 
@@ -6460,7 +6795,7 @@ document.querySelector('.filters').addEventListener('click', ev => {
     renderNow();
 });
 
-$('#refresh').onclick = () => { load(); loadBrokerForex(); loadForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadLiveBarsFallback(true); loadTradeStats(); renderTradeStats(); loadSentiment(); };
+$('#refresh').onclick = () => { load(); loadBrokerForex(); loadForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadLiveBarsFallback(true); loadTradeStats(); renderTradeStats(); loadSentiment(); loadHtf(); };
 renderGoldBoard();
 renderCryptoBoard();
 renderForexBoard();
@@ -6468,9 +6803,11 @@ renderIndicesBoard();
 if (typeof renderTechBoard === 'function') renderTechBoard();
 if (typeof renderMacroBoard === 'function') renderMacroBoard();
 if (typeof renderMacroImpact === 'function') renderMacroImpact();
+if (typeof renderForecastBoard === 'function') renderForecastBoard();
 if (typeof renderIpoBoard === 'function') renderIpoBoard();
 if (typeof renderSignalHistory === 'function') renderSignalHistory();
 loadSentiment();
+loadHtf();
 load(); loadBrokerForex(); loadForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadTradeStats(); renderTradeStats();
 setInterval(() => { loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); }, 60000);
 // Sentimen Fear & Greed jarang berubah; cukup ditarik ulang tiap 10 menit.
@@ -6483,6 +6820,8 @@ setInterval(load, 60000);
 setInterval(loadReaction, 300000);
 // Bar 1 menit (ATR) juga produk workflow; refresh bersamaan dengan reaction.
 setInterval(loadMarkets, 300000);
+// HTF harian produk workflow 15 menit, tapi dipoles tiap 30 menit di browser.
+setInterval(loadHtf, 1800000);
 
 /* ==========================================================================
    MT5 LINUX BRIDGE CLIENT (FBS DEMO / BOTTLES)

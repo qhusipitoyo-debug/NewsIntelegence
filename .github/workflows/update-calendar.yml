@@ -34,6 +34,9 @@ jobs:
           GOLD_API_KEY: ${{ secrets.GOLD_API_KEY }}
           TWELVE_DATA_API_KEY: ${{ secrets.TWELVE_DATA_API_KEY }}
 
+      - name: Fetch higher-timeframe (D/W/M) price history
+        run: node scripts/fetch-htf.mjs
+
       # CEK DULU: Apakah data dari API benar-benar berubah?
       - name: Check if data changed
         id: check_diff

@@ -109,6 +109,47 @@ header:after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;heigh
 .tech-tags span.buy:before{content:"↑ ";color:var(--green)}
 .tech-tags span.sell:before{content:"↓ ";color:var(--red)}
 
+/* ── Forecast D/W/M — HTF aligned ── */
+.forecast-board{grid-template-columns:1fr;align-items:stretch}
+.forecast-board>div:first-child{border-right:0;border-bottom:1px solid var(--line);padding:0 0 12px}
+.forecast-board>div:first-child p b{color:var(--aqua)}
+.forecast-summary{border-radius:5px;background:rgba(4,15,23,.5);justify-content:flex-start}
+.forecast-summary .watch-factors{display:inline-block;color:var(--muted);font-size:10.5px}
+.forecast-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(360px,1fr));gap:10px;margin-top:10px}
+.forecast-card{background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--wait);border-radius:5px;padding:11px 12px;position:relative;overflow:hidden}
+.forecast-card.buy{border-left-color:var(--green)}
+.forecast-card.sell{border-left-color:var(--red)}
+.forecast-card:before{content:"";position:absolute;right:0;top:0;width:96px;height:56px;background:var(--spark-g) no-repeat right top/96px 40px;opacity:.35;pointer-events:none}
+.forecast-card.sell:before{background-image:var(--spark-r)}
+.forecast-card.wait:before{display:none}
+.fc-head{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px;font-weight:800;position:relative;z-index:1}
+.fc-final{font:800 11px "DM Sans",sans-serif;padding:3px 9px;border-radius:999px;white-space:nowrap;background:rgba(125,139,161,.16);color:var(--wait)}
+.fc-final.buy{background:rgba(46,204,113,.16);color:var(--green)}
+.fc-final.sell{background:rgba(255,90,79,.16);color:var(--red)}
+.fc-price{font:800 19px Manrope;color:var(--ink);margin:6px 0 8px;font-variant-numeric:tabular-nums;position:relative;z-index:1}
+.fc-price small{font:600 10px "DM Sans",sans-serif;color:var(--muted);margin-left:6px}
+.fc-shock{font-size:10.5px;padding:6px 9px;border-radius:4px;margin-bottom:8px;background:rgba(94,224,192,.1);border:1px solid rgba(94,224,192,.25);color:var(--aqua)}
+.fc-shock.sell{background:rgba(255,90,79,.1);border-color:rgba(255,90,79,.25);color:var(--red)}
+.fc-shock.fade{background:rgba(255,168,61,.1);border-color:rgba(255,168,61,.28);color:var(--amber)}
+.fc-tfs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.fc-tf{border-radius:5px;background:var(--panel);border:1px solid var(--line);border-top:2px solid var(--wait);padding:8px 9px;min-width:0}
+.fc-tf.buy{border-top-color:var(--green)}
+.fc-tf.sell{border-top-color:var(--red)}
+.fc-tf-head{display:flex;justify-content:space-between;align-items:baseline;gap:4px;font-size:10px;letter-spacing:.6px;color:var(--muted)}
+.fc-tf-head b{font-size:10px;color:var(--ink)}
+.fc-tf.buy .fc-tf-head span{color:var(--green)}
+.fc-tf.sell .fc-tf-head span{color:var(--red)}
+.fc-tf-price{font:800 14px Manrope;color:var(--ink);margin:5px 0 3px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc-tf-sub,.fc-tf-meta{font-size:9.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc-tf-meta{margin-top:4px;color:#6f8199}
+.fc-final-price{margin-top:9px;padding:7px 9px;border-radius:4px;background:rgba(4,15,23,.55);border:1px dashed var(--line);font-size:11px;color:var(--muted)}
+.fc-final-price b{font:800 15px Manrope;color:var(--green);font-variant-numeric:tabular-nums}
+.forecast-card.sell .fc-final-price b{color:var(--red)}
+.fc-final-price small{font-size:9.5px;color:var(--muted)}
+.fc-note{margin-top:8px;font-size:10px;line-height:1.45;color:var(--muted)}
+.fc-note span{display:inline-block;background:rgba(4,14,21,.48);border:1px solid rgba(92,190,214,.14);padding:1px 6px;border-radius:6px;margin:3px 4px 0 0;font-size:9px;color:#cfe9ef}
+@media(max-width:1100px){.forecast-grid{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}}
+
 /* ── Toolbar / tab ── */
 .toolbar{border-radius:6px;top:8px;background:#161e2c;padding:7px 11px;border:1px solid var(--line)}
 .chip{border:0;background:transparent;border-radius:0;padding:7px 11px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:2px solid transparent}
@@ -165,6 +206,9 @@ header:after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;heigh
   .market-board,.crypto-board,.forex-board,.indices-board,.tech-board{grid-template-columns:1fr;padding:12px}
   .market-board>div:first-child,.crypto-board>div:first-child,.forex-board>div:first-child,.indices-board>div:first-child,.tech-board>div:first-child{border-right:0;padding-right:0;border-bottom:1px solid var(--line);padding-bottom:10px}
   .crypto-card,.fx-card,.idx-card,.tech-card,.macro-card{padding-right:11px;background-image:none}
+  .forecast-grid{grid-template-columns:1fr}
+  .fc-tfs{grid-template-columns:1fr}
+  .forecast-card:before{display:none}
   .event{grid-template-columns:1fr 1fr;padding:11px}
   .event-title{grid-column:1/-1}
   .signal{grid-column:2/4}
