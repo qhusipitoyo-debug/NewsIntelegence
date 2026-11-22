@@ -326,8 +326,10 @@ test('macro risk card and DXY card must share one dollar reading (no contradicto
   const { ctx, elements } = createDashboardSandbox();
 
   vm.runInContext(`
-    INDEX_RATES = { US500: { changePct: -1.0 } };
+    INDEX_RATES = { US500: { changePct: -1.0, price: 5900 } };
     CRYPTO_CHANGE = { 'BTC/USD': -2.8, 'ETH/USD': -3.4 };
+    CRYPTO_RATES = { 'BTC/USD': 66500, 'ETH/USD': 1710 };
+    LIVE_PRICE = 4100;
     FOREX_QUOTES = {
       'EUR/USD': { changePct: 0.15 },
       'USD/JPY': { changePct: -0.25 },
@@ -348,6 +350,12 @@ test('macro risk card and DXY card must share one dollar reading (no contradicto
   vm.runInContext(`renderIpoBoard();`, ctx);
   assert.ok(elements.get('#ipoBody').innerHTML.includes('IPO Anthropic'), 'IPO board rendered Anthropic sentiment impact');
   assert.ok(elements.get('#ipoBody').innerHTML.includes('Entry:'), 'IPO board must render post-IPO levels (Entry/SL/TP) — bukan 0.00');
+  // Harga IPO harus terkunci: render ulang setelah harga live bergerak tidak boleh
+  // mengubah Entry/SL/TP (sama seperti lock di board Gold/Crypto/Index/Forex).
+  const ipoBefore = elements.get('#ipoBody').innerHTML.match(/<b>Entry:<\/b> ([\d.]+)/g) || [];
+  vm.runInContext(`CRYPTO_RATES['BTC/USD'] = Number(CRYPTO_RATES['BTC/USD']) * 1.05; LIVE_PRICE = LIVE_PRICE * 1.05; renderIpoBoard();`, ctx);
+  const ipoAfter = elements.get('#ipoBody').innerHTML.match(/<b>Entry:<\/b> ([\d.]+)/g) || [];
+  assert.deepEqual(ipoAfter, ipoBefore, 'IPO levels must stay locked across re-render when live price moves');
   assert.ok(html.includes('▼ Dolar Turun'), 'risk card must derive dollar arrow from DXY bias (USD melemah)');
   assert.ok(!html.includes('▲ Dolar Naik'), 'risk card must not hardcode USD naik while DXY bias is down');
   assert.ok(html.includes('USD belum kembali safe-haven'), 'risk card must soften safe-haven claim when USD is weak');
