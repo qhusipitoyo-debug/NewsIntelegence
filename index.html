@@ -1989,6 +1989,7 @@ function goldBoardState(now = Date.now()) {
                         spike: watch.spike || spike,
                         modeLabel: watch.modeLabel || 'WATCH',
                         note: watch.note,
+                        locked: Boolean(lvl && lvl.locked), lockedAt: lvl ? lvl.lockedAt : null,
                         stopped: lvl.stopped,
                         tpReached: lvl.tpReached,
                         missed: lvl.missed,
@@ -2035,7 +2036,7 @@ function goldBoardState(now = Date.now()) {
                 if (lvl && lvl.levels) {
                     return {
                         status: 'pre', event: label, dir: lvl.dir || watch.dir, levels: lvl.levels,
-                        note: watch.note || data.note, buy, sell, locked: false, missed: lvl.missed,
+                        note: watch.note || data.note, buy, sell, locked: Boolean(lvl && lvl.locked), lockedAt: lvl ? lvl.lockedAt : null, missed: lvl.missed,
                         stopped: lvl.stopped, tpReached: lvl.tpReached,
                         orderFilled: lvl.orderFilled, pnlPct: lvl.pnlPct, pnlPoints: lvl.pnlPoints, reverseSetup: lvl.reverseSetup,
                         conf: watch.conf, factors: watch.factors || [], spike: watch.spike || spike,
@@ -2069,7 +2070,7 @@ function goldBoardState(now = Date.now()) {
             if (lvl && lvl.levels) {
                 return {
                     status: 'post', event: label, dir: lvl.dir || watch.dir, changePct: watch.movePct ?? data.movePct, validUntil,
-                    note: watch.note || data.note, levels: lvl.levels, locked: false,
+                    note: watch.note || data.note, levels: lvl.levels, locked: Boolean(lvl && lvl.locked), lockedAt: lvl ? lvl.lockedAt : null,
                     conflict: false, missed: lvl.missed, stopped: lvl.stopped, tpReached: lvl.tpReached,
                     orderFilled: lvl.orderFilled, pnlPct: lvl.pnlPct, pnlPoints: lvl.pnlPoints, reverseSetup: lvl.reverseSetup,
                     conf: watch.conf, factors: watch.factors || [], spike: watch.spike || spike,
@@ -2217,6 +2218,8 @@ function cryptoBoardState(now = Date.now()) {
                 it.conf = watch.conf || null;
                 it.note = watch.note || it.note;
                 it.basis = watch.basis;
+                it.locked = Boolean(lvl && lvl.locked);
+                it.lockedAt = lvl ? lvl.lockedAt : null;
                 it.missed = Boolean(lvl && lvl.missed);
                 it.stopped = Boolean(lvl && lvl.stopped);
                 it.tpReached = Boolean(lvl && lvl.tpReached);
@@ -2417,6 +2420,8 @@ function forexBoardState(now = Date.now()) {
                 conf = watch.conf || null;
                 note = watch.note || note;
                 basis = watch.basis;
+                locked = Boolean(lvl && lvl.locked);
+                lockedAt = lvl ? lvl.lockedAt : null;
                 noData = false;
                 missed = Boolean(lvl && lvl.missed);
                 stopped = Boolean(lvl && lvl.stopped);
@@ -2626,6 +2631,8 @@ function indicesBoardState(now = Date.now()) {
                 it.conf = watch.conf || null;
                 it.note = watch.note || it.note;
                 it.basis = watch.basis;
+                it.locked = Boolean(lvl && lvl.locked);
+                it.lockedAt = lvl ? lvl.lockedAt : null;
                 it.missed = Boolean(lvl && lvl.missed);
                 it.stopped = Boolean(lvl && lvl.stopped);
                 it.tpReached = Boolean(lvl && lvl.tpReached);

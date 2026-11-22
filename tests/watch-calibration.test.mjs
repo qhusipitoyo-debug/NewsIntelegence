@@ -303,6 +303,22 @@ test('End-to-end watch boards and HTML render cleanly on real data/* fixtures', 
   assert.ok(forexState.items.some(it => it.dir === 'long' || it.dir === 'short'),
     'Forex watch should calibrate directional signal instead of stalling on WAIT');
 
+  // Semua pair yang lolos threshold harus mengunci level (Entry/SL/TP tidak repaint).
+  const btc = cryptoState.items.find(it => it.pair === 'BTC/USD');
+  const us500 = idxState.items.find(it => it.symbol === 'US500');
+  assert.ok(btc && btc.dir && btc.locked && btc.lockedAt, 'Crypto watch must lock levels once threshold passed');
+  assert.ok(us500 && us500.dir && us500.locked && us500.lockedAt, 'Index watch must lock levels once threshold passed');
+  const levelsBefore = vm.runInContext(`JSON.stringify({
+    btc: cryptoBoardState(${now}).items.find(i => i.pair === 'BTC/USD').levels,
+    us: indicesBoardState(${now}).items.find(i => i.symbol === 'US500').levels
+  })`, ctx);
+  vm.runInContext(`CRYPTO_RATES['BTC/USD'] = Number(CRYPTO_RATES['BTC/USD']) * 1.05; INDEX_RATES['US500'].price = Number(INDEX_RATES['US500'].price) * 1.05;`, ctx);
+  const levelsAfter = vm.runInContext(`JSON.stringify({
+    btc: cryptoBoardState(${now}).items.find(i => i.pair === 'BTC/USD').levels,
+    us: indicesBoardState(${now}).items.find(i => i.symbol === 'US500').levels
+  })`, ctx);
+  assert.equal(levelsAfter, levelsBefore, 'Crypto/index levels must stay locked when live price moves');
+
   const goldHtml = vm.runInContext(`goldBoardHtml(LIVE_PRICE, goldBoardState(${now}))`, ctx);
   const cryptoHtml = vm.runInContext(`cryptoBoardHtml(CRYPTO_RATES, CRYPTO_CHANGE, cryptoBoardState(${now}))`, ctx);
   const forexHtml = vm.runInContext(`forexBoardHtml(forexBoardState(${now}))`, ctx);
