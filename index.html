@@ -3,11 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="theme-color" content="#071018">
+  <meta name="theme-color" content="#0e1420">
   <title>shidiqpiy — XAUUSD News Terminal</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     :root{--ink:#eefaff;--muted:#91aeb8;--line:rgba(92,190,214,.18);--aqua:#27d5e0;--blue:#5db7e8;--green:#18d19a;--red:#ff647d;--amber:#f2b84b;--wait:#8fb0c0;--glass:rgba(7,16,24,.48);--glass2:rgba(10,24,34,.58);--shadow:0 18px 55px rgba(0,0,0,.34)}
     *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;color:var(--ink);font:15px/1.55 "DM Sans",sans-serif;background:#03080d;min-height:100vh;overflow-x:hidden}
@@ -197,9 +197,26 @@
     .mt5-toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; max-width: 380px; }
     .mt5-toast { background: #071520; border: 1px solid rgba(94,199,222,.35); border-radius: 12px; padding: 12px 16px; color: #fff; box-shadow: 0 12px 35px rgba(0,0,0,.55); font-size: 12.5px; display: flex; align-items: center; gap: 10px; }
 </style>
+  <link rel="stylesheet" href="theme.css">
 </head>
-<body><main class="shell">
-  <header class="glass">
+<body>
+  <nav class="app-rail" aria-label="Navigasi cepat dashboard">
+    <a class="rail-logo" href="#mainTop" title="Beranda">F</a>
+    <a class="rail-link active" href="#mainTop" title="Dashboard"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></a>
+    <a class="rail-link" href="#goldBoard" title="Gold watch"><svg viewBox="0 0 24 24"><path d="M12 2 3 12l9 10 9-10z"/><path d="M3 12h18M12 2v20"/></svg></a>
+    <a class="rail-link" href="#cryptoBoard" title="Crypto watch"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 7h4a3 3 0 0 1 0 6H9zm0 6h5a3 3 0 0 1 0 6H9zM9 7v12M11 10h5"/></svg></a>
+    <a class="rail-link" href="#forexBoard" title="Forex watch"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M7 15l4-5 3 3 5-7"/></svg></a>
+    <a class="rail-link" href="#indicesBoard" title="Index watch"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></a>
+    <a class="rail-link" href="#macroBoard" title="Macro, micro & sentiment"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v9l6 4"/></svg></a>
+    <a class="rail-link" href="#techBoard" title="AI technical & spike suite"><svg viewBox="0 0 24 24"><path d="M3 17l5-6 4 3 5-8 4 5M3 21h18"/></svg></a>
+    <a class="rail-link" href="#calendar" title="Economic calendar"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></a>
+    <a class="rail-link" href="#statsPanel" title="Statistik & kalibrasi"><svg viewBox="0 0 24 24"><path d="M4 20h16M6 20V9M11 20V4M16 20v-6M21 20v-9"/></svg></a>
+    <div class="rail-spacer"></div>
+    <a class="rail-link" href="#mainTop" title="Kembali ke atas"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3m0 14v3M2 12h3m14 0h3M5 5l2 2m10 10 2 2M19 5l-2 2M7 17l-2 2"/></svg></a>
+    <div class="rail-foot">WITA</div>
+  </nav>
+  <main class="shell">
+  <header class="glass" id="mainTop">
     <div class="brand">
       <div class="logo">F</div>
       <div>
@@ -207,7 +224,15 @@
         <p>XAUUSD macro news intelligence, Forex, Crypto</p>
       </div>
     </div>
-    
+
+    <nav class="asset-tabs" aria-label="Pilihan pasar">
+      <a class="asset-tab active" href="#goldBoard">XAU/USD</a>
+      <a class="asset-tab" href="#cryptoBoard">BTC/USD</a>
+      <a class="asset-tab" href="#forexBoard">Forex</a>
+      <a class="asset-tab" href="#indicesBoard">US500</a>
+      <a class="asset-tab" href="#calendar">Calendar</a>
+    </nav>
+
     <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
       <div id="mt5BridgePill" class="mt5-pill" onclick="openMt5Modal()" title="Status koneksi ke FBS-Demo MetaTrader 5 di Linux">
         <i class="dot dot-mt5" id="mt5StatusDot"></i>
@@ -288,7 +313,7 @@
   <nav class="toolbar glass"><div class="filters"><button class="chip active" data-filter="all">Full month</button><button class="chip" data-filter="upcoming">Upcoming</button><button class="chip" data-filter="high">High impact</button></div><span class="status" id="status">Loading calendar…</span><button class="refresh" id="refresh">↻ Refresh</button></nav>
   <div class="section-head"><div><h3 id="monthTitle">Economic calendar</h3><p>Oldest to newest • times shown in WITA</p></div></div>
   <section id="calendar" class="timeline"></section>
-  <section class="stats-panel glass" style="margin-top: 24px; border-radius: 20px;">
+  <section class="stats-panel glass" id="statsPanel" style="margin-top: 24px; border-radius: 20px;">
     <div style="padding: 20px;">
       <h3 style="margin-top: 0; margin-bottom: 16px; font-size: 18px; color: var(--aqua);">📊 Sistem Statistik &amp; Kalibrasi</h3>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 16px;">

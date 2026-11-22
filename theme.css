@@ -1,0 +1,160 @@
+/* ============================================================
+   REFERENCE SKIN — dark trading dashboard
+   Diadaptasi dariDepositphotos 310550900 (forex/crypto dashboard).
+   File ini HANYA mengubah tampilan. Semua konten, struktur, dan
+   script di index.html tetap dipertahankan.
+   ============================================================ */
+:root{
+  --ink:#e7edf4;--muted:#8b98ab;--line:rgba(255,255,255,.075);
+  --aqua:#5ee0c0;--blue:#5b8dd9;--green:#2ecc71;--red:#ff5a4f;--amber:#ffa83d;--wait:#7d8ba1;
+  --panel:#141b28;--panel2:#101722;--panel3:#1a2231;--rail:#101622;
+  --shadow:0 8px 24px rgba(0,0,0,.28);
+  --spark-g:url("data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2080%2028'><path%20d='M1%2021%2011%2017%2021%2019%2031%2010%2041%2014%2051%208%2061%2012%2071%204%2079%207'%20fill='none'%20stroke='%232ecc71'%20stroke-opacity='.55'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'/></svg>");
+  --spark-r:url("data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%2080%2028'><path%20d='M1%2021%2011%2017%2021%2019%2031%2010%2041%2014%2051%208%2061%2012%2071%204%2079%207'%20fill='none'%20stroke='%23ff5a4f'%20stroke-opacity='.55'%20stroke-width='2'%20stroke-linecap='round'%20stroke-linejoin='round'/></svg>");
+  --chart:url("data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20900%20360'%20preserveAspectRatio='none'><defs><linearGradient%20id='g'%20x1='0'%20y1='0'%20x2='0'%20y2='1'><stop%20offset='0'%20stop-color='%232ecc71'%20stop-opacity='.26'/><stop%20offset='1'%20stop-color='%232ecc71'%20stop-opacity='0'/></linearGradient></defs><g%20stroke='%23ffffff'%20stroke-opacity='.055'%20stroke-width='1'><path%20d='M0%2060H900M0%20120H900M0%20180H900M0%20240H900M0%20300H900'/></g><path%20d='M0%20275%2060%20262%20120%20270%20180%20225%20240%20238%20300%20178%20360%20196%20420%20138%20480%20158%20540%2096%20600%20122%20660%2070%20720%2092%20780%2046%20840%2064%20900%2028V360H0Z'%20fill='url(%23g)'/><path%20d='M0%20275%2060%20262%20120%20270%20180%20225%20240%20238%20300%20178%20360%20196%20420%20138%20480%20158%20540%2096%20600%20122%20660%2070%20720%2092%20780%2046%20840%2064%20900%2028'%20fill='none'%20stroke='%23e9f2f7'%20stroke-opacity='.72'%20stroke-width='2.4'%20stroke-linecap='round'%20stroke-linejoin='round'/><path%20d='M0%20205H900'%20stroke='%232ecc71'%20stroke-opacity='.40'%20stroke-dasharray='7%207'%20stroke-width='1'/><path%20d='M0%20305H900'%20stroke='%23ff5a4f'%20stroke-opacity='.32'%20stroke-dasharray='7%207'%20stroke-width='1'/><path%20d='M780%200V360'%20stroke='%23ffa83d'%20stroke-opacity='.45'%20stroke-dasharray='5%205'%20stroke-width='1'/><circle%20cx='780'%20cy='46'%20r='4'%20fill='%232ecc71'%20stroke='%230e1420'%20stroke-width='2'/></svg>");
+  --bars:url("data:image/svg+xml,<svg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20240%2090'><g%20fill='%235b8dd9'%20fill-opacity='.30'><rect%20x='4'%20y='52'%20width='16'%20height='38'%20rx='2'/><rect%20x='30'%20y='38'%20width='16'%20height='52'%20rx='2'/><rect%20x='56'%20y='58'%20width='16'%20height='32'%20rx='2'/><rect%20x='82'%20y='26'%20width='16'%20height='64'%20rx='2'/><rect%20x='108'%20y='44'%20width='16'%20height='46'%20rx='2'/><rect%20x='134'%20y='18'%20width='16'%20height='72'%20rx='2'/><rect%20x='160'%20y='34'%20width='16'%20height='56'%20rx='2'/><rect%20x='186'%20y='48'%20width='16'%20height='42'%20rx='2'/><rect%20x='212'%20y='10'%20width='16'%20height='80'%20rx='2'/></g><path%20d='M12%2046%2038%2032%2064%2050%2090%2022%20116%2038%20142%2014%20168%2028%20194%2042%20220%208'%20fill='none'%20stroke='%23ffa83d'%20stroke-opacity='.45'%20stroke-width='2'/></svg>");
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;color:var(--ink);font:13px/1.5 "Inter","DM Sans",system-ui,sans-serif;background:#0e1420;background-image:linear-gradient(rgba(255,255,255,.016) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.016) 1px,transparent 1px);background-size:32px 32px;background-attachment:fixed;overflow-x:hidden}
+body:before,body:after{content:none!important;display:none!important;animation:none!important}
+button,select{font:inherit}
+
+/* ── Rail kiri ala dashboard referensi ── */
+.app-rail{position:fixed;inset:0 auto 0 0;width:76px;z-index:40;display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 0 12px;background:var(--rail);border-right:1px solid var(--line);box-shadow:6px 0 22px rgba(0,0,0,.22)}
+.app-rail .rail-logo{width:38px;height:38px;border-radius:6px;display:grid;place-items:center;margin-bottom:12px;background:#1d2a3f;border:1px solid rgba(94,224,192,.35);color:var(--aqua);font:800 17px Manrope;text-decoration:none}
+.app-rail a.rail-link{width:46px;height:42px;display:grid;place-items:center;border-radius:5px;color:#7f8da3;text-decoration:none;border-left:2px solid transparent;transition:background .15s,color .15s}
+.app-rail a.rail-link svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.app-rail a.rail-link:hover,.app-rail a.rail-link.active{color:var(--ink);background:#1d2a3f}
+.app-rail a.rail-link.active{border-left-color:var(--aqua)}
+.app-rail .rail-spacer{flex:1}
+.app-rail .rail-foot{font-size:9px;color:#546174;letter-spacing:1.2px;text-transform:uppercase;margin-top:8px}
+
+/* ── Kerangka & panel ── */
+.shell{width:min(1560px,calc(100% - 108px));margin:0 0 0 76px;padding:16px 20px 42px}
+.glass{background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:none;-webkit-backdrop-filter:none;border-radius:6px}
+
+/* ── Top bar ── */
+header{position:relative;border-radius:6px;padding:12px 16px;background:linear-gradient(180deg,#171f2d,#131a26);gap:14px}
+header:after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;height:1px;background:linear-gradient(90deg,var(--aqua),rgba(94,224,192,0) 65%)}
+.logo{width:38px;height:38px;border-radius:6px;background:#1d2a3f;border:1px solid rgba(94,224,192,.35);color:var(--aqua);font-size:17px;box-shadow:none}
+.brand{gap:11px}
+.brand h1{font-size:15px;letter-spacing:.7px;text-transform:uppercase}
+.brand p{font-size:11px;color:var(--muted)}
+.live{font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.mt5-pill{border-radius:5px;background:var(--panel3);border:1px solid var(--line);font-size:11px}
+#xauusd-price-widget{border-radius:5px!important;background:rgba(0,0,0,.2)!important;font-size:11px}
+.eyebrow{font-size:10px;letter-spacing:1.4px;color:var(--aqua)}
+.asset-tabs{display:flex;gap:2px;flex-wrap:wrap;align-items:center}
+.asset-tab{font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-decoration:none;padding:7px 10px;border-bottom:2px solid transparent;white-space:nowrap}
+.asset-tab:hover{color:var(--ink)}
+.asset-tab.active{color:var(--ink);border-bottom-color:var(--red)}
+
+/* ── Hero: grafik garis + panel kontrol ── */
+.hero{margin:14px 0;grid-template-columns:1.6fr .8fr;gap:12px}
+.intro{border-radius:6px;padding:24px 26px;position:relative;overflow:hidden;background:var(--panel)}
+.intro:before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#141b28 0%,rgba(20,27,40,.96) 34%,rgba(20,27,40,.35) 72%,transparent 100%),var(--chart) no-repeat right center/78% 100%;opacity:.62;pointer-events:none}
+.intro:after{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(to bottom,var(--red) 0 41%,var(--green) 41% 100%)}
+.intro>*{position:relative;z-index:1;text-shadow:0 1px 8px rgba(0,0,0,.85)}
+.intro h2{font-size:clamp(24px,3vw,38px);line-height:1.08;letter-spacing:-1.1px;margin:8px 0;max-width:580px}
+.intro h2 span{color:var(--aqua)}
+.intro p{font-size:12.5px;max-width:540px;color:var(--muted)}
+.stats{margin-top:20px;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat{border-radius:5px;background:var(--panel2);border:1px solid var(--line);padding:10px 12px}
+.stat b{font-size:18px;color:var(--green)}
+.stat span{font-size:10px;text-transform:uppercase;letter-spacing:.4px}
+.next{border-radius:6px;padding:18px 18px 26px;background:#182233;border:1px solid var(--line);color:var(--ink);position:relative;overflow:hidden}
+.next:before{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(46,204,113,.09),transparent 45%),linear-gradient(315deg,rgba(255,90,79,.09),transparent 45%);pointer-events:none}
+.next>*{position:relative;z-index:1}
+.next:after{content:"";position:absolute;left:18px;right:18px;bottom:13px;height:4px;border-radius:3px;background:linear-gradient(90deg,var(--green) 0 48%,transparent 48% 52%,var(--red) 52% 100%)}
+.next .eyebrow{color:var(--aqua)}
+.next h3{font-size:16px;margin:8px 0}
+.next small{color:var(--muted)}
+.countdown{font-size:clamp(26px,4vw,38px);color:var(--green);font-variant-numeric:tabular-nums}
+.wita-clock{border-top:1px solid var(--line);padding-top:9px;margin-top:8px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+#witaClock{font-weight:800;color:var(--amber);font-variant-numeric:tabular-nums}
+
+/* ── Board pasar: tabel data padat ── */
+.market-board,.crypto-board,.forex-board,.indices-board,.tech-board{border-radius:6px;padding:14px 16px;margin-top:12px;grid-template-columns:minmax(190px,.75fr) 2.4fr;gap:16px;align-items:center}
+.market-board>div:first-child,.crypto-board>div:first-child,.forex-board>div:first-child,.indices-board>div:first-child,.tech-board>div:first-child{border-right:1px solid var(--line);padding-right:14px}
+.market-board h3,.crypto-board h3,.forex-board h3,.indices-board h3,.tech-board h3{font-size:15px;letter-spacing:-.2px;margin:4px 0 6px}
+.market-board p,.crypto-board p,.forex-board p,.indices-board p,.tech-board p{font-size:11px;line-height:1.45}
+.mb-body{gap:8px}
+.mb-price{font:800 19px Manrope;color:var(--ink);letter-spacing:0;font-variant-numeric:tabular-nums}
+.mb-meta{font-size:10px}
+.mb-level{border-radius:5px;background:var(--panel2);border:1px solid var(--line);border-left:3px solid var(--amber);padding:8px 10px}
+.crypto-grid,.fx-grid,.idx-grid,.tech-grid,.macro-body{display:grid;gap:8px}
+.crypto-card,.fx-card,.idx-card,.tech-card,.macro-card{background:var(--panel2);border:1px solid var(--line);border-left:2px solid var(--line);border-radius:5px;padding:9px 64px 9px 11px;font-size:11px;position:relative;background-image:var(--spark-g);background-repeat:no-repeat;background-position:right 8px center;background-size:54px 20px}
+.crypto-card.sell,.fx-card.sell,.idx-card.sell{background-image:var(--spark-r)}
+.crypto-card .pair span:first-child:before,.fx-card .pair span:first-child:before,.idx-card .pair span:first-child:before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--aqua);margin-right:7px;vertical-align:1px;box-shadow:0 0 0 3px rgba(94,224,192,.1)}
+.crypto-card.sell .pair span:first-child:before,.fx-card.sell .pair span:first-child:before,.idx-card.sell .pair span:first-child:before{background:var(--red);box-shadow:0 0 0 3px rgba(255,90,79,.1)}
+.crypto-card .pair,.fx-card .pair,.idx-card .pair,.tech-card .head{font-size:12px}
+.crypto-card .price,.fx-price,.idx-price{font:800 18px Manrope;color:var(--ink);letter-spacing:0;margin:3px 0 5px;font-variant-numeric:tabular-nums}
+.crypto-card.buy,.fx-card.buy,.idx-card.buy{border-left-color:var(--green)}
+.crypto-card.sell,.fx-card.sell,.idx-card.sell{border-left-color:var(--red)}
+.crypto-card.wait,.fx-card.wait,.idx-card.wait{border-left-color:var(--wait)}
+.macro-card h5{font-size:11px;color:var(--ink)}
+.macro-card .big{font-size:17px}
+
+/* ── Toolbar / tab ── */
+.toolbar{border-radius:6px;top:8px;background:#161e2c;padding:7px 11px;border:1px solid var(--line)}
+.chip{border:0;background:transparent;border-radius:0;padding:7px 11px;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);border-bottom:2px solid transparent}
+.chip:hover{color:var(--ink)}
+.chip.active{background:transparent;color:var(--ink);border-bottom-color:var(--red)}
+.refresh{border-radius:5px;background:var(--panel3);border:1px solid var(--line);padding:7px 12px;font-size:11px;color:var(--aqua)}
+.status{font-size:11px}
+
+/* ── Kalender ekonomi ── */
+.section-head{margin:22px 2px 10px}
+.section-head h3{font-size:15px;text-transform:uppercase;letter-spacing:.7px}
+.section-head p{font-size:11px}
+.datebar strong{font-size:14px}
+.datebar span{font-size:11px}
+.event{grid-template-columns:minmax(190px,1.5fr) repeat(3,minmax(72px,.5fr)) minmax(130px,.7fr);gap:10px;padding:11px 13px;border-radius:5px;background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--blue);margin-bottom:7px}
+.event:nth-child(even){border-left-color:#3a4a6b}
+.event:hover{transform:none;box-shadow:0 6px 18px rgba(0,0,0,.3);background:#182233}
+.event h4{font-size:13px}
+.event-title{gap:10px}
+.flag{width:32px;height:32px;border-radius:5px;background:#1d2a3f;font-size:16px}
+.event-title p,.metric span{font-size:9.5px;text-transform:uppercase;letter-spacing:.4px}
+.metric b{font-size:12px;color:var(--ink);font-variant-numeric:tabular-nums}
+.impact{border-radius:3px;background:#233149;color:#9fc7ff;font-size:9px;text-transform:uppercase;padding:3px 7px}
+.signal{border-radius:4px;padding:8px 10px;background:var(--panel2);border:1px solid var(--line)}
+.signal.long{background:rgba(46,204,113,.14);border-color:rgba(46,204,113,.38);color:var(--green)}
+.signal.short{background:rgba(255,90,79,.14);border-color:rgba(255,90,79,.38);color:var(--red)}
+.signal.wait{background:#1d2534;color:var(--wait)}
+.signal b{font-size:12px;letter-spacing:.5px;text-transform:uppercase}
+.signal.long:after{content:" ▲";font-size:9px;opacity:.85}
+.signal.short:after{content:" ▼";font-size:9px;opacity:.85}
+.expand{border-top:1px dashed var(--line);padding-top:12px}
+.tpsl{border-radius:4px;background:var(--panel2);border:1px dashed var(--line)}
+.empty{border-radius:5px;background:var(--panel)}
+
+/* ── Statistik ── */
+.stats-panel{border-radius:6px!important;background:var(--panel);border:1px solid var(--line);position:relative;overflow:hidden}
+.stats-panel:before{content:"";position:absolute;right:12px;top:12px;width:210px;height:80px;background:var(--bars) no-repeat right top/210px 80px;opacity:.75;pointer-events:none}
+.stats-panel>div{position:relative;z-index:1}
+.stat-item{background:var(--panel2)!important;border:1px solid var(--line)!important;border-radius:5px!important}
+.hist-table th,.hist-table td{border-bottom:1px solid var(--line)!important}
+.footer{margin-top:20px;padding:14px;border-top:1px solid var(--line);border-radius:0;font-size:11px;color:#6f7d91;background:rgba(16,22,34,.6)}
+
+/* ── Modal & toast ── */
+.mt5-modal-backdrop{background:rgba(6,10,16,.86)}
+.mt5-modal{background:var(--panel);border:1px solid var(--line);border-radius:6px}
+.mt5-toast{background:var(--panel);border:1px solid var(--line);border-radius:5px}
+
+/* ── Responsif ── */
+@media(max-width:1000px){
+  .app-rail{display:none}
+  .shell{width:min(100% - 20px,1380px);margin:0 auto;padding:12px}
+}
+@media(max-width:760px){
+  .market-board,.crypto-board,.forex-board,.indices-board,.tech-board{grid-template-columns:1fr;padding:12px}
+  .market-board>div:first-child,.crypto-board>div:first-child,.forex-board>div:first-child,.indices-board>div:first-child,.tech-board>div:first-child{border-right:0;padding-right:0;border-bottom:1px solid var(--line);padding-bottom:10px}
+  .crypto-card,.fx-card,.idx-card,.tech-card,.macro-card{padding-right:11px;background-image:none}
+  .event{grid-template-columns:1fr 1fr;padding:11px}
+  .event-title{grid-column:1/-1}
+  .signal{grid-column:2/4}
+  .stats-panel:before{display:none}
+}
