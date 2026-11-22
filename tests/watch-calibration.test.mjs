@@ -265,12 +265,29 @@ test('End-to-end watch boards and HTML render cleanly on real data/* fixtures', 
     if (MARKETS.pairs && MARKETS.pairs['ETH/USD'] && MARKETS.pairs['ETH/USD'].bars && MARKETS.pairs['ETH/USD'].bars.length) {
       CRYPTO_RATES['ETH/USD'] = MARKETS.pairs['ETH/USD'].bars.slice(-1)[0].c;
     }
+    // Membuat tren intraday BTC konsisten turun + impulse turun terakhir supaya
+    // confluence Makro/Mikro/F&G/Spike membentuk sinyal SELL yang tren-menyenangkan
+    // (EMA20 < EMA50), konsisten dengan perubahan intraday -2.8% yang di-override.
+    {
+      const btcBars = [];
+      for (let i = 0; i < 60; i++) { const px = 68000 - i * 12; btcBars.push({ k: i, o: px - 5, h: px + 25, l: px - 25, c: px }); }
+      btcBars.push({ k: 60, o: 68000, h: 68500, l: 67000, c: 66500 });
+      MARKETS.pairs['BTC/USD'].bars = btcBars;
+    }
     SENTIMENT = { score: 24, rating: 'Extreme Fear', source: 'CNN Fear & Greed' };
-    SENTIMENT_CRYPTO = { score: 28, rating: 'Fear', source: 'Alternative.me' };
+    SENTIMENT_CRYPTO = { score: 85, rating: 'Extreme Greed', source: 'Alternative.me' };
+    // Kalender ter-refresh menyasarkan katalis MBA (tanpa Forecast → surprise
+    // tak terukur) sehingga board kripto sempat stall. Titiskan katalis CPI dengan
+    // Actual = Forecast (tanpa kejutan) supaya arah benar-benar datang dari momentum
+    // teknikal mikro, sesuai jalur kalibrasi WATCH yang diuji.
+    events = [normalize({ Date: '2026-11-11T12:30:00Z', Country: 'United States', Event: 'Core CPI m/m', Importance: 3, Actual: '0.2%', Forecast: '0.2%' })];
     if (FOREX_QUOTES['USD/JPY']) FOREX_QUOTES['USD/JPY'].changePct = 0.35;
     if (FOREX_QUOTES['EUR/USD']) FOREX_QUOTES['EUR/USD'].changePct = -0.32;
     FOREX_QUOTES['USD/CHF'] = { price: Number(FOREX_RATES.CHF) || 0.88, changePct: 0.25 };
     if (FOREX_META && FOREX_META.rates) FOREX_META.rates.USD_CHG = 0.30;
+    // Index board membaca harga/chg dari INDEX_RATES (hasil applyIndexItems) — sinkronkan
+    // supaya konflik makro/mikro konsisten dengan override INDEX_CHANGE.
+    if (INDEX_RATES && INDEX_RATES['US500']) { INDEX_RATES['US500'].price = 5900; INDEX_RATES['US500'].changePct = -0.85; }
   `, ctx);
 
   const goldState = vm.runInContext(`goldBoardState(${now})`, ctx);
