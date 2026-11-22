@@ -62,7 +62,8 @@ function createDashboardSandbox() {
 
 const NOW = Date.parse('2026-11-16T12:00:00Z');
 // Bar perlahan naik (EMA20 > EMA50) dengan sedikit penarikan di ujung — net score
-// moderat positif (di bawah ambang aktivasi 1.25, tetapi di atas batas tahan 0.55).
+// moderat positif: di bawah ambang aktivasi WINRATE_PARAMS.minNetScoreActive (2.2),
+// tetapi di atas batas tahan WATCH_HOLD_SCORE (1.8) agar hysteresis aktif.
 const dipBars = (() => {
   const out = [];
   let px = 4100;
@@ -100,9 +101,9 @@ test('calibratedWatchSignal keeps an active WATCH direction while the score hove
   // → hysteresis must keep the direction instead of toggling to WAIT.
   const weak = vm.runInContext(`calibratedWatchSignal({
     kind: 'crypto', asset: '${asset}', event: null,
-    now: ${NOW}, price: ${dipBars[dipBars.length - 1].c}, changePct: 0, bars: ${JSON.stringify(dipBars)},
-    fg: 50, cryptoFg: 50, usdChgPct: 0,
-    riskRegime: { regime: 'MIXED', score: 0 },
+    now: ${NOW}, price: ${dipBars[dipBars.length - 1].c}, changePct: 0.2, bars: ${JSON.stringify(dipBars)},
+    fg: 50, cryptoFg: 60, usdChgPct: 0,
+    riskRegime: { regime: 'RISK-ON', score: 1 },
     macroRegime: { country: 'USD', z: -0.7, dir: 'long', weight: 0.7, event: { Event: 'CPI m/m' } }
   })`, ctx);
   assert.equal(weak.dir, 'long', 'active watch signal must not flip/vanish on marginal score changes');
@@ -143,7 +144,7 @@ test('resolveSignalLevels locks watch-phase Entry/SL/TP across ticks and live pr
 
   // Persisted lock is reusable across renders (fresh sandbox read from the same store is
   // covered by the post-news regression suite; here the store must contain the lock).
-  assert.ok([...store.keys()].some(k => k.startsWith('feriha:signal:v2:')), 'lock must persist to localStorage');
+  assert.ok([...store.keys()].some(k => k.startsWith('feriha:signal:v3:')), 'lock must persist to localStorage');
 });
 
 test('pre-news order lock survives an opposing tick but a fresh release basis may replace it', () => {

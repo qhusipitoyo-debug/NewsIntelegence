@@ -146,6 +146,23 @@ Bar 1 menit di `data/markets.json` sengaja tetap 270 per aset: memotongnya jadi 
 
 Event cards also show the pre-news market bias for affected forex majors, crosses and indices, and the card's signal badge changes from WAIT to BUY/SELL. This is an execution scenario, not a guarantee: wait for the release if the forecast edge is flat.
 
+## Market sentiment module — four gold drivers
+
+The gold sentiment module is not a commentary layer: every reading is computed from live market data by `scripts/fetch-calendar.mjs` and published into `data/sentiment.json` every 15 minutes by the same workflow/cron. The UI renders it into the macro panel (`#macroBody`, `renderMacroBoard()`).
+
+Four drivers dominate the daily XAU/USD moves and are weighted separately (weights live in `GOLD_DRIVER_WEIGHTS` in `scripts/fetch-calendar.mjs`):
+
+1. **US real yield & Treasury 10Y** — the opportunity cost of holding gold without coupon. Real yield comes from the official US Treasury daily real yield curve (`daily_treasury_real_yield_curve` CSV), nominal 10Y from Yahoo `^TNX`. The driver uses the z-score of the last ~20 daily values (level relative to its own trend), bearish when the yield rises.
+2. **DXY / USD** — gold in US dollars. Yahoo `DX-Y.NYB`; driver is the z-score of the last ~20 daily closes (bearish when DXY strengthens).
+3. **Fed policy & inflation (CPI/PCE)** — implied Fed rate from Yahoo CME Fed funds futures `ZQ=F` (`100 − price` = implied rate, cross-checked with `Yahoo ^IRX` T-bill) plus the latest US CPI/PCE surprise from `events`/`calendar.json` (`inflationFromEvents()`: `surprise = Actual − Forecast`, bullish/bearish from sign). Higher policy + higher surprise = hawkish = bearish gold.
+4. **Central bank buying & gold ETF flows** — ETF side is live: Yahoo `GLD`/`IAU`/`GC=F` (price change, 5d change, spot-relative basis, volume/avg-volume ratio) and the official iShares Gold Trust (IAU) shares-outstanding page (`fetchIauSharesOutstanding()`), whose day-over-day unit delta is net creation/redemption (flow). The central-bank reserve figure has no keyless public endpoint, so that leg stays explicit (`centralBank: null`) and the driver score is computed from the ETF legs only when the reserve feed is absent.
+
+Composite score (`scoreGoldDrivers()`): each factor is normalised to [-100, +100] and weighted `{ yield: 0.30, dxy: 0.25, fed: 0.25, flows: 0.20 }`. Label: `Bullish Kuat` / `Bullish` / `Netral` / `Bearish` / `Bearish Kuat`. Missing factors are renormaled out (weights renormalized over present factors); with no data at all the score is `null` and the cards show `—`.
+
+`data/sentiment.json` shape: `{ generatedAt, cnn, crypto, drivers: { yield, dxy, fed, flows }, goldDrivers: { score, label, parts, weights, missing } }`. `drivers.*` hold the raw feeds (tenYr/realTenYr/zNominal/zReal/change1d/date/source, dxy price/change1d/change5d/z/date/source, fed impliedRate/change1d/z/inflation/date/source, flows etfChange1d/etfChange5d/spotChange5d/basis5d/volumeRatio/flowScore/sharesOutstanding/sharesChange/sharesAsOf/source).
+
+Tests: `tests/gold-drivers.test.mjs` (fetcher parsing/scoring + UI rendering of the five new cards), plus the extended `tests/watch-calibration.test.mjs` macro-card count.
+
 ## Auto order grid (forex major)
 
 `scripts/mt5_grid_hft.py` is a breakout-grid executor for EUR/USD, GBP/USD and USD/JPY: lot 0.01, grid/SL 15 pips, TP 30 pips (RR 1:2), breakeven at +1R, daily loss stop $5. News behaviour: entries are blocked ±30 minutes around impact>=2 events, and for 60 minutes after an impact>=3 event the grid/SL/TP are widened ×1.5. It is DRY-RUN by default (paper book); orders are only sent to a DEMO account with `--enable`.

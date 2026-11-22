@@ -1333,14 +1333,332 @@ export function buildReactionPayload(events, markets, now = Date.now(), holdMs =
   return { generatedAt: (markets && markets.generatedAt) || new Date(now).toISOString(), events: keyed };
 }
 
+// ═══ PENGGERAK EMAS HARIAN — EMPAT FAKTOR DOMINAN ═══════════════════════════
+// 1. Real yield AS & Treasury 10Y : biaya peluang memegang emas tanpa kupon.
+// 2. DXY / USD                    : harga emas dinyatakan dalam dolar.
+// 3. Kebijakan Fed & inflasi       : arah suku bunga riil (CPI/PCE surprise).
+// 4. Pembelian bank sentral & aliran ETF emas : basis permintaan fisik.
+//
+// Semua dibaca dari feed publik tanpa API key. Bila satu feed gagal, field-nya
+// null dan kartu di halaman menampilkan "—" — tidak ada nilai karangan.
 const SENTIMENT_FILE = 'data/sentiment.json';
+const YAHOO_HEADERS = { 'user-agent': 'Mozilla/5.0' };
+const clampNum = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
-async function fetchSentiment() {
-  const out = { generatedAt: new Date().toISOString(), cnn: null, crypto: null };
-  await Promise.all([
+async function readJsonSafe(file) {
+  try { return JSON.parse(await fs.readFile(file, 'utf8')) || null; } catch { return null; }
+}
+
+function firstNumber(value) {
+  if (value == null) return null;
+  const m = String(value).replace(/,/g, '').match(/-?\d+(?:\.\d+)?/);
+  return m ? Number(m[0]) : null;
+}
+
+/** Seri harian Yahoo (close + volume) untuk satu simbol. */
+export async function fetchYahooDaily(symbol, { range = '1mo', fetchImpl = fetch, timeoutMs = 15000 } = {}) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=${range}`;
+  const r = await fetchImpl(url, { headers: YAHOO_HEADERS, signal: AbortSignal.timeout(timeoutMs) });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const j = await r.json();
+  const chart = j && j.chart && j.chart.result && j.chart.result[0];
+  if (!chart) throw new Error('chart kosong');
+  const ts = Array.isArray(chart.timestamp) ? chart.timestamp : [];
+  const q = chart.indicators && chart.indicators.quote && chart.indicators.quote[0];
+  const rows = [];
+  for (let i = 0; i < ts.length; i++) {
+    const close = finiteNumber(q && q.close && q.close[i]);
+    if (close == null || !(close > 0)) continue;
+    rows.push({
+      date: new Date(Number(ts[i]) * 1000).toISOString().slice(0, 10),
+      close,
+      volume: finiteNumber(q && q.volume && q.volume[i]) || 0
+    });
+  }
+  if (!rows.length) throw new Error('seri kosong');
+  rows.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)); // pastikan urutan menaik (terlama → terbaru)
+  const last = rows[rows.length - 1];
+  const closeAt = back => (rows.length > back ? rows[rows.length - 1 - back].close : null);
+  const pct = (a, b) => (a != null && b != null && b > 0 ? Number((((a - b) / b) * 100).toFixed(4)) : null);
+  const volWindow = rows.slice(-21, -1).map(x => x.volume).filter(v => v > 0);
+  const avgVol = volWindow.length ? volWindow.reduce((s, v) => s + v, 0) / volWindow.length : null;
+  return {
+    symbol,
+    date: last.date,
+    closes: rows.map(x => x.close),
+    last: last.close,
+    change1d: pct(last.close, closeAt(1)),
+    change5d: pct(last.close, closeAt(5)),
+    // perubahan absolut (poin persen) — dipakai untuk yield/suku bunga
+    absChange1d: Number.isFinite(closeAt(1)) ? Number((last.close - closeAt(1)).toFixed(4)) : null,
+    volume: last.volume,
+    volumeRatio: avgVol && last.volume > 0 ? Number((last.volume / avgVol).toFixed(3)) : null
+  };
+}
+
+/** z-score nilai terakhir terhadap `window` titik terakhir.
+ *  Relatif terhadap seri data sendiri — bukan ambang opini. */
+export function zScore(series, window = 20) {
+  const s = (Array.isArray(series) ? series : []).filter(v => Number.isFinite(v)).slice(-window);
+  if (s.length < 5) return null;
+  const mean = s.reduce((a, b) => a + b, 0) / s.length;
+  const sd = Math.sqrt(s.reduce((a, b) => a + (b - mean) ** 2, 0) / s.length);
+  if (!(sd > 0)) return 0;
+  return Number(((s[s.length - 1] - mean) / sd).toFixed(3));
+}
+
+/** CSV kurva yield riil harian US Treasury (baris terbaru di atas). */
+export function parseTreasuryYieldCsv(csv) {
+  const lines = String(csv || '').split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) return null;
+  const head = lines[0].split(',').map(c => c.replace(/^"|"$/g, '').trim());
+  const col = head.findIndex(h => /^10\s*YR$/i.test(h));
+  if (col < 0) return null;
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cells = lines[i].split(',');
+    const m = (cells[0] || '').match(/^\s*"?(\d{2})\/(\d{2})\/(\d{4})/);
+    const value = finiteNumber((cells[col] || '').replace(/"/g, '').trim());
+    if (!m || value == null) continue;
+    rows.push({ date: `${m[3]}-${m[1]}-${m[2]}`, value });
+  }
+  if (!rows.length) return null;
+  const latest = rows[0];
+  const prev = rows[1] || null;
+  return {
+    value: latest.value,
+    date: latest.date,
+    change1d: prev ? Number((latest.value - prev.value).toFixed(3)) : null,
+    // urut naik (tertua -> terbaru) agar zScore membaca tren dengan benar
+    series: rows.map(r => r.value).reverse().slice(-60)
+  };
+}
+
+export async function fetchTreasuryRealYield({ fetchImpl = fetch, now = Date.now(), timeoutMs = 15000 } = {}) {
+  const year = new Date(now).getUTCFullYear();
+  const url = `https://home.treasury.gov/resource-center/data-chart-center/interest-rates/daily-treasury-rates.csv/${year}/all?type=daily_treasury_real_yield_curve&field_tdr_date_value=${year}&page&_format=csv`;
+  const r = await fetchImpl(url, { headers: YAHOO_HEADERS, signal: AbortSignal.timeout(timeoutMs) });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return parseTreasuryYieldCsv(await r.text());
+}
+
+/** Kejutan inflasi terbaru (Actual - Forecast) dari kalender rilis.
+ *  surprise > 0 = data di atas perkiraan = tekanan hawkish. */
+export function inflationFromEvents(events, now = Date.now()) {
+  const out = { cpi: null, pce: null, latest: null };
+  for (const raw of Array.isArray(events) ? events : []) {
+    const title = String((raw && (raw.Event || raw.event)) || '');
+    // Hanya rilis AS: kebijakan Fed hanya dipengaruhi CPI/PCE Amerika.
+    const country = String((raw && (raw.Country || raw.country)) || '').trim();
+    if (country && !/united states|^usa$|^usd$/i.test(country)) continue;
+    const key = /\bpce\b/i.test(title) ? 'pce'
+      : /\bcpi\b|\binflation rate\b/i.test(title) ? 'cpi' : null;
+    if (!key) continue;
+    if (Number(raw && (raw.Importance || raw.importance)) < 2) continue;
+    const t = Date.parse(raw && (raw.Date || raw.date));
+    if (!Number.isFinite(t) || t > now) continue;
+    const actual = firstNumber(raw && (raw.Actual || raw.actual));
+    const forecast = firstNumber(raw && (raw.Forecast || raw.forecast));
+    if (actual == null || forecast == null) continue;
+    const rec = {
+      event: title,
+      date: new Date(t).toISOString(),
+      actual, forecast,
+      surprise: Number((actual - forecast).toFixed(4))
+    };
+    if (!out[key] || t > Date.parse(out[key].date)) out[key] = rec;
+  }
+  out.latest = [out.cpi, out.pce].filter(Boolean)
+    .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))[0] || null;
+  return out;
+}
+
+/** Unit beredar IAU (iShares Gold Trust) dari halaman resmi iShares.
+ *  Delta antar-hari = net creation/redemption = aliran ETF emas riil. */
+export async function fetchIauSharesOutstanding({ fetchImpl = fetch, timeoutMs = 25000 } = {}) {
+  const url = 'https://www.ishares.com/us/products/239726/ishares-gold-trust';
+  const r = await fetchImpl(url, { headers: YAHOO_HEADERS, signal: AbortSignal.timeout(timeoutMs) });
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  const html = (await r.text()).replace(/&quot;/g, '"');
+  const m = html.match(/"label"\s*:\s*"Shares Outstanding"\s*,\s*"formattedValue"\s*:\s*"([0-9,]+)"[\s\S]{0,240}?"formattedAsOfDate"\s*:\s*"([^"]+)"/);
+  if (!m) return null;
+  const shares = Number(m[1].replace(/,/g, ''));
+  if (!Number.isFinite(shares) || !(shares > 0)) return null;
+  return { shares, asOf: m[2], source: 'iShares Gold Trust (IAU)' };
+}
+
+/** Faktor 4: aliran ETF emas + (bila tersedia) permintaan resmi/bank sentral. */
+async function fetchGoldFlows({ fetchImpl, prev, now }) {
+  const [gld, iau, spot, sharesOut] = await Promise.all([
+    fetchYahooDaily('GLD', { fetchImpl }).catch(() => null),
+    fetchYahooDaily('IAU', { fetchImpl }).catch(() => null),
+    fetchYahooDaily('GC=F', { fetchImpl }).catch(() => null),
+    fetchIauSharesOutstanding({ fetchImpl }).catch(() => null)
+  ]);
+  if (!gld && !iau && !spot && !sharesOut) return null;
+
+  const avg = vals => {
+    const v = vals.filter(x => Number.isFinite(x));
+    return v.length ? Number((v.reduce((a, b) => a + b, 0) / v.length).toFixed(4)) : null;
+  };
+  const etfChange1d = avg([gld && gld.change1d, iau && iau.change1d]);
+  const etfChange5d = avg([gld && gld.change5d, iau && iau.change5d]);
+  const spotChange5d = spot && Number.isFinite(spot.change5d) ? spot.change5d : null;
+  const basis5d = etfChange5d != null && spotChange5d != null
+    ? Number((etfChange5d - spotChange5d).toFixed(4)) : null;
+  const volumeRatio = avg([gld && gld.volumeRatio, iau && iau.volumeRatio]);
+
+  // Delta unit beredar: hanya bila tanggal as-of benar-benar berganti,
+  // supaya run 15-menit yang sama tidak melaporkan aliran palsu.
+  const prevShares = prev && prev.flows && prev.flows.shares;
+  let sharesChange = null, flowPct = null, flowScore = null;
+  if (sharesOut && prevShares && prevShares.asOf !== sharesOut.asOf
+      && Number.isFinite(prevShares.shares) && prevShares.shares > 0) {
+    sharesChange = sharesOut.shares - prevShares.shares;
+    flowPct = Number(((sharesChange / prevShares.shares) * 100).toFixed(4));
+    flowScore = clampNum(flowPct * 150, -100, 100);
+  }
+
+  return {
+    etfChange1d, etfChange5d, spotChange5d, basis5d, volumeRatio,
+    sharesOutstanding: sharesOut ? sharesOut.shares : null,
+    sharesAsOf: sharesOut ? sharesOut.asOf : null,
+    sharesChange, flowPct, flowScore,
+    // Feed cadangan bank sentral tidak punya endpoint publik tanpa API key;
+    // bila tidak tersedia, kartu memakai komponen ETF dan menyatakan hal itu.
+    centralBank: (prev && prev.flows && prev.flows.centralBank) || null,
+    source: 'Yahoo GLD/IAU/GC=F · iShares IAU'
+  };
+}
+
+async function fetchGoldDrivers({ fetchImpl = fetch, events = null, prev = null, now = Date.now() } = {}) {
+  const [real, nom, dxy, fed, bill] = await Promise.all([
+    fetchTreasuryRealYield({ fetchImpl, now }).catch(() => null),
+    fetchYahooDaily('^TNX', { fetchImpl }).catch(() => null),
+    fetchYahooDaily('DX-Y.NYB', { fetchImpl }).catch(() => null),
+    fetchYahooDaily('ZQ=F', { fetchImpl }).catch(() => null),
+    fetchYahooDaily('^IRX', { fetchImpl }).catch(() => null)
+  ]);
+  const [inflation, flows] = await Promise.all([
+    Promise.resolve(inflationFromEvents(events, now)),
+    fetchGoldFlows({ fetchImpl, prev, now })
+  ]);
+
+  const yieldDriver = real || nom ? {
+    tenYr: nom ? nom.last : null,
+    tenYrChange1d: nom && Number.isFinite(nom.change1d) ? nom.change1d : null,
+    zNominal: nom ? zScore(nom.closes) : null,
+    realTenYr: real ? real.value : null,
+    realChange1d: real ? real.change1d : null,
+    zReal: real ? zScore(real.series) : null,
+    date: real ? real.date : (nom ? nom.date : null),
+    source: 'US Treasury (yield riil) · Yahoo ^TNX (nominal)'
+  } : null;
+
+  const dxyDriver = dxy ? {
+    price: dxy.last,
+    change1d: dxy.change1d,
+    change5d: dxy.change5d,
+    z: zScore(dxy.closes),
+    date: dxy.date,
+    source: 'Yahoo DX-Y.NYB'
+  } : null;
+
+  const fedDriver = fed || bill || inflation.latest ? {
+    impliedRate: fed ? Number((100 - fed.last).toFixed(3)) : (bill ? bill.last : null),
+    change1d: bill ? bill.absChange1d : null,
+    z: bill ? zScore(bill.closes) : null,
+    inflation,
+    date: fed ? fed.date : (bill ? bill.date : (inflation.latest ? inflation.latest.date.slice(0, 10) : null)),
+    source: 'Yahoo ZQ=F (Fed funds futures) · Yahoo ^IRX (T-bill) · kalender CPI/PCE'
+  } : null;
+
+  const drivers = {
+    yield: yieldDriver,
+    dxy: dxyDriver,
+    fed: fedDriver,
+    flows
+  };
+  if (!yieldDriver && !dxyDriver && !fedDriver && !flows) return null;
+  return drivers;
+}
+
+// Bobot: keempat faktor memang dominan menggerakkan XAU/USD harian, jadi
+// bobotnya dibuat berdekatan (yield sedikit lebih berat karena paling langsung).
+const GOLD_DRIVER_WEIGHTS = { yield: 0.30, dxy: 0.25, fed: 0.25, flows: 0.20 };
+
+/** Skor per faktor [-100..+100], + = mendukung emas naik. Murni dari data. */
+export function scoreGoldDrivers(drivers) {
+  const d = drivers || {};
+  const parts = {};
+
+  // 1) Yield naik (di atas rata-rata 20 hari) -> bearish emas.
+  const yz = [d.yield && d.yield.zNominal, d.yield && d.yield.zReal].filter(v => Number.isFinite(v));
+  parts.yield = yz.length ? Math.round(clampNum(-(yz.reduce((a, b) => a + b, 0) / yz.length) * 34, -100, 100)) : null;
+
+  // 2) DXY menguat -> bearish emas.
+  parts.dxy = d.dxy && Number.isFinite(d.dxy.z)
+    ? Math.round(clampNum(-d.dxy.z * 34, -100, 100)) : null;
+
+  // 3) Suku bunga implied naik / inflasi surprise positif -> hawkish -> bearish emas.
+  const fedLegs = [];
+  if (d.fed && Number.isFinite(d.fed.z)) fedLegs.push(clampNum(-d.fed.z * 34, -100, 100));
+  const inf = d.fed && d.fed.inflation && Number.isFinite(d.fed.inflation.surprise)
+    ? d.fed.inflation.surprise : null;
+  if (inf != null) {
+    const scale = Math.max(Math.abs((d.fed.inflation.forecast) || 0), 0.1);
+    fedLegs.push(clampNum(-(inf / scale) * 45, -100, 100));
+  }
+  parts.fed = fedLegs.length ? Math.round(clampNum(fedLegs.reduce((a, b) => a + b, 0) / fedLegs.length, -100, 100)) : null;
+
+  // 4) Net creation ETF (+), basis ETF vs spot (+), volume di atas rata-rata (+).
+  const f = d.flows || {};
+  const flowLegs = [];
+  if (Number.isFinite(f.flowScore)) flowLegs.push(f.flowScore);
+  if (Number.isFinite(f.basis5d)) flowLegs.push(clampNum(f.basis5d * 60, -100, 100));
+  if (Number.isFinite(f.volumeRatio)) {
+    // Volume hanya mengkonfirmasi ARAH: volume besar saat harga turun = tekanan jual.
+    const dir = Number.isFinite(f.etfChange1d) ? Math.sign(f.etfChange1d)
+      : (Number.isFinite(f.basis5d) ? Math.sign(f.basis5d) : 0);
+    flowLegs.push(clampNum(dir * (f.volumeRatio - 1) * 50, -100, 100));
+  }
+  parts.flows = flowLegs.length ? Math.round(clampNum(flowLegs.reduce((a, b) => a + b, 0) / flowLegs.length, -100, 100)) : null;
+
+  const present = Object.keys(GOLD_DRIVER_WEIGHTS).filter(k => parts[k] != null);
+  const totalW = present.reduce((s, k) => s + GOLD_DRIVER_WEIGHTS[k], 0);
+  const score = totalW > 0
+    ? Math.round(present.reduce((s, k) => s + parts[k] * GOLD_DRIVER_WEIGHTS[k], 0) / totalW)
+    : null;
+
+  return {
+    score,
+    label: goldDriverLabel(score),
+    parts,
+    weights: GOLD_DRIVER_WEIGHTS,
+    missing: Object.keys(GOLD_DRIVER_WEIGHTS).filter(k => parts[k] == null)
+  };
+}
+
+export function goldDriverLabel(score) {
+  if (!Number.isFinite(score)) return 'Belum ada data';
+  if (score >= 45) return 'Bullish Kuat';
+  if (score >= 15) return 'Bullish';
+  if (score > -15) return 'Netral';
+  if (score > -45) return 'Bearish';
+  return 'Bearish Kuat';
+}
+
+export async function fetchSentiment({ fetchImpl = fetch, events = null, now = Date.now(), write = true } = {}) {
+  const prev = await readJsonSafe(SENTIMENT_FILE);
+  const out = {
+    generatedAt: new Date(now).toISOString(),
+    cnn: null, crypto: null,
+    drivers: null, goldDrivers: null
+  };
+  const [cnn, crypto, drivers] = await Promise.all([
     (async () => {
       try {
-        const r = await fetch('https://production.dataviz.cnn.io/index/fearandgreed/graphdata', {
+        const r = await fetchImpl('https://production.dataviz.cnn.io/index/fearandgreed/graphdata', {
           headers: { 'user-agent': 'Mozilla/5.0', referer: 'https://edition.cnn.com/' },
           signal: AbortSignal.timeout(10000)
         });
@@ -1349,7 +1667,7 @@ async function fetchSentiment() {
         const fg = j && j.fear_and_greed;
         const score = fg ? Number(fg.score) : NaN;
         if (Number.isFinite(score)) {
-          out.cnn = {
+          return {
             score: Math.round(score),
             rating: fg.rating || '',
             previousClose: finiteNumber(fg.previous_close)
@@ -1359,7 +1677,7 @@ async function fetchSentiment() {
     })(),
     (async () => {
       try {
-        const r = await fetch('https://api.alternative.me/fng/?limit=1', {
+        const r = await fetchImpl('https://api.alternative.me/fng/?limit=1', {
           headers: { 'user-agent': 'Mozilla/5.0' },
           signal: AbortSignal.timeout(10000)
         });
@@ -1368,24 +1686,35 @@ async function fetchSentiment() {
         const d = j && j.data && j.data[0];
         const score = d ? Number(d.value) : NaN;
         if (Number.isFinite(score)) {
-          out.crypto = {
+          return {
             score: Math.round(score),
             rating: d.value_classification || ''
           };
         }
       } catch {}
-    })()
+    })(),
+    fetchGoldDrivers({ fetchImpl, events, prev, now }).catch(() => null)
   ]);
-  if (out.cnn || out.crypto) {
+  out.cnn = cnn || null;
+  out.crypto = crypto || null;
+  out.drivers = drivers || null;
+  out.goldDrivers = drivers ? scoreGoldDrivers(drivers) : null;
+
+  if (write && (out.cnn || out.crypto || out.drivers)) {
     await fs.writeFile(SENTIMENT_FILE, JSON.stringify(out, null, 2));
-    console.log('Sentimen Fear & Greed tersimpan:', out.cnn ? `CNN=${out.cnn.score}` : 'CNN=-', out.crypto ? `Crypto=${out.crypto.score}` : 'Crypto=-');
+    console.log('Sentimen Fear & Greed tersimpan:',
+      out.cnn ? `CNN=${out.cnn.score}` : 'CNN=-',
+      out.crypto ? `Crypto=${out.crypto.score}` : 'Crypto=-',
+      out.goldDrivers ? `Penggerak Emas=${out.goldDrivers.score} (${out.goldDrivers.label})` : 'Penggerak Emas=-');
   }
   return out;
 }
 
 export async function main() {
   const events = await fetchCalendar();
-  const [price, forexData, cryptoData, indices] = await Promise.all([fetchMarket(), fetchForex(), fetchCrypto(), fetchIndices(), fetchSentiment()]);
+  // fetchSentiment menerima `events` agar faktor inflasi (CPI/PCE) dibaca dari
+  // kalender rilis yang sama — satu sumber, tanpa feed tambahan.
+  const [price, forexData, cryptoData, indices] = await Promise.all([fetchMarket(), fetchForex(), fetchCrypto(), fetchIndices(), fetchSentiment({ events })]);
   const markets = await fetchMarkets({ price, forexData, cryptoData });
   const extraBars = await fetchReactionBars();
   const reaction = buildReactionPayload(events, markets, Date.now(), REACTION_HOLD_MS, extraBars);

@@ -3729,6 +3729,83 @@ async function loadSentiment() {
     scheduleRender();
 }
 
+// ═════════════════════════════════════════════════════════════════════════════
+// MODUL SENTIMEN PASAR — PENGGERAK EMAS (empat faktor dominan XAU/USD)
+// Setiap pembacaan berasal dari data yang dihitung oleh scripts/fetch-calendar.mjs
+// (data/sentiment.json -> SENTIMENT_CACHE). Semua skor = derivasi data, bukan opini.
+// ═════════════════════════════════════════════════════════════════════════════
+
+function goldDriverTone(score) {
+    const v = score == null ? 0 : Math.max(-100, Math.min(100, Number(score)));
+    return v >= 15 ? 'buy' : v <= -15 ? 'sell' : 'wait';
+}
+
+function goldDriverLabel(score) {
+    const v = score == null ? null : Number(score);
+    if (v == null) return 'Belum ada data';
+    if (v >= 45) return 'Bullish Kuat';
+    if (v >= 15) return 'Bullish';
+    if (v > -15) return 'Netral';
+    if (v > -45) return 'Bearish';
+    return 'Bearish Kuat';
+}
+
+function goldDriversHtml() {
+    const cache = typeof SENTIMENT_CACHE === 'object' && SENTIMENT_CACHE ? SENTIMENT_CACHE : null;
+    const g = cache && cache.goldDrivers ? cache.goldDrivers : null;
+    const drv = cache && cache.drivers ? cache.drivers : null;
+    const score = g ? Number(g.score) : null;
+    const label = g ? String(g.label) : 'Belum ada data';
+    const cls = goldDriverTone(score);
+
+    const barW = score == null ? 0 : Math.max(2, Math.min(100, Math.abs(score)));
+    const cards = [];
+
+    cards.push(`<div class="macro-card"><h5>Penggerak Emas · Skor Komposit (4 Faktor)</h5>
+        <div class="big ${cls}">${score == null ? '—' : (score >= 0 ? '+' : '') + score}<span style="font-size:11px;opacity:0.85;"> ${esc(label)}</span></div>
+        <div class="macro-bar"><i style="left:0;width:${barW}%"></i></div>
+        <div class="meta">${score == null
+            ? 'Menunggu data yield/DXY/Fed/ETF dari feed publik…'
+            : `Bobot: RealYield 30% · DXY 25% · Fed/Inflasi 25% · Bank Sentral &amp; ETF 20% (skor gabungan dari factor yang tersedia).`}</div>
+        <div class="meta">${drv && drv ? 'Feed: Treasury, Yahoo (^TNX/DXY/ZQ=F/^IRX/GLD/GC=F/IAU), iShares IAU.' : 'Feed: Treasury, Yahoo, iShares IAU.'}</div></div>`);
+
+    const y = drv && drv.yield ? drv.yield : null;
+    const yCls = goldDriverTone(y && y.zReal != null ? -y.zReal * 34 : (y && y.zNominal != null ? -y.zNominal * 34 : null));
+    cards.push(`<div class="macro-card"><h5>1 · Real Yield &amp; Treasury 10Y</h5>
+        <div class="big ${yCls}">${y ? `${esc(String(y.realTenYr ?? y.tenYr ?? '—'))}%` : '—'}</div>
+        <div class="macro-bar"><i style="left:0;width:${y ? Math.max(2, Math.min(100, Math.abs(-(y.zReal ?? y.zNominal ?? 0)) * 34)) : 0}%"></i></div>
+        <div class="meta">${y ? `Real ${esc(String(y.realTenYr ?? '—'))}% · Treasury 10Y ${esc(String(y.tenYr ?? '—'))}% · real z=${esc(String(y.zReal ?? '—'))}` : 'Menunggu feed Treasury/Yahoo…'}</div>
+        <div class="meta">${y && Number.isFinite(y.zReal) && y.zReal > 0 ? 'Real yield di atas tren 20 hari → tekanan jual emas.' : y && Number.isFinite(y.zReal) && y.zReal < 0 ? 'Real yield di bawah tren 20 hari → dukungan potensial emas.' : 'Real yield kapan pun: bacaan makro utamunya.'}</div></div>`);
+
+    const dx = drv && drv.dxy ? drv.dxy : null;
+    const dxCls = goldDriverTone(dx ? -dx.z : null);
+    cards.push(`<div class="macro-card"><h5>2 · DXY / USD</h5>
+        <div class="big ${dxCls}">${dx ? esc(String(dx.price ?? '—')) : '—'}</div>
+        <div class="macro-bar"><i style="left:0;width:${dx ? Math.max(2, Math.min(100, Math.abs(-dx.z || 0) * 34)) : 0}%"></i></div>
+        <div class="meta">${dx ? `DXY ${esc(String(dx.change1d ?? '—'))}% (1d) · ${esc(String(dx.change5d ?? '—'))}% (5d)` : 'Menunggu feed Yahoo…'}</div>
+        <div class="meta">${dx && Number.isFinite(dx.z) && dx.z > 0 ? 'Dollar menguat → tekanan jual emas / safe-haven bid.' : dx && Number.isFinite(dx.z) && dx.z < 0 ? 'Dollar melemah → dukungan bid emas.' : 'Dollar netral.'}</div></div>`);
+
+    const fed = drv && drv.fed ? drv.fed : null;
+    const fedCls = goldDriverTone(fed ? -fed.z : null);
+    const inf = fed ? fed.inflation : null;
+    cards.push(`<div class="macro-card"><h5>3 · Kebijakan Fed &amp; Inflasi (CPI/PCE)</h5>
+        <div class="big ${fedCls}">${fed ? esc(String(fed.impliedRate ?? '—')) + '%' : '—'}</div>
+        <div class="macro-bar"><i style="left:0;width:${fed ? Math.max(2, Math.min(100, Math.abs(-fed.z || 0) * 34)) : 0}%"></i></div>
+        <div class="meta">${fed ? `Implied rate Fed ${esc(String(fed.impliedRate ?? '—'))}%` : 'Menunggu data Fed…'}</div>
+        <div class="meta">${inf && inf.latest ? `Inflasi: ${esc(inf.latest.event)} Actual ${inf.latest.actual} vs Forecast ${inf.latest.forecast} (surprise ${inf.latest.surprise})` : 'Menunggu rilis CPI/PCE…'}</div>
+        <div class="meta">${fed && Number.isFinite(fed.z) && fed.z > 0 ? 'Suku bunga &amp; data bernasib buruk → tekanan emas jangka pendek.' : fed && Number.isFinite(fed.z) && fed.z < 0 ? 'Suku bunga riil mendukung emas.' : 'Kebijakan/inflasi netral.'}</div></div>`);
+
+    const fl = drv && drv.flows ? drv.flows : null;
+    const flCls = goldDriverTone(fl ? (Number.isFinite(fl.flowScore) ? fl.flowScore : (Number.isFinite(fl.basis5d) ? fl.basis5d * 60 : (Number.isFinite(fl.volumeRatio) ? (fl.volumeRatio - 1) * 50 : null))) : null);
+    cards.push(`<div class="macro-card"><h5>4 · Bank Sentral &amp; Aliran ETF Emas</h5>
+        <div class="big ${flCls}">${fl ? esc(String(fl.etfChange5d ?? fl.basis5d ?? fl.etfChange1d ?? '—')) + '%' : '—'}</div>
+        <div class="macro-bar"><i style="left:0;width:${fl ? Math.max(2, Math.min(100, Math.abs(Number.isFinite(fl.flowScore) ? fl.flowScore : (Number.isFinite(fl.basis5d) ? fl.basis5d * 60 : 0)) || 0)) : 0}%"></i></div>
+        <div class="meta">${fl ? `ETF chg 5d ${esc(String(fl.etfChange5d ?? '—'))}% · basis ETF-vs-spot ${esc(String(fl.basis5d ?? '—'))}% · volume/avg ${esc(String(fl.volumeRatio ?? '—'))}` : 'Menunggu feed Yahoo/iShares…'}</div>
+        <div class="meta">${fl && Number.isFinite(fl.sharesOutstanding) ? `ETF IAU ${esc(String(fl.sharesOutstanding))} unit (as of ${esc(String(fl.sharesAsOf ?? ''))})` : 'Unit ETF beredar &amp; perubahan aliran.'}</div></div>`);
+
+    return cards.join('');
+}
+
 function macroPanelHtml() {
     const bias = usdBias();
     const cal = calibrationInfo();
@@ -3785,7 +3862,7 @@ function macroPanelHtml() {
             <div class="meta">${cal.base ? `Base pra-rilis ${esc(cal.event.Event)}: $${Number(cal.base).toFixed(2)}` : 'Snapshot pra-rilis belum tersedia untuk katalis aktif.'}${cal.driftPct != null ? ` → selisih ${cal.driftPct >= 0 ? '+' : ''}${cal.driftPct.toFixed(2)}% (basis momentum pasca-rilis).` : ''}</div></div>`
         : `<div class="macro-card"><h5>Kalibrasi harga pra-rilis vs live</h5><div class="big wait">—</div><div class="meta">Tidak ada katalis USD aktif.</div></div>`;
 
-    return riskCard + usdCard + fgCard + cfgCard + spikeCard + calCard;
+    return riskCard + usdCard + fgCard + cfgCard + spikeCard + calCard + goldDriversHtml();
 }
 
 function renderMacroBoard() {

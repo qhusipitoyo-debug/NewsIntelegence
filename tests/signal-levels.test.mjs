@@ -24,6 +24,24 @@ function extractFunction(name) {
   throw new Error(`Could not extract ${name}()`);
 }
 
+// computeSignalLevels membaca RR/TP1 dari konstanta konfigurasi tingkat modul.
+// Tanpa konstanta ini di lingkungan ekstrak, referensinya melemping ReferenceError.
+function extractObjectConst(name) {
+  const start = source.indexOf(`const ${name} = `);
+  assert.notEqual(start, -1, `${name} must stay declared in index.html`);
+  const open = source.indexOf('{', start);
+  let depth = 0;
+  for (let i = open; i < source.length; i++) {
+    if (source[i] === '{') depth++;
+    else if (source[i] === '}') {
+      depth--;
+      if (depth === 0) return `${source.slice(start, i + 1)};`;
+    }
+  }
+  throw new Error(`Could not extract ${name}`);
+}
+
+const winrateConst = extractObjectConst('WINRATE_PARAMS');
 const clampNumFn = extractFunction('clampNum');
 const marketsFreshFn = extractFunction('marketsFresh');
 const barsOfFn = extractFunction('barsOf');
@@ -40,6 +58,7 @@ function buildEngine(brokerPayload, markets) {
   const body = `
     const MARKETS = ${JSON.stringify(markets)};
     const LIVE_BARS = {};
+    ${winrateConst}
     ${spreadConst}
     ${clampNumFn}
     ${marketsFreshFn}
@@ -84,12 +103,13 @@ const wildMarkets = { generatedAt: new Date(now).toISOString(), pairs: { 'XAU/US
 const engineWild = buildEngine(null, wildMarkets);
 const goldWild = engineWild('gold', 'XAU/USD', 'long', 4000, event, { movePct: null });
 assert.equal(goldWild.entrySource, 'estimated');
-// ATR $40 dari harga 4000 = 1.0% -> lantai 1.6% + spread 0.0075% -> ~1.61%, di atas pola tetap 0.715%.
-assert.ok(goldWild.riskPct >= 1.6 && goldWild.riskPct <= 1.62, `ATR floor must widen gold SL, got ${goldWild.riskPct}`);
+// ATR $40 dari harga 4000 = 1.0% -> lantai 2.0x ATR = 2.0% + spread 0.0075% -> ~2.01%,
+// di atas pola tetap 0.715%. (Lantai naik dari 1.6x ke 2.0x pada "perketat filter winrate".)
+assert.ok(goldWild.riskPct >= 2 && goldWild.riskPct <= 2.02, `ATR floor must widen gold SL, got ${goldWild.riskPct}`);
 const goldEntry = 4000 + 0.15; // setengah spread emas 0.0075% dari 4000
 assert.ok(Math.abs(goldWild.entry - goldEntry) < 1e-9);
-assert.ok(Math.abs(goldWild.sl - 3935.8476) < 1e-3);
-assert.ok(Math.abs(goldWild.tp - 4128.7548) < 1e-3);
+assert.ok(Math.abs(goldWild.sl - 3919.847) < 1e-3);
+assert.ok(Math.abs(goldWild.tp - 4160.756) < 1e-3);
 
 // 4) markets.json basi (>2 jam) -> ATR diabaikan, perilaku tetap seperti dulu.
 const oldMarkets = { generatedAt: new Date(now - 3 * 60 * 60 * 1000).toISOString(), pairs: { 'XAU/USD': { bars: wildBars } } };
@@ -103,8 +123,9 @@ for (let i = 0; i < 40; i++) fxBars.push({ k: i, o: 1.1, h: 1.1015, l: 1.0985, c
 const fxMarkets = { generatedAt: new Date(now).toISOString(), pairs: { 'EUR/USD': { bars: fxBars } } };
 const engineFx = buildEngine(null, fxMarkets);
 const fxBuy = engineFx('forex', 'EUR/USD', 'long', 1.1, event, { movePct: 0 });
-// atrPips 30 -> 30*1.2 + 1 pip spread * 1.5 = 37.5 (di antara clamp 25..45).
-assert.equal(fxBuy.stopPips, 37.5);
+// atrPips 30 -> 30*1.5 + 1 pip spread * 2.0 = 47 (di antara clamp 25..55).
+// Koefisien ATR naik dari 1.2/1.5 ke 1.5/2.0 pada "perketat filter winrate".
+assert.equal(fxBuy.stopPips, 47);
 assert.ok(Math.abs((fxBuy.entry - fxBuy.sl) - fxBuy.stopPips * 0.0001) < 1e-9);
 assert.ok(Math.abs((fxBuy.tp - fxBuy.entry) - 2 * (fxBuy.entry - fxBuy.sl)) < 1e-9, 'TP stays 1:2 vs SL');
 

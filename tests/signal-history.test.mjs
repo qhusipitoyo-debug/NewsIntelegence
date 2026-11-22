@@ -55,6 +55,11 @@ function createSandbox() {
   sandbox.globalThis = sandbox;
   const ctx = vm.createContext(sandbox);
   vm.runInContext(match[1], ctx);
+  // Halaman memuat <script src="signal-engine.js"> terpisah. Tanpa file ini
+  // engineOf() null -> signalDirectionCore tidak pernah menghasilkan
+  // basis 'engine', sehingga backtest kalender selalu 0 sampel.
+  // (require tidak ada di vm, jadi blok --selftest di bawah tidak ikut jalan.)
+  vm.runInContext(readFileSync(join(ROOT, 'signal-engine.js'), 'utf8'), ctx);
   return { ctx, elements, store };
 }
 
@@ -129,22 +134,33 @@ test('summarizeTradeSet calculates PROFIT, LOSS, Winrate, Profit Factor, and exc
 test('evaluateSignalHistory & renderSignalHistory produce multi-day backtest & live tracker stats in UI', () => {
   const { ctx, elements } = createSandbox();
 
-  // Construct 500 x 5m bars for XAU/USD with clear macro regime + sustained rally hitting TP2
+  // 420 bar 5m XAU/USD: sesi tenang (ATR5m ~2.05) -> rilis 11:36Z -> impuls naik
+  // ~0.75% (>= 1.5x ATR5m) -> lanjut rally hingga TP2. Rilis sengaja TIDAK
+  // selaras 5m supaya bar dasar reaksi = bar pra-rilis terakhir (11:35Z).
   const baseK = Math.floor(Date.parse('2026-11-08T00:00:00Z') / 60000);
   const goldBars = [];
-  let px = 4000;
-  for (let i = 0; i < 420; i++) {
-    const step = i < 70 ? 0.15 : (i < 220 ? 0.95 : -0.65);
+  let px = 4100;
+  for (let i = 0; i <= 138; i++) {
     const o = px;
-    const c = px + step;
-    const h = Math.max(o, c) + 0.6;
-    const l = Math.min(o, c) - 0.5;
-    goldBars.push({ k: baseK + i * 5, o, h, l, c });
+    const c = px + 0.05;
+    goldBars.push({ k: baseK + i * 5, o, h: c + 1, l: o - 1, c });
+    px = c;
+  }
+  goldBars.push({ k: baseK + 695, o: 4106.95, h: 4108, l: 4105.95, c: 4107 }); // bar pra-rilis
+  goldBars.push({ k: baseK + 700, o: 4107, h: 4125, l: 4107, c: 4123 });       // impuls +16
+  goldBars.push({ k: baseK + 705, o: 4123, h: 4139, l: 4122, c: 4137 });       // impuls +14
+  goldBars.push({ k: baseK + 710, o: 4137, h: 4141, l: 4134, c: 4138 });       // puncak impuls
+  goldBars.push({ k: baseK + 715, o: 4138, h: 4147, l: 4137, c: 4147 });       // bar entry (+19 mnt)
+  px = 4147;
+  for (let i = 144; i < 420; i++) {
+    const o = px;
+    const c = i <= 151 ? px + 7 : (i <= 240 ? px - 0.4 : px - 0.25);
+    goldBars.push({ k: baseK + i * 5, o, h: Math.max(o, c) + 1.5, l: Math.min(o, c) - 1.5, c });
     px = c;
   }
 
   const nowMs = (baseK + 420 * 5) * 60000;
-  const evDate = new Date((baseK + 55 * 5) * 60000).toISOString();
+  const evDate = new Date((baseK + 696) * 60000).toISOString(); // 11:36Z, di antara bar 11:35 & 11:40
 
   vm.runInContext(`
     events = [normalize({ Date: ${JSON.stringify(evDate)}, Country: 'United States', Event: 'Unemployment Claims', Importance: 3, Actual: '235K', Forecast: '195K', Previous: '194K' })];

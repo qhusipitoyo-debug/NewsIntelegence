@@ -251,8 +251,10 @@ test('End-to-end watch boards and HTML render cleanly on real data/* fixtures', 
   const { ctx, elements, loadRealFixtures } = createDashboardSandbox();
   loadRealFixtures();
 
-  // Keep markets fresh relative to simulated timestamp and make intraday trends explicit
-  const now = Date.parse('2026-11-11T05:38:00Z');
+  // Keep markets fresh relative to simulated timestamp and make intraday trends explicit.
+  // Pilih jam di dalam sesi likuransi UTC (WINRATE_PARAMS.activeUtcHours = 07–21):
+  // 05:38Z berada di luar sesi sehingga semua papan sengaja menahan entry (WAIT).
+  const now = Date.parse('2026-11-11T13:38:00Z');
   vm.runInContext(`
     MARKETS.generatedAt = new Date(${now}).toISOString();
     INDEX_CHANGE = { US500: -0.85 };
@@ -298,7 +300,9 @@ test('End-to-end watch boards and HTML render cleanly on real data/* fixtures', 
 
   vm.runInContext(`renderTechBoard(); renderMacroBoard();`, ctx);
   assert.ok(elements.get('#techGrid').innerHTML.includes('tech-card'), 'renderTechBoard should render cards');
-  assert.ok(elements.get('#macroBody').innerHTML.includes('macro-card'), 'renderMacroBoard should render 6 macro cards');
+  // 6 kartu lama (risiko/DXY/F&G-crypto/F&G-cnn/spike/kalibrasi) + 5 kartu penggerak emas.
+  assert.ok(elements.get('#macroBody').innerHTML.includes('macro-card'), 'renderMacroBoard should render cards');
+  assert.equal((elements.get('#macroBody').innerHTML.match(/macro-card/g) || []).length, 11, 'renderMacroBoard should render 11 macro cards (6 baseline + 5 gold drivers)');
 });
 
 test('macro risk card and DXY card must share one dollar reading (no contradictory USD narrative)', () => {
