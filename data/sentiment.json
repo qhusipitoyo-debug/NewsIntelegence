@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T03:27:47.015Z",
+  "generatedAt": "2026-11-23T13:27:38.492Z",
   "cnn": null,
   "crypto": {
     "score": 11,
@@ -17,15 +17,15 @@
       "source": "US Treasury (yield riil) · Yahoo ^TNX (nominal)"
     },
     "dxy": {
-      "price": 103.75299835205078,
-      "change1d": -0.0549,
-      "change5d": 0.196,
-      "z": 1.286,
+      "price": 104.09600067138672,
+      "change1d": 0.2755,
+      "change5d": 0.5273,
+      "z": 1.62,
       "date": "2026-11-23",
       "source": "Yahoo DX-Y.NYB"
     },
     "fed": {
-      "impliedRate": 4.13,
+      "impliedRate": 4.145,
       "change1d": -0.025,
       "z": 0.955,
       "inflation": {
@@ -57,8 +57,8 @@
     "flows": {
       "etfChange1d": -3.6481,
       "etfChange5d": -9.1453,
-      "spotChange5d": -6.5404,
-      "basis5d": -2.6049,
+      "spotChange5d": -5.9979,
+      "basis5d": -3.1474,
       "volumeRatio": 2.392,
       "sharesOutstanding": 1160150000,
       "sharesAsOf": "Nov 20, 2026",
@@ -70,11 +70,11 @@
     }
   },
   "goldDrivers": {
-    "score": -34,
+    "score": -36,
     "label": "Bearish",
     "parts": {
       "yield": 8,
-      "dxy": -44,
+      "dxy": -55,
       "fed": -32,
       "flows": -85
     },
