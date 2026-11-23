@@ -1,0 +1,126 @@
+{
+  "generatedAt": "2026-11-16T15:31:46Z",
+  "source": "MT5 Linux Bottles Bridge",
+  "broker": {
+    "id": "FBS",
+    "name": "FBS (DEMO)",
+    "server": "FBS-Demo",
+    "accountType": "demo",
+    "login": "105075645",
+    "balance": 16042.71,
+    "equity": 16042.71,
+    "marginFree": 16042.71,
+    "tradeAllowed": true,
+    "tradeExpert": true
+  },
+  "quotes": {
+    "EUR/USD": {
+      "symbol": "EURUSD",
+      "bid": 1.10044,
+      "ask": 1.10054,
+      "mid": 1.10049,
+      "spread": 0.0001,
+      "spreadPips": 1.0,
+      "digits": 5,
+      "rawPoints": 10.0
+    },
+    "USD/JPY": {
+      "symbol": "USDJPY",
+      "bid": 159.529,
+      "ask": 159.538,
+      "mid": 159.534,
+      "spread": 0.009,
+      "spreadPips": 0.9,
+      "digits": 3,
+      "rawPoints": 9.0
+    },
+    "GBP/USD": {
+      "symbol": "GBPUSD",
+      "bid": 1.31879,
+      "ask": 1.3189,
+      "mid": 1.31885,
+      "spread": 0.00011,
+      "spreadPips": 1.1,
+      "digits": 5,
+      "rawPoints": 11.0
+    },
+    "USD/CHF": {
+      "symbol": "USDCHF",
+      "bid": 0.83895,
+      "ask": 0.83905,
+      "mid": 0.839,
+      "spread": 0.0001,
+      "spreadPips": 1.0,
+      "digits": 5,
+      "rawPoints": 10.0
+    },
+    "AUD/USD": {
+      "symbol": "AUDUSD",
+      "bid": 0.67438,
+      "ask": 0.67449,
+      "mid": 0.67444,
+      "spread": 0.00011,
+      "spreadPips": 1.1,
+      "digits": 5,
+      "rawPoints": 11.0
+    },
+    "USD/CAD": {
+      "symbol": "USDCAD",
+      "bid": 1.43036,
+      "ask": 1.43047,
+      "mid": 1.43041,
+      "spread": 0.00011,
+      "spreadPips": 1.1,
+      "digits": 5,
+      "rawPoints": 11.0
+    },
+    "NZD/USD": {
+      "symbol": "NZDUSD",
+      "bid": 0.55074,
+      "ask": 0.55086,
+      "mid": 0.5508,
+      "spread": 0.00012,
+      "spreadPips": 1.2,
+      "digits": 5,
+      "rawPoints": 12.0
+    },
+    "XAU/USD": {
+      "symbol": "XAUUSD",
+      "bid": 3866.28,
+      "ask": 3866.51,
+      "mid": 3866.4,
+      "spread": 0.23,
+      "spreadPips": 23.0,
+      "digits": 2,
+      "rawPoints": 23.0
+    },
+    "BTC/USD": {
+      "symbol": "BTCUSD",
+      "bid": 64320.1,
+      "ask": 64339.75,
+      "mid": 64329.93,
+      "spread": 19.65,
+      "spreadPips": 196500.0,
+      "digits": 2,
+      "rawPoints": 1965.0
+    },
+    "ETH/USD": {
+      "symbol": "ETHUSD",
+      "bid": 1811.31,
+      "ask": 1813.24,
+      "mid": 1812.28,
+      "spread": 1.93,
+      "spreadPips": 19300.0,
+      "digits": 2,
+      "rawPoints": 193.0
+    }
+  },
+  "providers": {
+    "FBS": {
+      "name": "FBS DEMO",
+      "status": "ok",
+      "pairs": 10
+    }
+  },
+  "staleAfterSec": 60
+}

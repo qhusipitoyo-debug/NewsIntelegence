@@ -1,0 +1,89 @@
+{
+  "generatedAt": "2026-11-22T22:57:03.182Z",
+  "cnn": null,
+  "crypto": {
+    "score": 11,
+    "rating": "Extreme Fear"
+  },
+  "drivers": {
+    "yield": {
+      "tenYr": 4.9120001792907715,
+      "tenYrChange1d": -2.7712,
+      "zNominal": -0.814,
+      "realTenYr": 2.77,
+      "realChange1d": -0.11,
+      "zReal": 0.368,
+      "date": "2026-11-20",
+      "source": "US Treasury (yield riil) · Yahoo ^TNX (nominal)"
+    },
+    "dxy": {
+      "price": 103.83999633789062,
+      "change1d": 0.0289,
+      "change5d": 0.2801,
+      "z": 1.373,
+      "date": "2026-11-22",
+      "source": "Yahoo DX-Y.NYB"
+    },
+    "fed": {
+      "impliedRate": 4.12,
+      "change1d": -0.025,
+      "z": 0.955,
+      "inflation": {
+        "cpi": {
+          "event": "Core CPI m/m",
+          "date": "2026-11-10T13:30:00.000Z",
+          "actual": 0.3,
+          "forecast": 0.2,
+          "surprise": 0.1
+        },
+        "pce": {
+          "event": "PCE Price Index MoM",
+          "date": "2026-10-29T12:30:00.000Z",
+          "actual": 0.5,
+          "forecast": 0.5,
+          "surprise": 0
+        },
+        "latest": {
+          "event": "Core CPI m/m",
+          "date": "2026-11-10T13:30:00.000Z",
+          "actual": 0.3,
+          "forecast": 0.2,
+          "surprise": 0.1
+        }
+      },
+      "date": "2026-11-20",
+      "source": "Yahoo ZQ=F (Fed funds futures) · Yahoo ^IRX (T-bill) · kalender CPI/PCE"
+    },
+    "flows": {
+      "etfChange1d": -3.6481,
+      "etfChange5d": -9.1453,
+      "spotChange5d": -9.5438,
+      "basis5d": 0.3985,
+      "volumeRatio": 2.392,
+      "sharesOutstanding": 1160150000,
+      "sharesAsOf": "Nov 20, 2026",
+      "sharesChange": null,
+      "flowPct": null,
+      "flowScore": null,
+      "centralBank": null,
+      "source": "Yahoo GLD/IAU/GC=F · iShares IAU"
+    }
+  },
+  "goldDrivers": {
+    "score": -22,
+    "label": "Bearish",
+    "parts": {
+      "yield": 8,
+      "dxy": -47,
+      "fed": -32,
+      "flows": -23
+    },
+    "weights": {
+      "yield": 0.3,
+      "dxy": 0.25,
+      "fed": 0.25,
+      "flows": 0.2
+    },
+    "missing": []
+  }
+}

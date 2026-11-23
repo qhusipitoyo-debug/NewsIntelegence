@@ -1,0 +1,143 @@
+{
+  "generatedAt": "2026-11-22T22:57:04.782Z",
+  "events": {
+    "2026-11-22T21:45:00.000Z|Retail Sales q/q": {
+      "releasedAt": "2026-11-22T21:45:00.000Z",
+      "pairs": {
+        "BTC/USD": {
+          "baseClose": 60955,
+          "lastClose": 60701.62109375,
+          "movePct": -0.416,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": -0.047,
+          "faded": false
+        },
+        "ETH/USD": {
+          "baseClose": 1722.469970703125,
+          "lastClose": 1710.489990234375,
+          "movePct": -0.696,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": -0.1,
+          "faded": false
+        }
+      }
+    },
+    "2026-11-22T21:45:00.000Z|Retail Sales YoY": {
+      "releasedAt": "2026-11-22T21:45:00.000Z",
+      "pairs": {
+        "BTC/USD": {
+          "baseClose": 60955,
+          "lastClose": 60701.62109375,
+          "movePct": -0.416,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": -0.047,
+          "faded": false
+        },
+        "ETH/USD": {
+          "baseClose": 1722.469970703125,
+          "lastClose": 1710.489990234375,
+          "movePct": -0.696,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": -0.1,
+          "faded": false
+        }
+      }
+    },
+    "2026-11-22T16:45:00-05:00|Core Retail Sales q/q": {
+      "releasedAt": "2026-11-22T21:45:00.000Z",
+      "pairs": {
+        "BTC/USD": {
+          "baseClose": 60955,
+          "lastClose": 60701.62109375,
+          "movePct": -0.416,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": -0.047,
+          "faded": false
+        },
+        "ETH/USD": {
+          "baseClose": 1722.469970703125,
+          "lastClose": 1710.489990234375,
+          "movePct": -0.696,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": -0.1,
+          "faded": false
+        }
+      }
+    },
+    "2026-11-22T22:00:00.000Z|S&P Global Composite PMI Flash": {
+      "releasedAt": "2026-11-22T22:00:00.000Z",
+      "pairs": {
+        "BTC/USD": {
+          "baseClose": 60845.9609375,
+          "lastClose": 60732.359375,
+          "movePct": -0.187,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": -0.094,
+          "faded": false
+        },
+        "ETH/USD": {
+          "baseClose": 1717.3199462890625,
+          "lastClose": 1710.010009765625,
+          "movePct": -0.426,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": -0.239,
+          "faded": false
+        }
+      }
+    },
+    "2026-11-22T22:00:00.000Z|Flash Manufacturing PMI": {
+      "releasedAt": "2026-11-22T22:00:00.000Z",
+      "pairs": {
+        "BTC/USD": {
+          "baseClose": 60845.9609375,
+          "lastClose": 60732.359375,
+          "movePct": -0.187,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": -0.094,
+          "faded": false
+        },
+        "ETH/USD": {
+          "baseClose": 1717.3199462890625,
+          "lastClose": 1710.010009765625,
+          "movePct": -0.426,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": -0.239,
+          "faded": false
+        }
+      }
+    },
+    "2026-11-22T22:00:00.000Z|Flash Services PMI": {
+      "releasedAt": "2026-11-22T22:00:00.000Z",
+      "pairs": {
+        "BTC/USD": {
+          "baseClose": 60845.9609375,
+          "lastClose": 60732.359375,
+          "movePct": -0.187,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": -0.094,
+          "faded": false
+        },
+        "ETH/USD": {
+          "baseClose": 1717.3199462890625,
+          "lastClose": 1710.010009765625,
+          "movePct": -0.426,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": -0.239,
+          "faded": false
+        }
+      }
+    }
+  }
+}
