@@ -1,86 +1,5 @@
 [
   {
-    "Date": "2026-09-24T00:30:00.000Z",
-    "Event": "S&P Global Services PMI Flash",
-    "Country": "JPY",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "",
-    "Actual": ""
-  },
-  {
-    "Date": "2026-09-24T00:30:00.000Z",
-    "Event": "S&P Global Composite PMI Flash",
-    "Country": "JPY",
-    "Importance": 1,
-    "Forecast": "",
-    "Previous": "",
-    "Actual": ""
-  },
-  {
-    "Date": "2026-09-24T00:30:00.000Z",
-    "Event": "S&P Global Manufacturing PMI Flash",
-    "Country": "JPY",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "",
-    "Actual": ""
-  },
-  {
-    "Date": "2026-09-24T01:30:00.000Z",
-    "Event": "Employment Change",
-    "Country": "AUD",
-    "Importance": 2,
-    "Forecast": "20",
-    "Previous": "-17.9",
-    "Actual": "30.2"
-  },
-  {
-    "Date": "2026-09-24T01:30:00.000Z",
-    "Event": "Full Time Employment Chg",
-    "Country": "AUD",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "16.4",
-    "Actual": "-5"
-  },
-  {
-    "Date": "2026-09-24T01:30:00.000Z",
-    "Event": "Unemployment Rate",
-    "Country": "AUD",
-    "Importance": 2,
-    "Forecast": "4.5%",
-    "Previous": "4.5%",
-    "Actual": "4.7%"
-  },
-  {
-    "Date": "2026-09-24T03:00:00.000Z",
-    "Event": "New Car Registrations MoM",
-    "Country": "EUR",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "23.8%",
-    "Actual": "-9.6%"
-  },
-  {
-    "Date": "2026-09-24T03:00:00.000Z",
-    "Event": "New Car Registrations MoM",
-    "Country": "GBP",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "32.7%",
-    "Actual": "-26.5%"
-  },
-  {
-    "Date": "2026-09-24T03:00:00.000Z",
-    "Event": "New Passenger Car Registrations YoY",
-    "Country": "EUR",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "22.6%",
-    "Actual": "-3.9%"
-  },
-  {
     "Date": "2026-09-24T04:00:00.000Z",
     "Event": "New Car Registrations MoM",
     "Country": "EUR",
@@ -21828,6 +21747,33 @@
     "Date": "2026-12-23T16:30:00.000Z",
     "Event": "2-Year FRN Auction Total Accepted",
     "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-23T23:50:00.000Z",
+    "Event": "Services PPI YoY",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-23T23:50:00.000Z",
+    "Event": "Bond Investment by Foreigners",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-23T23:50:00.000Z",
+    "Event": "Foreign Stock Investment",
+    "Country": "JPY",
     "Importance": 2,
     "Forecast": "",
     "Previous": "",
