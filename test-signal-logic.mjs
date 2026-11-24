@@ -4,8 +4,10 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
-const html = fs.readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-const calPath = ['../data/calendar.json', '../calendar.json', './calendar.json'].map(p => new URL(p, import.meta.url)).find(u => fs.existsSync(u));
+const htmlPath = ['./index.html', '../index.html'].map(p => new URL(p, import.meta.url)).find(u => fs.existsSync(u));
+if (!htmlPath) throw new Error('index.html tidak ditemukan');
+const html = fs.readFileSync(htmlPath, 'utf8');
+const calPath = ['./data/calendar.json', '../data/calendar.json', './calendar.json', '../calendar.json'].map(p => new URL(p, import.meta.url)).find(u => fs.existsSync(u));
 if (!calPath) throw new Error('calendar.json tidak ditemukan (taruh di data/ atau di root repo)');
 const calendar = JSON.parse(fs.readFileSync(calPath, 'utf8'));
 
@@ -94,8 +96,8 @@ t('USD/JPY & EUR/USD tetap dipetakan benar untuk event USD', () => {
   assert.equal(L.mapPairBias('EUR/USD', 'long', 'USD'), 'long');
 });
 t('Indeks/crypto: inflasi dipetakan, NFP/claims TIDAK (bergantung rezim)', () => {
-  assert.equal(L.mapAssetBias('index', 'NAS100', 'short', { Event: 'CPI m/m' }), 'short');
-  assert.equal(L.mapAssetBias('index', 'NAS100', 'short', { Event: 'Nonfarm Payrolls' }), null);
+  assert.equal(L.mapAssetBias('index', 'US500', 'short', { Event: 'CPI m/m' }), 'short');
+  assert.equal(L.mapAssetBias('index', 'US500', 'short', { Event: 'Nonfarm Payrolls' }), null);
   assert.equal(L.mapAssetBias('crypto', 'BTC/USD', 'long', { Event: 'Unemployment Claims' }), null);
 });
 
@@ -143,7 +145,10 @@ t('Leg naik lalu pullback 0.7 → OTE bullish (BUY), bukan bearish', () => {
 });
 
 console.log('Reaksi harga (fetch-calendar.mjs)');
-const { reactionFromBars } = await import('../fetch-calendar.mjs');
+const fetchCalPath = fs.existsSync(new URL('./fetch-calendar.mjs', import.meta.url))
+  ? './fetch-calendar.mjs'
+  : '../fetch-calendar.mjs';
+const { reactionFromBars } = await import(fetchCalPath);
 t('Basis = close SEBELUM menit rilis, bukan bar yang sudah memuat spike', () => {
   const releaseMs = Date.UTC(2026, 10, 10, 13, 30);          // 08:30 EST
   const k0 = releaseMs / 60000;
@@ -195,5 +200,39 @@ t('CPI m/m (10 Nov, 0.4 vs 0.3, paket hawkish) = FINAL SELL emas', () => {
 t('Core CPI m/m = FINAL SELL', () => { assert.match(cardOf('Core CPI m/m'), /<b>SELL<\/b>/); });
 t('Rilis lama low-impact non-USD (BRC GBP) = NO TRADE', () => { assert.match(cardOf('BRC Retail Sales Monitor y/y', 'GBP'), /NO TRADE/); });
 t('Rilis lama tidak menampilkan Entry/SL/TP', () => { assert.doesNotMatch(cardOf("CPI m/m"), /<b>Entry<\/b>|<b>SL<\/b>|<b>TP<\/b>/); });
+
+console.log('Konfluensi tren teknikal & proteksi counter-trend');
+vm.runInContext(`WINRATE_PARAMS.pairGate.enabled = false;`, ctx);
+t('applyMarketContext membatalkan BUY bila tren teknikal Bearish (EMA20 < EMA50)', () => {
+  const res = vm.runInContext(`
+    technicalView = () => ({ emaFast: 3940, emaSlow: 3960, price: 3935, dir: 'sell', trendText: 'tren turun (EMA20 < EMA50)' });
+    applyMarketContext({ phase: 'post', dir: 'long', basis: 'actual', conf: 60 }, 'gold', 'XAU/USD', Date.parse('2026-11-11T14:00:00Z'));
+  `, ctx);
+  assert.equal(res.dir, null);
+  assert.equal(res.blocked, true);
+  assert.equal(res.basis, 'conf-block');
+  assert.match(res.note, /Melawan tren/);
+});
+
+t('applyMarketContext membatalkan SELL bila tren teknikal Bullish (EMA20 > EMA50)', () => {
+  const res = vm.runInContext(`
+    technicalView = () => ({ emaFast: 3970, emaSlow: 3950, price: 3980, dir: 'buy', trendText: 'tren naik (EMA20 > EMA50)' });
+    applyMarketContext({ phase: 'post', dir: 'short', basis: 'actual', conf: 60 }, 'gold', 'XAU/USD', Date.parse('2026-11-11T14:00:00Z'));
+  `, ctx);
+  assert.equal(res.dir, null);
+  assert.equal(res.blocked, true);
+  assert.equal(res.basis, 'conf-block');
+  assert.match(res.note, /Melawan tren/);
+});
+
+t('applyMarketContext memperkuat sinyal bila Fundamental dan Tren Teknikal selaras', () => {
+  const res = vm.runInContext(`
+    technicalView = () => ({ emaFast: 3940, emaSlow: 3960, price: 3935, dir: 'sell', trendText: 'tren turun (EMA20 < EMA50)' });
+    applyMarketContext({ phase: 'post', dir: 'short', basis: 'actual', conf: 60 }, 'gold', 'XAU/USD', Date.parse('2026-11-11T14:00:00Z'));
+  `, ctx);
+  assert.equal(res.dir, 'short');
+  assert.ok(res.conf >= 68);
+  assert.match(res.note, /Konfluensi Tren/);
+});
 
 console.log(`\n${pass} tes lulus${process.exitCode ? ' — ADA YANG GAGAL' : ''}`);

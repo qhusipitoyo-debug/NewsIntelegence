@@ -4110,8 +4110,19 @@ function htfDirection(dailyBars, tf, livePrice = null) {
         notes.push(`${cfg.mom} bar ${momPct >= 0 ? '+' : ''}${momPct.toFixed(2)}%`);
     }
     if (rsi !== null) {
-        if (rsi <= 35) { votes.push('buy'); notes.push(`RSI ${rsi.toFixed(0)} oversold`); }
-        else if (rsi >= 65) { votes.push('sell'); notes.push(`RSI ${rsi.toFixed(0)} overbought`); }
+        const isBull = emaFast && emaSlow ? emaFast > emaSlow : null;
+        if (isBull === true) {
+            if (rsi >= 50 && rsi < 80) { votes.push('buy'); notes.push(`RSI ${rsi.toFixed(0)} bullish zone`); }
+            else if (rsi >= 80 && momPct !== null && momPct < 0) { votes.push('sell'); notes.push(`RSI ${rsi.toFixed(0)} overbought divergence`); }
+            else if (rsi <= 38) { votes.push('buy'); notes.push(`RSI ${rsi.toFixed(0)} oversold pullback`); }
+        } else if (isBull === false) {
+            if (rsi <= 50 && rsi > 20) { votes.push('sell'); notes.push(`RSI ${rsi.toFixed(0)} bearish zone`); }
+            else if (rsi <= 20 && momPct !== null && momPct > 0) { votes.push('buy'); notes.push(`RSI ${rsi.toFixed(0)} oversold divergence`); }
+            else if (rsi >= 62) { votes.push('sell'); notes.push(`RSI ${rsi.toFixed(0)} overbought pullback`); }
+        } else {
+            if (rsi <= 35) { votes.push('buy'); notes.push(`RSI ${rsi.toFixed(0)} oversold`); }
+            else if (rsi >= 65) { votes.push('sell'); notes.push(`RSI ${rsi.toFixed(0)} overbought`); }
+        }
     }
     const buys = votes.filter(v => v === 'buy').length;
     const sells = votes.filter(v => v === 'sell').length;
@@ -4133,17 +4144,45 @@ function fcNormDir(d) {
 }
 
 function finalHtfAlignment(daily, weekly, monthly, desiredDir = null) {
-    const dirs = [daily && daily.dir, weekly && weekly.dir, monthly && monthly.dir];
-    const txt = dirs.map(d => d === 'buy' ? 'B' : d === 'sell' ? 'S' : 'W').join('/');
-    const aligned = dirs.every(d => d === 'buy') ? 'buy' : dirs.every(d => d === 'sell') ? 'sell' : null;
-    if (!aligned) return { dir: null, aligned: null, reason: `HTF belum aligned (D/W/M = ${txt}) — final WAIT` };
-    if (desiredDir && desiredDir !== aligned) {
-        return {
-            dir: null, aligned,
-            reason: `HTF ${aligned.toUpperCase()} vs katalis ${desiredDir.toUpperCase()} (D/W/M = ${txt}) — final WAIT sampai searah`
-        };
+    const d = daily && daily.dir;
+    const w = weekly && weekly.dir;
+    const m = monthly && monthly.dir;
+    const dirs = [d, w, m];
+    const txt = dirs.map(x => x === 'buy' ? 'B' : x === 'sell' ? 'S' : 'W').join('/');
+
+    // 1. Triple Alignment (D/W/M sepakat 100%)
+    if (d === 'buy' && w === 'buy' && m === 'buy') {
+        if (desiredDir && desiredDir !== 'buy') {
+            return { dir: null, aligned: 'buy', reason: `HTF BUY vs katalis ${desiredDir.toUpperCase()} (D/W/M = ${txt}) — final WAIT sampai searah` };
+        }
+        return { dir: 'buy', aligned: 'buy', reason: `D/W/M aligned BUY (${txt})` };
     }
-    return { dir: aligned, aligned, reason: `D/W/M aligned ${aligned.toUpperCase()} (${txt})` };
+    if (d === 'sell' && w === 'sell' && m === 'sell') {
+        if (desiredDir && desiredDir !== 'sell') {
+            return { dir: null, aligned: 'sell', reason: `HTF SELL vs katalis ${desiredDir.toUpperCase()} (D/W/M = ${txt}) — final WAIT sampai searah` };
+        }
+        return { dir: 'sell', aligned: 'sell', reason: `D/W/M aligned SELL (${txt})` };
+    }
+
+    // 2. Swing Alignment (D dan W searah, Monthly netral/konsolidasi WAIT)
+    if (d === 'buy' && w === 'buy' && (!m || m === 'wait')) {
+        if (desiredDir && desiredDir !== 'buy') {
+            return { dir: null, aligned: 'buy', reason: `D/W BUY vs katalis ${desiredDir.toUpperCase()} (D/W/M = ${txt}) — final WAIT sampai searah` };
+        }
+        return { dir: 'buy', aligned: 'buy', reason: `D/W aligned BUY (Monthly netral, ${txt})` };
+    }
+    if (d === 'sell' && w === 'sell' && (!m || m === 'wait')) {
+        if (desiredDir && desiredDir !== 'sell') {
+            return { dir: null, aligned: 'sell', reason: `D/W SELL vs katalis ${desiredDir.toUpperCase()} (D/W/M = ${txt}) — final WAIT sampai searah` };
+        }
+        return { dir: 'sell', aligned: 'sell', reason: `D/W aligned SELL (Monthly netral, ${txt})` };
+    }
+
+    // 3. Proteksi modal counter-trend melawan Monthly
+    if (d && w && m && ((d === 'buy' && w === 'buy' && m === 'sell') || (d === 'sell' && w === 'sell' && m === 'buy'))) {
+        return { dir: null, aligned: null, reason: `Konflik HTF: D/W melawan tren Monthly (${txt}) — proteksi modal WAIT` };
+    }
+    return { dir: null, aligned: null, reason: `HTF belum aligned (D/W/M = ${txt}) — final WAIT` };
 }
 
 // Katalis news/impact & spike: arah akhir mengikuti harga bila spike/reaksi
@@ -4158,19 +4197,19 @@ function forecastShock(asset, kind, now = Date.now(), price = null) {
             const ph = typeof newsPhase === 'function' ? newsPhase(ev, now) : 'post';
             const imp = +ev.Importance || 1;
             newsLabel = `${ev.Event} · ${countryCode(ev.Country)} · Imp ${imp}`;
-            if (ph === 'live') block = 'Rilis sedang berlangsung — tunggu konfirmasi 15 menit.';
-            else if (ph === 'pre' && imp >= 3 && Date.parse(ev.Date) - now <= 15 * 60000) {
+            if (ph === 'live') {
+                block = 'Rilis sedang berlangsung — tunggu konfirmasi 15 menit.';
+            } else if (ph === 'pre' && imp >= 3 && Date.parse(ev.Date) - now <= 15 * 60000) {
                 block = 'High-impact < 15 menit — arah ditahan.';
-            } else {
+            } else if (ph === 'post') {
                 const sig = typeof signalDirectionCore === 'function' ? signalDirectionCore(ev, asset, kind, now) : null;
                 if (sig && sig.dir) {
                     newsDir = sig.dir === 'long' ? 'buy' : 'sell';
                     newsMove = Number.isFinite(Number(sig.movePct)) ? Number(sig.movePct) : null;
                     basis = sig.basis || 'news';
-                } else if (sig && sig.lean) {
-                    newsDir = sig.lean === 'long' ? 'buy' : 'sell';
-                    basis = sig.basis || 'pre-news';
                 }
+            } else if (ph === 'pre') {
+                basis = 'pre-news';
             }
         } catch (e) { block = `Katalis gagal dibaca: ${e.message || e}`; }
     }
@@ -4363,9 +4402,9 @@ function renderIpoBoard() {
     if (!usdMlemah) ipoBias -= 0.5;
     const dirOf = v => (v > 0.25 ? 'buy' : v < -0.25 ? 'sell' : 'wait');
     const cards = [
-        { h: 'XAU/USD (Gold) · Dampak IPO', kind: 'gold', asset: 'XAU/USD', v: ipoBias * 0.9, note: 'Blend risk/F&G/DXY — emas mengikuti safe-haven & risk sentiment dari sentimen IPO.' },
-        { h: 'US500 (Index) · Dampak IPO', kind: 'index', asset: 'US500', v: ipoBias * 0.7, note: 'Blend risk/F&G/DXY — indeks bereaksi terhadap risk appetite dari sentimen IPO Anthropic.' },
-        { h: 'BTC/USD (Crypto) · Dampak IPO', kind: 'crypto', asset: 'BTC/USD', v: ipoBias * 0.6, note: 'Blend risk/F&G/DXY — crypto mengikuti sentimen risk-on/off dari sentimen IPO.' }
+        { h: 'XAU/USD (Gold) · Dampak IPO', kind: 'gold', asset: 'XAU/USD', v: -ipoBias * 0.8, note: 'Rotasi Safe-Haven vs Risk: Emas tertekan saat euforia Risk-On IPO, didukung saat Risk-Off.' },
+        { h: 'US500 (Index) · Dampak IPO', kind: 'index', asset: 'US500', v: ipoBias * 0.75, note: 'Ekuitas & AI bereaksi langsung terhadap risk appetite sentimen IPO Anthropic.' },
+        { h: 'BTC/USD (Crypto) · Dampak IPO', kind: 'crypto', asset: 'BTC/USD', v: ipoBias * 0.65, note: 'Aset berisiko & kripto mengikuti likuiditas spekulatif IPO.' }
     ];
     let html = '';
     const now = Date.now();
@@ -4686,16 +4725,33 @@ function applyMarketContext(sig, kind, asset, now = Date.now()) {
     if (!sig || (sig.dir !== 'long' && sig.dir !== 'short') || (sig.phase !== 'post' && sig.phase !== 'pre')) return sig;
 
     // Filter volatilitas ATR — jangan trade saat terlalu sepi atau terlalu liar.
-    const volOk = volRegimeOk(kind, asset);
+    const volOk = volRegimeOk(kind, asset, now);
     if (!volOk.ok) {
         return { ...sig, dir: null, blocked: true, basis: 'vol-block', ctx: null, conf: null,
             note: `Sinyal dibatalkan: ${volOk.reason}` };
     }
 
     // Filter sesi likuransi UTC.
-    if (!inActiveUtcSession()) {
+    if (!inActiveUtcSession(now)) {
         return { ...sig, dir: null, blocked: true, basis: 'session-block', ctx: null, conf: null,
             note: 'Sinyal dibatalkan: di luar sesi likuransi tinggi (UTC 07–21).' };
+    }
+
+    // Veto Makro Fundamental (Emas vs Real Yield & DXY):
+    if (kind === 'gold') {
+        const sentCache = typeof SENTIMENT_CACHE === 'object' && SENTIMENT_CACHE ? SENTIMENT_CACHE : null;
+        const drvYield = sentCache && sentCache.drivers && sentCache.drivers.yield ? sentCache.drivers.yield : null;
+        const usdVal = typeof usdBias === 'function' ? usdBias() : null;
+        const zr = drvYield ? Number(drvYield.zReal) : null;
+        const dxyChg = usdVal ? Number(usdVal.changePct) : 0;
+        if (sig.dir === 'long' && Number.isFinite(zr) && zr >= 1.5 && dxyChg >= 0.25) {
+            return { ...sig, dir: null, blocked: true, basis: 'macro-veto', ctx: null, conf: null,
+                note: `NO TRADE (Makro Veto): Real Yield melonjak tajam (+${zr.toFixed(1)}z) & DXY naik (+${dxyChg.toFixed(2)}%) — tekanan jual emas terlalu dominan.` };
+        }
+        if (sig.dir === 'short' && Number.isFinite(zr) && zr <= -1.5 && dxyChg <= -0.25) {
+            return { ...sig, dir: null, blocked: true, basis: 'macro-veto', ctx: null, conf: null,
+                note: `NO TRADE (Makro Veto): Real Yield runtuh (${zr.toFixed(1)}z) & DXY anjlok (${dxyChg.toFixed(2)}%) — tailwind emas terlalu kuat untuk sell.` };
+        }
     }
 
     // Gerbang skor pair (Makro + DXY + Risk + Mikro + F&G + Spike) — wajib searah & valid.
@@ -4901,6 +4957,65 @@ function calibratedWatchSignal({
         } else if (kind === 'gold') {
             macroScore += risk.regime === 'RISK-OFF' ? 0.35 : -0.25;
             factors.push(risk.regime);
+        }
+    }
+
+    // Yield Treasury 10Y & Penggerak Makro Emas / Indeks / Forex
+    const sentCache = typeof SENTIMENT_CACHE === 'object' && SENTIMENT_CACHE ? SENTIMENT_CACHE : null;
+    const drvYield = sentCache && sentCache.drivers && sentCache.drivers.yield ? sentCache.drivers.yield : null;
+    const gDrivers = sentCache && sentCache.goldDrivers ? sentCache.goldDrivers : null;
+
+    if (kind === 'gold') {
+        if (drvYield && Number.isFinite(Number(drvYield.zReal))) {
+            const zr = Number(drvYield.zReal);
+            if (zr >= 0.7) {
+                macroScore -= 0.65;
+                factors.push(`Real Yield +${zr.toFixed(1)}z (tekanan emas)`);
+            } else if (zr <= -0.7) {
+                macroScore += 0.65;
+                factors.push(`Real Yield ${zr.toFixed(1)}z (dukungan emas)`);
+            }
+        } else if (drvYield && Number.isFinite(Number(drvYield.zNominal))) {
+            const zn = Number(drvYield.zNominal);
+            if (zn >= 0.8) {
+                macroScore -= 0.45;
+                factors.push(`Treasury 10Y +${zn.toFixed(1)}z`);
+            } else if (zn <= -0.8) {
+                macroScore += 0.45;
+                factors.push(`Treasury 10Y ${zn.toFixed(1)}z`);
+            }
+        }
+        if (gDrivers && Number.isFinite(Number(gDrivers.score))) {
+            const gs = Number(gDrivers.score);
+            if (gs <= -20) {
+                macroScore -= 0.5;
+                factors.push(`Driver Emas ${gs} (${gDrivers.label || 'Bearish'})`);
+            } else if (gs >= 20) {
+                macroScore += 0.5;
+                factors.push(`Driver Emas +${gs} (${gDrivers.label || 'Bullish'})`);
+            }
+        }
+    } else if (kind === 'index') {
+        if (drvYield && Number.isFinite(Number(drvYield.zNominal ?? drvYield.zReal))) {
+            const zy = Number(drvYield.zNominal ?? drvYield.zReal);
+            if (zy >= 1.0) {
+                macroScore -= 0.45;
+                factors.push(`Yield 10Y Naik (tekanan indeks)`);
+            } else if (zy <= -1.0) {
+                macroScore += 0.45;
+                factors.push(`Yield 10Y Turun (dukungan indeks)`);
+            }
+        }
+    } else if (kind === 'forex') {
+        if (/JPY$/.test(String(asset)) && drvYield && Number.isFinite(Number(drvYield.zNominal))) {
+            const zn = Number(drvYield.zNominal);
+            if (zn >= 0.7) {
+                macroScore += 0.45;
+                factors.push(`Spread Yield US-JP Melebar`);
+            } else if (zn <= -0.7) {
+                macroScore -= 0.45;
+                factors.push(`Spread Yield US-JP Menyempit`);
+            }
         }
     }
 
