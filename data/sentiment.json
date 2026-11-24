@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-24T10:53:04.782Z",
+  "generatedAt": "2026-11-24T20:56:07.448Z",
   "cnn": null,
   "crypto": {
     "score": 11,
@@ -7,27 +7,27 @@
   },
   "drivers": {
     "yield": {
-      "tenYr": 4.918000221252441,
-      "tenYrChange1d": 0.1222,
-      "zNominal": -0.703,
+      "tenYr": 4.904000282287598,
+      "tenYrChange1d": -0.2847,
+      "zNominal": -0.792,
       "realTenYr": 2.79,
-      "realChange1d": 0.02,
-      "zReal": 0.486,
-      "date": "2026-11-23",
+      "realChange1d": 0,
+      "zReal": 0.432,
+      "date": "2026-11-24",
       "source": "US Treasury (yield riil) · Yahoo ^TNX (nominal)"
     },
     "dxy": {
-      "price": 104.14600372314453,
-      "change1d": -0.1668,
-      "change5d": 0.6339,
-      "z": 1.447,
+      "price": 103.81900024414062,
+      "change1d": -0.4803,
+      "change5d": 0.3179,
+      "z": 1.144,
       "date": "2026-11-24",
       "source": "Yahoo DX-Y.NYB"
     },
     "fed": {
-      "impliedRate": 4.36,
-      "change1d": 0.025,
-      "z": 1.217,
+      "impliedRate": 4.3,
+      "change1d": 0.021,
+      "z": 1.376,
       "inflation": {
         "cpi": {
           "event": "Core CPI m/m",
@@ -55,11 +55,11 @@
       "source": "Yahoo ZQ=F (Fed funds futures) · Yahoo ^IRX (T-bill) · kalender CPI/PCE"
     },
     "flows": {
-      "etfChange1d": 3.1421,
-      "etfChange5d": -5.6061,
-      "spotChange5d": -6.2186,
-      "basis5d": 0.6125,
-      "volumeRatio": 1.17,
+      "etfChange1d": -2.2419,
+      "etfChange5d": -7.6188,
+      "spotChange5d": -8.2113,
+      "basis5d": 0.5925,
+      "volumeRatio": 1.0695,
       "sharesOutstanding": 1158750000,
       "sharesAsOf": "Nov 23, 2026",
       "sharesChange": null,
@@ -70,13 +70,13 @@
     }
   },
   "goldDrivers": {
-    "score": -17,
+    "score": -16,
     "label": "Bearish",
     "parts": {
-      "yield": 4,
-      "dxy": -49,
-      "fed": -41,
-      "flows": 23
+      "yield": 6,
+      "dxy": -39,
+      "fed": -47,
+      "flows": 16
     },
     "weights": {
       "yield": 0.3,
