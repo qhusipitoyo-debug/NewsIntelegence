@@ -1,122 +1,5 @@
 [
   {
-    "Date": "2026-09-24T14:00:00.000Z",
-    "Event": "New Home Sales",
-    "Country": "USD",
-    "Importance": 2,
-    "Forecast": "0.61",
-    "Previous": "0.65",
-    "Actual": "0.68"
-  },
-  {
-    "Date": "2026-09-24T14:00:00.000Z",
-    "Event": "New Home Sales MoM",
-    "Country": "USD",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "-4.9%",
-    "Actual": "5.1%"
-  },
-  {
-    "Date": "2026-09-24T14:30:00.000Z",
-    "Event": "EIA Natural Gas Stocks Change",
-    "Country": "USD",
-    "Importance": 1,
-    "Forecast": "",
-    "Previous": "44",
-    "Actual": "53"
-  },
-  {
-    "Date": "2026-09-24T15:00:00.000Z",
-    "Event": "Kansas Fed Composite Index",
-    "Country": "USD",
-    "Importance": 1,
-    "Forecast": "",
-    "Previous": "10",
-    "Actual": "14"
-  },
-  {
-    "Date": "2026-09-24T15:00:00.000Z",
-    "Event": "Kansas Fed Manufacturing Index",
-    "Country": "USD",
-    "Importance": 1,
-    "Forecast": "",
-    "Previous": "17",
-    "Actual": "20"
-  },
-  {
-    "Date": "2026-09-24T15:30:00.000Z",
-    "Event": "4-Week Bill Auction Allotted at High",
-    "Country": "USD",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "69.59%",
-    "Actual": "54.97%"
-  },
-  {
-    "Date": "2026-09-24T15:30:00.000Z",
-    "Event": "4-Week Bill Auction Bid-to-Cover",
-    "Country": "USD",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "3.02",
-    "Actual": "2.61"
-  },
-  {
-    "Date": "2026-09-24T15:30:00.000Z",
-    "Event": "4-Week Bill Auction Total Accepted",
-    "Country": "USD",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "97.65",
-    "Actual": "97.44"
-  },
-  {
-    "Date": "2026-09-24T17:00:00.000Z",
-    "Event": "7-Year Note Auction Allotted at High",
-    "Country": "USD",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "97.63%",
-    "Actual": "91.11%"
-  },
-  {
-    "Date": "2026-09-24T17:00:00.000Z",
-    "Event": "7-Year Note Auction Bid-to-Cover",
-    "Country": "USD",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "2.5",
-    "Actual": "2.42"
-  },
-  {
-    "Date": "2026-09-24T17:00:00.000Z",
-    "Event": "7-Year Note Auction Total Accepted",
-    "Country": "USD",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "44",
-    "Actual": "44"
-  },
-  {
-    "Date": "2026-09-24T20:30:00.000Z",
-    "Event": "Fed Balance Sheet",
-    "Country": "USD",
-    "Importance": 1,
-    "Forecast": "",
-    "Previous": "6.75",
-    "Actual": "6.75"
-  },
-  {
-    "Date": "2026-09-24T23:01:00.000Z",
-    "Event": "Consumer Confidence Index",
-    "Country": "GBP",
-    "Importance": 2,
-    "Forecast": "-16",
-    "Previous": "-14",
-    "Actual": "-13"
-  },
-  {
     "Date": "2026-09-25T05:00:00.000Z",
     "Event": "Chain Store Sales YoY",
     "Country": "JPY",
@@ -13812,7 +13695,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "0.07",
-    "Actual": ""
+    "Actual": "-0.06"
   },
   {
     "Date": "2026-11-23T14:45:00.000Z",
@@ -13847,8 +13730,8 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
-    "Actual": ""
+    "Previous": "93.85%",
+    "Actual": "20.69%"
   },
   {
     "Date": "2026-11-23T16:30:00.000Z",
@@ -13856,8 +13739,8 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
-    "Actual": ""
+    "Previous": "2.76",
+    "Actual": "2.74"
   },
   {
     "Date": "2026-11-23T16:30:00.000Z",
@@ -13865,8 +13748,8 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
-    "Actual": ""
+    "Previous": "87.85",
+    "Actual": "88.24"
   },
   {
     "Date": "2026-11-23T18:00:00.000Z",
@@ -13874,8 +13757,8 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
-    "Actual": ""
+    "Previous": "80.83%",
+    "Actual": "74.54%"
   },
   {
     "Date": "2026-11-23T18:00:00.000Z",
@@ -13883,8 +13766,8 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
-    "Actual": ""
+    "Previous": "2.59",
+    "Actual": "2.65"
   },
   {
     "Date": "2026-11-23T18:00:00.000Z",
@@ -13892,8 +13775,8 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
-    "Actual": ""
+    "Previous": "69",
+    "Actual": "69"
   },
   {
     "Date": "2026-11-23T16:00:00-05:00",
@@ -14026,7 +13909,7 @@
     "Event": "CB Consumer Confidence",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "92.1",
+    "Forecast": "92.4",
     "Previous": "91.7",
     "Actual": ""
   },
@@ -14062,7 +13945,7 @@
     "Event": "Richmond Manufacturing Index",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "-3",
+    "Forecast": "-2",
     "Previous": "-2",
     "Actual": ""
   },
@@ -14161,7 +14044,7 @@
     "Event": "API Crude Oil Stock Change",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "0.9",
     "Previous": "5.28",
     "Actual": ""
   },
@@ -14170,7 +14053,7 @@
     "Event": "API Distillate Stocks",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "1.5",
     "Previous": "0.35",
     "Actual": ""
   },
@@ -14260,7 +14143,7 @@
     "Event": "CPI y/y",
     "Country": "AUD",
     "Importance": 3,
-    "Forecast": "4.8%",
+    "Forecast": "4.7%",
     "Previous": "4.3%",
     "Actual": ""
   },
@@ -14466,7 +14349,7 @@
     "Date": "2026-11-25T13:30:00.000Z",
     "Event": "Unemployment Claims",
     "Country": "USD",
-    "Importance": 2,
+    "Importance": 1,
     "Forecast": "201K",
     "Previous": "203K",
     "Actual": ""
@@ -14512,7 +14395,7 @@
     "Event": "Durable Goods Orders m/m",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "0.5%",
+    "Forecast": "0.7%",
     "Previous": "1.8%",
     "Actual": ""
   },
@@ -14602,7 +14485,7 @@
     "Event": "New Home Sales",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "649K",
+    "Forecast": "650K",
     "Previous": "676K",
     "Actual": ""
   },
@@ -14656,7 +14539,7 @@
     "Event": "EIA Cushing Crude Oil Stocks Change",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "0.9",
     "Previous": "-1.21",
     "Actual": ""
   },
@@ -14683,7 +14566,7 @@
     "Event": "EIA Distillate Stocks Change",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "1.5",
     "Previous": "1.57",
     "Actual": ""
   },
@@ -14710,7 +14593,7 @@
     "Event": "EIA Refinery Utilization Change",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "0.3%",
     "Previous": "0.5%",
     "Actual": ""
   },
@@ -14800,7 +14683,7 @@
     "Event": "Natural Gas Storage",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "-19B",
     "Previous": "20B",
     "Actual": ""
   },
@@ -14926,7 +14809,7 @@
     "Event": "Tokyo Core CPI y/y",
     "Country": "JPY",
     "Importance": 2,
-    "Forecast": "2.9%",
+    "Forecast": "3.0%",
     "Previous": "2.6%",
     "Actual": ""
   },
@@ -15097,7 +14980,7 @@
     "Event": "French Prelim CPI m/m",
     "Country": "EUR",
     "Importance": 1,
-    "Forecast": "-0.1%",
+    "Forecast": "-0.2%",
     "Previous": "0.4%",
     "Actual": ""
   },
@@ -15151,7 +15034,7 @@
     "Event": "Spanish Flash CPI y/y",
     "Country": "EUR",
     "Importance": 1,
-    "Forecast": "4.8%",
+    "Forecast": "4.7%",
     "Previous": "4.9%",
     "Actual": ""
   },
@@ -15385,7 +15268,7 @@
     "Event": "Goods Trade Balance",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "-134.4B",
+    "Forecast": "-135.9B",
     "Previous": "-134.9B",
     "Actual": ""
   },
@@ -15394,7 +15277,7 @@
     "Event": "Prelim Wholesale Inventories m/m",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "0.7%",
+    "Forecast": "0.5%",
     "Previous": "0.6%",
     "Actual": ""
   },
@@ -20885,7 +20768,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-0.06",
     "Actual": ""
   },
   {
@@ -21753,6 +21636,87 @@
     "Actual": ""
   },
   {
+    "Date": "2026-12-24T13:30:00.000Z",
+    "Event": "United States-ExportSales-Soybn Oil Exp Sls Nxt Yr Net *",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-24T13:30:00.000Z",
+    "Event": "USDA Soybean Oil Net Export Sales",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-24T13:30:00.000Z",
+    "Event": "USDA Pork Gross Export Sales",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-24T13:30:00.000Z",
+    "Event": "Jobless Claims 4-week Average",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-24T13:30:00.000Z",
+    "Event": "Initial Jobless Claims",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-24T16:00:00.000Z",
+    "Event": "Budget Balance Year-to-Date",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-24T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-24T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-24T16:30:00.000Z",
+    "Event": "4-Week Bill Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
     "Date": "2026-12-24T21:30:00.000Z",
     "Event": "Fed Balance Sheet",
     "Country": "USD",
@@ -21768,6 +21732,42 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "2.6%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-24T23:30:00.000Z",
+    "Event": "Tokyo CPI ex All Food and Energy MoM",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-24T23:30:00.000Z",
+    "Event": "Tokyo Core CPI YoY",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-24T23:30:00.000Z",
+    "Event": "Tokyo CPI YoY",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-24T23:30:00.000Z",
+    "Event": "Unemployment Rate",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
     "Actual": ""
   }
 ]

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T13:27:38.492Z",
+  "generatedAt": "2026-11-24T01:06:46.578Z",
   "cnn": null,
   "crypto": {
     "score": 11,
@@ -7,27 +7,27 @@
   },
   "drivers": {
     "yield": {
-      "tenYr": 4.9120001792907715,
-      "tenYrChange1d": -2.7712,
-      "zNominal": -0.814,
-      "realTenYr": 2.77,
-      "realChange1d": -0.11,
-      "zReal": 0.368,
-      "date": "2026-11-20",
+      "tenYr": 4.918000221252441,
+      "tenYrChange1d": 0.1222,
+      "zNominal": -0.703,
+      "realTenYr": 2.79,
+      "realChange1d": 0.02,
+      "zReal": 0.486,
+      "date": "2026-11-23",
       "source": "US Treasury (yield riil) · Yahoo ^TNX (nominal)"
     },
     "dxy": {
-      "price": 104.09600067138672,
-      "change1d": 0.2755,
-      "change5d": 0.5273,
-      "z": 1.62,
-      "date": "2026-11-23",
+      "price": 104.26200103759766,
+      "change1d": 0.4354,
+      "change5d": 0.6876,
+      "z": 1.772,
+      "date": "2026-11-24",
       "source": "Yahoo DX-Y.NYB"
     },
     "fed": {
-      "impliedRate": 4.145,
-      "change1d": -0.025,
-      "z": 0.955,
+      "impliedRate": 4.165,
+      "change1d": 0.025,
+      "z": 1.217,
       "inflation": {
         "cpi": {
           "event": "Core CPI m/m",
@@ -51,15 +51,15 @@
           "surprise": 0.1
         }
       },
-      "date": "2026-11-23",
+      "date": "2026-11-24",
       "source": "Yahoo ZQ=F (Fed funds futures) · Yahoo ^IRX (T-bill) · kalender CPI/PCE"
     },
     "flows": {
       "etfChange1d": -3.6481,
       "etfChange5d": -9.1453,
-      "spotChange5d": -5.9979,
-      "basis5d": -3.1474,
-      "volumeRatio": 2.392,
+      "spotChange5d": -4.8482,
+      "basis5d": -4.2971,
+      "volumeRatio": 2.38,
       "sharesOutstanding": 1160150000,
       "sharesAsOf": "Nov 20, 2026",
       "sharesChange": null,
@@ -70,13 +70,13 @@
     }
   },
   "goldDrivers": {
-    "score": -36,
+    "score": -41,
     "label": "Bearish",
     "parts": {
-      "yield": 8,
-      "dxy": -55,
-      "fed": -32,
-      "flows": -85
+      "yield": 4,
+      "dxy": -60,
+      "fed": -41,
+      "flows": -84
     },
     "weights": {
       "yield": 0.3,
