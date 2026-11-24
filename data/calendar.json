@@ -1,50 +1,5 @@
 [
   {
-    "Date": "2026-09-25T05:00:00.000Z",
-    "Event": "Chain Store Sales YoY",
-    "Country": "JPY",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "0.1%",
-    "Actual": "0.2%"
-  },
-  {
-    "Date": "2026-09-25T06:00:00.000Z",
-    "Event": "GfK Consumer Confidence",
-    "Country": "EUR",
-    "Importance": 3,
-    "Forecast": "-27.4",
-    "Previous": "-26.8",
-    "Actual": "-30.6"
-  },
-  {
-    "Date": "2026-09-25T07:00:00.000Z",
-    "Event": "GDP Growth Rate QoQ Final",
-    "Country": "EUR",
-    "Importance": 1,
-    "Forecast": "0.7%",
-    "Previous": "0.6%",
-    "Actual": "0.7%"
-  },
-  {
-    "Date": "2026-09-25T07:00:00.000Z",
-    "Event": "GDP Growth Rate YoY Final",
-    "Country": "EUR",
-    "Importance": 1,
-    "Forecast": "2.7%",
-    "Previous": "2.7%",
-    "Actual": "2.6%"
-  },
-  {
-    "Date": "2026-09-25T08:00:00.000Z",
-    "Event": "M3 Money Supply Annual Growth",
-    "Country": "EUR",
-    "Importance": 2,
-    "Forecast": "3.5%",
-    "Previous": "3.4%",
-    "Actual": "3.5%"
-  },
-  {
     "Date": "2026-09-25T12:30:00.000Z",
     "Event": "Durable Goods Orders ex Defense MoM",
     "Country": "USD",
@@ -13821,7 +13776,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "20.8%",
-    "Actual": ""
+    "Actual": "-0.9%"
   },
   {
     "Date": "2026-11-24T05:00:00.000Z",
@@ -13830,7 +13785,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "272%",
-    "Actual": ""
+    "Actual": "-56.4%"
   },
   {
     "Date": "2026-11-24T05:00:00.000Z",
@@ -13839,7 +13794,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "0.8%",
-    "Actual": ""
+    "Actual": "1.4%"
   },
   {
     "Date": "2026-11-24T05:00:00.000Z",
@@ -13848,7 +13803,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "-6.4%",
-    "Actual": ""
+    "Actual": "17.2%"
   },
   {
     "Date": "2026-11-24T06:00:00.000Z",
@@ -13857,7 +13812,16 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "10.5%",
-    "Actual": ""
+    "Actual": "10.6%"
+  },
+  {
+    "Date": "2026-11-24T06:00:00.000Z",
+    "Event": "PPI YoY",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "9.8%",
+    "Actual": "9.4%"
   },
   {
     "Date": "2026-11-24T09:00:00.000Z",
@@ -13866,7 +13830,7 @@
     "Importance": 3,
     "Forecast": "90.8",
     "Previous": "90.2",
-    "Actual": ""
+    "Actual": "90.6"
   },
   {
     "Date": "2026-11-24T11:00:00.000Z",
@@ -20039,7 +20003,7 @@
     "Country": "EUR",
     "Importance": 3,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "90.6",
     "Actual": ""
   },
   {
@@ -20346,6 +20310,15 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "-7.4%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-17T13:30:00.000Z",
+    "Event": "House Price Index YoY",
+    "Country": "CAD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "-1.88%",
     "Actual": ""
   },
   {
@@ -20822,7 +20795,7 @@
     "Country": "EUR",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-0.9%",
     "Actual": ""
   },
   {
@@ -20831,7 +20804,7 @@
     "Country": "GBP",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-56.4%",
     "Actual": ""
   },
   {
@@ -20840,7 +20813,7 @@
     "Country": "EUR",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "17.2%",
     "Actual": ""
   },
   {
@@ -20849,7 +20822,7 @@
     "Country": "EUR",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "10.6%",
     "Actual": ""
   },
   {
@@ -20858,7 +20831,7 @@
     "Country": "EUR",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "9.4%",
     "Actual": ""
   },
   {
@@ -21766,6 +21739,15 @@
     "Event": "Unemployment Rate",
     "Country": "JPY",
     "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-25T09:00:00.000Z",
+    "Event": "UniCredit Bank Manufacturing PMI",
+    "Country": "EUR",
+    "Importance": 1,
     "Forecast": "",
     "Previous": "",
     "Actual": ""
