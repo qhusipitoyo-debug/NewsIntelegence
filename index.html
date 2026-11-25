@@ -314,7 +314,7 @@
     <div>
       <div class="eyebrow">Market forecast · Daily / Weekly / Monthly</div>
       <h3>Arah Pasar HTF — Final Hanya Saat D/W/M Align</h3>
-      <p>Setiap aset dibaca dari data harga harian (Yahoo 1d, 2 tahun) yang diagregasi ke daily/weekly/monthly. Arah dasar memakai engine sentimen yang sama dengan board lain; news/impact dan spike nyata dapat mengubah arah — tetapi <b>final BUY/SELL hanya keluar bila Daily + Weekly + Monthly sepakat</b>, jika tidak final WAIT. Target harga (entry bid/ask live, SL/TP dari ATR tiap timeframe) ikut menyesuaikan arah &amp; kekuatan katalis.</p>
+      <p>Setiap aset dibaca dari data harga harian (Yahoo 1d, 2 tahun) yang diagregasi ke daily/weekly/monthly. Arah dasar memakai engine sentimen yang sama dengan board lain; news/impact dan spike nyata dapat mengubah arah — tetapi <b>final BUY/SELL keluar bila Daily + Weekly + Monthly sepakat, atau Daily + Weekly sepakat saat Monthly netral</b>; selain itu final WAIT. Target harga (entry bid/ask live, SL/TP dari ATR tiap timeframe) ikut menyesuaikan arah &amp; kekuatan katalis.</p>
     </div>
     <div id="forecastGrid"></div>
   </section>
@@ -491,7 +491,7 @@ const WINRATE_PARAMS = {
     //   'strict' = hanya reaksi harga 1-menit kuat (>=2x noise floor), tidak faded,
     //              searah Actual, tanpa konflik; momentum-saja / Actual-saja DITOLAK
     //   'loose'  = perilaku lama (penyebab banyak loss)
-    legacyLadder: 'strict',
+    legacyLadder: 'off',
     // Jangan trade saat volatilitas ATR 1 menit melebihi ini (%) — pasar terlalu liar.
     maxAtrPct: { gold: 1.0, forex: 0.08, crypto: 1.5, index: 0.6 },
     // Jangan trade saat ATR di bawah ini — pasar terlalu sepi / noise spread.
@@ -1307,10 +1307,15 @@ function evaluateSignalHistory({
 
         // 1. Evaluasi sinyal rilis event historis (Actual vs Forecast/Previous + reaksi) dalam rentang bar
         if (Array.isArray(eventList)) {
-            for (const ev of eventList) {
+            // Satu gerakan harga = satu sampel: event berimportance tertinggi dulu, lalu lewati event lain
+            // yang jendelanya (45 menit) tumpang tindih untuk aset yang sama.
+            const tradedRel = [];
+            const evSorted = [...eventList].sort((x, y) => (+y.Importance || 1) - (+x.Importance || 1));
+            for (const ev of evSorted) {
                 if ((+ev.Importance || 1) < 2) continue;
                 const relMs = Date.parse(ev.Date);
                 if (!Number.isFinite(relMs) || relMs + 15 * 60000 < firstMs || relMs + 20 * 60000 >= lastMs) continue;
+                if (tradedRel.some(x => Math.abs(x - relMs) < 45 * 60000)) continue;
                 const entryIdx = bars.findIndex(b => Number(b.k) * 60000 >= relMs + 15 * 60000);
                 if (entryIdx < 1 || entryIdx >= bars.length - 1) continue;
                 // Kirim bar historis yang sedang dievaluasi ke engine. Tanpa ini engine
@@ -1346,6 +1351,7 @@ function evaluateSignalHistory({
                 // Order LIMIT engine hangus 30 menit: 6 bar @5m, 30 bar @1m.
                 const ttlBars = usedHistory5d ? 6 : 30;
                 const sim = simulateTradeOnBars(rawDir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(entryIdx + 1), kind, ttlBars);
+                tradedRel.push(relMs);
                 trades.push({
                     origin: 'calendar',
                     kind,
@@ -4105,7 +4111,9 @@ function htfDirection(dailyBars, tf, livePrice = null) {
         votes.push(price > emaFast ? 'buy' : 'sell');
         notes.push(price > emaFast ? `harga > EMA${cfg.fast}` : `harga < EMA${cfg.fast}`);
     }
-    if (momPct !== null && Math.abs(momPct) >= cfg.momMin) {
+    // Ambang momentum minimal = max(floor tetap, 0.5 x ATR% x sqrt(n bar)) supaya tidak lolos hanya karena gerak kecil.
+    const momMinEff = Math.max(cfg.momMin, 0.5 * (atr ? atr.atrPct : 0) * Math.sqrt(cfg.mom));
+    if (momPct !== null && Math.abs(momPct) >= momMinEff) {
         votes.push(momPct > 0 ? 'buy' : 'sell');
         notes.push(`${cfg.mom} bar ${momPct >= 0 ? '+' : ''}${momPct.toFixed(2)}%`);
     }
@@ -4286,7 +4294,10 @@ function forecastState(now = Date.now()) {
             v.levels = forecastTargets(cfg.asset, cfg.kind, tf, v, price, v.dir || desired, shock);
             tfs[tf] = v;
         });
-        const final = finalHtfAlignment(tfs.daily, tfs.weekly, tfs.monthly, desired);
+        // Veto HTF hanya dari reaksi news terkonfirmasi. Spike 1 menit / skor sentimen mikro
+        // hanya memengaruhi lebar target & label (beda skala waktu dengan D/W/M).
+        const vetoDir = shock && shock.source === 'news' ? fcNormDir(shock.dir) : null;
+        const final = finalHtfAlignment(tfs.daily, tfs.weekly, tfs.monthly, vetoDir);
         return {
             ...cfg, price, sentiment, shock, tfs, final,
             finalLevels: final.dir ? forecastTargets(cfg.asset, cfg.kind, 'daily', tfs.daily, price, final.dir, shock) : null,
@@ -4320,6 +4331,7 @@ function forecastHtml(state) {
         <span class="fx-badge buy">↑ ${c.buy} ALIGNED BUY</span>
         <span class="fx-badge sell">↓ ${c.sell} ALIGNED SELL</span>
         <span class="fx-badge wait">■ ${c.wait} WAIT</span>
+        ${(() => { const t = Date.parse(state.asOf); const age = Number.isFinite(t) ? (Date.now() - t) / 86400000 : null; return age !== null && age > 3 ? `<span class="fx-badge wait">⚠ HTF basi ${Math.floor(age)} hari</span>` : ''; })()}
         <span class="watch-factors">${esc(state.asOf ? 'HTF ' + state.asOf : 'HTF menunggu data')} · ${esc(state.risk && state.risk.label ? state.risk.label : 'RISK n/a')} · ${esc(state.fg)}</span>
     </div>`;
     const cards = state.items.map(it => {
