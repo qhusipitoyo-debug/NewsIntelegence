@@ -13938,7 +13938,7 @@
     "Importance": 2,
     "Forecast": "0.9",
     "Previous": "5.28",
-    "Actual": ""
+    "Actual": "0.13"
   },
   {
     "Date": "2026-11-24T21:30:00.000Z",
@@ -13947,7 +13947,7 @@
     "Importance": 1,
     "Forecast": "1.5",
     "Previous": "0.35",
-    "Actual": ""
+    "Actual": "1.65"
   },
   {
     "Date": "2026-11-24T21:30:00.000Z",
@@ -13956,7 +13956,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "-0.27",
-    "Actual": ""
+    "Actual": "-0.09"
   },
   {
     "Date": "2026-11-24T21:30:00.000Z",
@@ -13965,7 +13965,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "-0.18",
-    "Actual": ""
+    "Actual": "0.1"
   },
   {
     "Date": "2026-11-24T23:50:00.000Z",
@@ -13974,7 +13974,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "3.7%",
-    "Actual": ""
+    "Actual": "4.2%"
   },
   {
     "Date": "2026-11-24T18:50:00-05:00",
@@ -13992,7 +13992,7 @@
     "Importance": 2,
     "Forecast": "0.7%",
     "Previous": "-2.1%",
-    "Actual": ""
+    "Actual": "0.9%"
   },
   {
     "Date": "2026-11-25T00:30:00.000Z",
@@ -14001,7 +14001,7 @@
     "Importance": 3,
     "Forecast": "0.4%",
     "Previous": "0.8%",
-    "Actual": ""
+    "Actual": "0.5%"
   },
   {
     "Date": "2026-11-25T00:30:00.000Z",
@@ -14010,7 +14010,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "104.34",
-    "Actual": ""
+    "Actual": "104.91"
   },
   {
     "Date": "2026-11-25T00:30:00.000Z",
@@ -14019,7 +14019,7 @@
     "Importance": 3,
     "Forecast": "0.3%",
     "Previous": "0.3%",
-    "Actual": ""
+    "Actual": "0.5%"
   },
   {
     "Date": "2026-11-25T00:30:00.000Z",
@@ -14028,7 +14028,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "0.2%",
-    "Actual": ""
+    "Actual": "0.3%"
   },
   {
     "Date": "2026-11-25T00:30:00.000Z",
@@ -14037,7 +14037,7 @@
     "Importance": 3,
     "Forecast": "4.7%",
     "Previous": "4.3%",
-    "Actual": ""
+    "Actual": "4.9%"
   },
   {
     "Date": "2026-11-25T00:30:00.000Z",
@@ -14046,7 +14046,7 @@
     "Importance": 2,
     "Forecast": "3.6%",
     "Previous": "3.6%",
-    "Actual": ""
+    "Actual": "3.8%"
   },
   {
     "Date": "2026-11-25T00:30:00.000Z",
@@ -14055,7 +14055,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "3.4%",
-    "Actual": ""
+    "Actual": "3.4%"
   },
   {
     "Date": "2026-11-25T00:00:00-05:00",
@@ -14127,6 +14127,15 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "6.64%",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-11-25T07:25:00-05:00",
+    "Event": "FOMC Member Bowman Speaks",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
     "Actual": ""
   },
   {
@@ -14503,7 +14512,7 @@
     "Event": "Crude Oil Inventories",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "2.0M",
     "Previous": "3.4M",
     "Actual": ""
   },
@@ -16142,7 +16151,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.13",
     "Actual": ""
   },
   {
@@ -16151,7 +16160,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "1.65",
     "Actual": ""
   },
   {
@@ -16160,7 +16169,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-0.09",
     "Actual": ""
   },
   {
@@ -16169,7 +16178,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.1",
     "Actual": ""
   },
   {
@@ -21371,7 +21380,7 @@
     "Country": "JPY",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "4.2%",
     "Actual": ""
   },
   {
