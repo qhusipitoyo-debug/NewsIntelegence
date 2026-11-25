@@ -14373,6 +14373,15 @@
     "Actual": ""
   },
   {
+    "Date": "2026-11-25T09:15:00-05:00",
+    "Event": "Monetary Policy Report Hearings",
+    "Country": "GBP",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
     "Date": "2026-11-25T15:00:00.000Z",
     "Event": "Dallas Fed Trimmed Mean PCE",
     "Country": "USD",
@@ -14388,7 +14397,7 @@
     "Importance": 1,
     "Forecast": "650K",
     "Previous": "676K",
-    "Actual": ""
+    "Actual": "0.7"
   },
   {
     "Date": "2026-11-25T15:00:00.000Z",
@@ -14397,7 +14406,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "-0.6%",
-    "Actual": ""
+    "Actual": "14.2%"
   },
   {
     "Date": "2026-11-25T15:00:00.000Z",
@@ -14405,8 +14414,8 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
-    "Actual": ""
+    "Previous": "57.47%",
+    "Actual": "97.61%"
   },
   {
     "Date": "2026-11-25T15:00:00.000Z",
@@ -14414,8 +14423,8 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
-    "Actual": ""
+    "Previous": "2.55",
+    "Actual": "2.64"
   },
   {
     "Date": "2026-11-25T15:00:00.000Z",
@@ -14424,7 +14433,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "",
-    "Actual": ""
+    "Actual": "4.115"
   },
   {
     "Date": "2026-11-25T15:30:00.000Z",
@@ -14433,7 +14442,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "1.13K",
-    "Actual": ""
+    "Actual": "1.13K"
   },
   {
     "Date": "2026-11-25T15:30:00.000Z",
@@ -14442,7 +14451,7 @@
     "Importance": 1,
     "Forecast": "0.9",
     "Previous": "-1.21",
-    "Actual": ""
+    "Actual": "-0.53"
   },
   {
     "Date": "2026-11-25T15:30:00.000Z",
@@ -14451,7 +14460,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "-0.13",
-    "Actual": ""
+    "Actual": "0.43"
   },
   {
     "Date": "2026-11-25T15:30:00.000Z",
@@ -14460,7 +14469,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "0.14",
-    "Actual": ""
+    "Actual": "-0.01"
   },
   {
     "Date": "2026-11-25T15:30:00.000Z",
@@ -14469,7 +14478,7 @@
     "Importance": 1,
     "Forecast": "1.5",
     "Previous": "1.57",
-    "Actual": ""
+    "Actual": "0.71"
   },
   {
     "Date": "2026-11-25T15:30:00.000Z",
@@ -14478,7 +14487,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "-0",
-    "Actual": ""
+    "Actual": "0"
   },
   {
     "Date": "2026-11-25T15:30:00.000Z",
@@ -14487,7 +14496,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "0.57",
-    "Actual": ""
+    "Actual": "-0.35"
   },
   {
     "Date": "2026-11-25T15:30:00.000Z",
@@ -14496,7 +14505,7 @@
     "Importance": 1,
     "Forecast": "0.3%",
     "Previous": "0.5%",
-    "Actual": ""
+    "Actual": "1.8%"
   },
   {
     "Date": "2026-11-25T15:30:00.000Z",
@@ -14505,7 +14514,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "-0.78",
-    "Actual": ""
+    "Actual": "0.22"
   },
   {
     "Date": "2026-11-25T10:30:00-05:00",
@@ -14549,8 +14558,8 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
-    "Actual": ""
+    "Previous": "63.94%",
+    "Actual": "41.41%"
   },
   {
     "Date": "2026-11-25T16:30:00.000Z",
@@ -14558,8 +14567,8 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
-    "Actual": ""
+    "Previous": "2.46",
+    "Actual": "2.43"
   },
   {
     "Date": "2026-11-25T16:30:00.000Z",
@@ -14567,8 +14576,8 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
-    "Actual": ""
+    "Previous": "44",
+    "Actual": "44"
   },
   {
     "Date": "2026-11-25T17:00:00.000Z",
@@ -14577,7 +14586,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "20",
-    "Actual": ""
+    "Actual": "-24"
   },
   {
     "Date": "2026-11-25T12:00:00-05:00",
@@ -16322,7 +16331,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "1.13K",
     "Actual": ""
   },
   {
@@ -16331,7 +16340,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-0.53",
     "Actual": ""
   },
   {
@@ -16340,7 +16349,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.43",
     "Actual": ""
   },
   {
@@ -16349,7 +16358,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-0.01",
     "Actual": ""
   },
   {
@@ -16358,7 +16367,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.71",
     "Actual": ""
   },
   {
@@ -16367,7 +16376,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0",
     "Actual": ""
   },
   {
@@ -16376,7 +16385,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-0.35",
     "Actual": ""
   },
   {
@@ -16385,7 +16394,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "1.8%",
     "Actual": ""
   },
   {
@@ -16394,7 +16403,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.22",
     "Actual": ""
   },
   {
@@ -16467,6 +16476,15 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-03T08:00:00.000Z",
+    "Event": "GDP Growth Rate QoQ Final",
+    "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "-0.1%",
     "Actual": ""
   },
   {
@@ -16745,7 +16763,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-24",
     "Actual": ""
   },
   {
@@ -17069,7 +17087,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "127",
     "Actual": ""
   },
   {
@@ -17078,7 +17096,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "470",
     "Actual": ""
   },
   {
@@ -21254,7 +21272,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.7",
     "Actual": ""
   },
   {
@@ -21263,7 +21281,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "14.2%",
     "Actual": ""
   },
   {
@@ -21586,6 +21604,15 @@
     "Event": "Initial Jobless Claims",
     "Country": "USD",
     "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-24T15:30:00.000Z",
+    "Event": "EIA Natural Gas Stocks Change",
+    "Country": "USD",
+    "Importance": 1,
     "Forecast": "",
     "Previous": "",
     "Actual": ""
