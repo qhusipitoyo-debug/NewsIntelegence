@@ -125,15 +125,21 @@ const lockFreshEnoughFn = extractFunction('lockFreshEnough');
 const lockShouldReplaceFn = extractFunction('lockShouldReplace');
 const watchConsts = `const WATCH_LOCK_TTL_MS = 4 * 60 * 60 * 1000;\nconst SIGNAL_PHASE_RANK = { watch: 0, pre: 1, post: 2 };\nconst RILIS_BASIS = new Set(['actual', 'reaction', 'momentum', 'forecast']);`;
 const winrateConst = (() => { const i = source.indexOf('const WINRATE_PARAMS = {'); const j = source.indexOf('\n};', i); return source.slice(i, j + 4) + '\n'; })();
+// Produksi memakai legacyLadder:'off' (engine-only). Unit test arah ini menguji
+// tangga lama secara eksplisit, jadi semua bundle di file ini memakai 'strict'.
+const winrateStrictConst = winrateConst.replace(/legacyLadder:\s*'[^']*'/, "legacyLadder: 'strict'");
 const missedFromLevelsFn = extractFunction('missedFromLevels');
 const resolveSignalLevelsFn = extractFunction('resolveSignalLevels');
 const signalCardDataFn = extractFunction('signalCardData');
 const riskSensitiveConst = source.match(/const RISK_SENSITIVE_EVENT = .*?;\n/)[0];
 const rateDrivenConst = source.match(/const RATE_DRIVEN_EVENT = .*?;\n/)[0];
 
-function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, indexRates = defaultIndexRates, reaction = null, legacyLadder = null) {
+// Unit test ini menguji tangga arah lama secara eksplisit. Aplikasi produksi
+// memakai legacyLadder:'off' (engine-only); test memaksa 'strict' agar jalur
+// legacy tetap ter-coverage tanpa mengubah konfigurasi live.
+function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, indexRates = defaultIndexRates, reaction = null, legacyLadder = 'strict') {
   const winrateForBundle = legacyLadder
-    ? winrateConst.replace("legacyLadder: 'strict'", `legacyLadder: '${legacyLadder}'`)
+    ? winrateConst.replace(/legacyLadder:\s*'[^']*'/, `legacyLadder: '${legacyLadder}'`)
     : winrateConst;
   const body = `
     const WITA = 'Asia/Makassar';
@@ -579,7 +585,7 @@ function buildCatalyst(eventList, reaction) {
     ${mapActualBiasFn}
     ${newsPhaseFn}
     ${core}
-    ${winrateConst}
+    ${winrateStrictConst}
     ${engineOfFn}
     ${engineBarsFn}
     ${engineDecFn}
@@ -744,7 +750,7 @@ function buildCryptoState(evts, now, rates, change, reaction = null) {
     ${mapAssetBiasFn}
     ${mapActualBiasFn}
     ${core}
-    ${winrateConst}
+    ${winrateStrictConst}
     ${engineOfFn}
     ${engineBarsFn}
     ${engineDecFn}
@@ -1019,7 +1025,7 @@ function buildIndicesState(evts, idxRates, now, analyzeBody = "() => ({ dir: 'wa
     ${mapAssetBiasFn}
     ${mapActualBiasFn}
     ${core}
-    ${winrateConst}
+    ${winrateStrictConst}
     ${engineOfFn}
     ${engineBarsFn}
     ${engineDecFn}
@@ -1220,7 +1226,7 @@ function buildGoldState(evts, price, now, analyzeBody = "() => ({ dir: 'wait' })
     ${mapActualBiasFn}
     ${newsPhaseFn}
     ${core}
-    ${winrateConst}
+    ${winrateStrictConst}
     ${engineOfFn}
     ${engineBarsFn}
     ${engineDecFn}
@@ -1540,7 +1546,7 @@ function buildEngine(price, { reaction = null, preNews = {}, indexRates = {}, st
     ${mapActualBiasFn}
     ${newsPhaseFn}
     ${core}
-    ${winrateConst}
+    ${winrateStrictConst}
     ${engineOfFn}
     ${engineBarsFn}
     ${engineDecFn}
