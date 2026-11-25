@@ -18,6 +18,14 @@ jobs:
         run: node tests/xauusd-signal-rules.test.mjs
       - name: Run actual index.html signal tests
         run: node tests/index-signal-regression.test.mjs
+      - name: Run HTF D/W/M recalibration tests
+        run: |
+          node tests/htf-forecast-validation.test.mjs
+          node tests/htf-recalibration.test.mjs
+      - name: Run statistics / calibration integrity tests
+        run: node tests/stats-calibration.test.mjs
+      - name: Run timezone, DXY sign & event-direction tests
+        run: node tests/time-and-dxy.test.mjs
       - name: Check calendar fetcher syntax
         run: node --check scripts/fetch-calendar.mjs
       - name: Run calendar actual-backfill and price-reaction tests

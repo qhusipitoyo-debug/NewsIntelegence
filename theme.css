@@ -131,6 +131,7 @@ header:after{content:"";position:absolute;left:16px;right:16px;bottom:-1px;heigh
 .fc-shock{font-size:10.5px;padding:6px 9px;border-radius:4px;margin-bottom:8px;background:rgba(94,224,192,.1);border:1px solid rgba(94,224,192,.25);color:var(--aqua)}
 .fc-shock.sell{background:rgba(255,90,79,.1);border-color:rgba(255,90,79,.25);color:var(--red)}
 .fc-shock.fade{background:rgba(255,168,61,.1);border-color:rgba(255,168,61,.28);color:var(--amber)}
+.fc-shock.wait{background:rgba(143,176,192,.12);border-color:rgba(143,176,192,.3);color:var(--wait)}
 .fc-tfs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
 .fc-tf{border-radius:5px;background:var(--panel);border:1px solid var(--line);border-top:2px solid var(--wait);padding:8px 9px;min-width:0}
 .fc-tf.buy{border-top-color:var(--green)}

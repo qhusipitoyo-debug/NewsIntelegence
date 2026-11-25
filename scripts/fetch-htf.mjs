@@ -2,9 +2,18 @@
 //
 // Data 1m/5m yang dipakai board teknikal hanya mencakup beberapa hari, jadi
 // tidak cukup untuk bacaan weekly/monthly. Script ini mengambil bar HARIAN
-// Yahoo Finance (interval=1d, range=2y) untuk seluruh aset yang dipantau,
+// Yahoo Finance (interval=1d, range=5y) untuk seluruh aset yang dipantau,
 // lalu menyimpannya ke data/htf.json. Browser yang melakukan agregasi ke
 // weekly/monthly supaya satu sumber data dipakai ketiga timeframe.
+//
+// Range diperpanjang dari 2y ke 5y: 420 bar 1d hanya menghasilkan ~15 bar
+// monthly untuk crypto, sehingga EMA10/RSI14 tidak stabil. 900 bar memberi
+// ~30+ bar monthly. JSON ditulis ringkas (tanpa indentasi) agar payload tetap
+// kecil meski histori diperpanjang.
+//
+// Bar tanggal hari ini ditandai `partial: true` dan dibuang browser saat
+// menghitung arah — close harian/weekly/monthly yang belum selesai memicu
+// repaint pada awal pekan/bulan.
 //
 // generatedAt sengaja memakai tanggal bar terakhir (bukan waktu fetch) agar
 // workflow 15 menit tidak membuat commit baru bila data harian belum berubah.
@@ -15,9 +24,12 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.resolve(HERE, '..', 'data', 'htf.json');
-const RANGE = '2y';
+const RANGE = '5y';
+const MAX_BARS = 1100;
 const HEADERS = { 'user-agent': 'Mozilla/5.0' };
-const FRESH_MS = 20 * 60 * 60 * 1000;
+// mtime tidak dipakai: actions/checkout selalu membuat file "baru" sehingga
+// cache 20 jam hampir selalu terlewat di CI. Kesegaran diukur dari asOf data.
+const MAX_AS_OF_AGE_DAYS = 3;
 
 export const HTF_SYMBOLS = [
     { pair: 'EUR/USD', symbol: 'EURUSD=X' },
@@ -63,21 +75,37 @@ export async function fetchHtfDaily(symbol, { fetchImpl = fetch, timeoutMs = 200
     }
     const rows = [...byDate.values()].sort((a, b) => (a.t < b.t ? -1 : a.t > b.t ? 1 : 0));
     if (!rows.length) throw new Error('seri harian kosong');
-    return rows.slice(-420);
+    const today = new Date().toISOString().slice(0, 10);
+    const trimmed = rows.slice(-MAX_BARS);
+    // Bar hari berjalan belum close. Ditandai agar agregator browser bisa
+    // membuangnya (bukan mengira itu close final weekly/monthly).
+    if (trimmed.length && trimmed[trimmed.length - 1].t === today) {
+        trimmed[trimmed.length - 1] = { ...trimmed[trimmed.length - 1], partial: true };
+    }
+    return trimmed;
 }
 
+// asOf harus tanggal bar TERAKHIR YANG SUDAH CLOSE, bukan bar hari berjalan.
+function lastClosedDate(pair) {
+    const rows = Array.isArray(pair && pair.bars) ? pair.bars : [];
+    for (let i = rows.length - 1; i >= 0; i--) {
+        if (!rows[i].partial) return rows[i].t;
+    }
+    return null;
+}
 function asOfOf(pairs) {
-    const dates = Object.values(pairs).flatMap(x => (Array.isArray(x.bars) ? x.bars.map(b => b.t) : []));
-    return dates.sort().slice(-1)[0] || new Date().toISOString().slice(0, 10);
+    const dates = Object.values(pairs).map(lastClosedDate).filter(Boolean).sort();
+    return dates.slice(-1)[0] || new Date().toISOString().slice(0, 10);
 }
 
 export async function fetchHtf({ write = true, force = false, fetchImpl = fetch } = {}) {
+    force = force || process.argv.includes('--force') || process.env.HTF_FORCE === 'true';
     if (!force) {
         try {
-            const st = await fs.stat(OUT);
             const old = JSON.parse(await fs.readFile(OUT, 'utf8'));
-            if (Date.now() - st.mtimeMs < FRESH_MS && old && Object.keys(old.pairs || {}).length >= 10) {
-                console.log('HTF masih segar — fetch dilewati.');
+            const cutoff = new Date(Date.now() - MAX_AS_OF_AGE_DAYS * 86400000).toISOString().slice(0, 10);
+            if (old && old.asOf && old.asOf >= cutoff && Object.keys(old.pairs || {}).length >= 10) {
+                console.log('HTF masih segar (asOf ' + old.asOf + ') — fetch dilewati.');
                 return old;
             }
         } catch {}
@@ -89,7 +117,13 @@ export async function fetchHtf({ write = true, force = false, fetchImpl = fetch 
         try {
             const bars = await fetchHtfDaily(cfg.symbol, { fetchImpl });
             if (bars.length < 30) throw new Error(`hanya ${bars.length} bar`);
-            pairs[cfg.pair] = { symbol: cfg.symbol, bars };
+            const last = bars[bars.length - 1];
+            pairs[cfg.pair] = {
+                symbol: cfg.symbol,
+                asOf: last && !last.partial ? last.t : (bars[bars.length - 2] || last).t,
+                partial: last && last.partial === true,
+                bars
+            };
         } catch (e) {
             errors.push(`${cfg.pair} (${cfg.symbol}): ${e.message || e}`);
         }
@@ -100,15 +134,19 @@ export async function fetchHtf({ write = true, force = false, fetchImpl = fetch 
     }
 
     const asOf = asOfOf(pairs);
+    // asOf global dipakai untuk header; tiap aset menyimpan asOf-nya sendiri
+    // (emas/indeks bisa berhenti Jumat sementara crypto tetap berjalan).
+    const asOfByPair = Object.fromEntries(Object.entries(pairs).map(([k, v]) => [k, v.asOf]));
     const payload = {
         generatedAt: `${asOf}T00:00:00.000Z`,
         asOf,
-        source: `Yahoo Finance 1d OHLC (interval=1d&range=${RANGE})`,
+        asOfByPair,
+        source: `Yahoo Finance 1d OHLC (interval=1d&range=${RANGE}, max ${MAX_BARS} bar)`,
         symbols: Object.fromEntries(HTF_SYMBOLS.map(c => [c.pair, c.symbol])),
         pairs,
         errors
     };
-    const next = JSON.stringify(payload, null, 2) + '\n';
+    const next = JSON.stringify(payload) + '\n';
     if (write) {
         const prev = await fs.readFile(OUT, 'utf8').catch(() => null);
         if (prev !== next) {

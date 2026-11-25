@@ -103,9 +103,10 @@ test('IPO Anthropic: XAU/USD exhibits correct Safe-Haven inverse correlation to 
 test('HTF Direction: RSI in strong trends acts as trend continuation, not contrarian sell', () => {
   const { ctx } = createTestSandbox();
 
-  // Bull trend: EMA fast > slow, RSI in bullish zone (60-75)
+  // Bull trend: EMA fast > slow, RSI in bullish zone (60-75).
+  // 70 bar: EMA50 butuh >= slow+15 = 65 bar setelah bar belum-close dibuang.
   const rows = [];
-  for (let i = 0; i < 45; i++) {
+  for (let i = 0; i < 70; i++) {
     const d = new Date(Date.UTC(2026, 0, 1 + i));
     const t = d.toISOString().slice(0, 10);
     const c = 2500 + i * 12;

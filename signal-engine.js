@@ -4,7 +4,12 @@
  * Pengganti logika sinyal pasca-news. Satu file, bisa dipakai di browser
  * (window.SignalEngine) maupun Node (require). Tanpa dependensi.
  *
- * Perubahan utama vs versi lama (winrate 50%, PF 0.90, avg win 0.92R / loss 1.02R):
+ * Catatan: angka lama "winrate 50%, PF 0.90, avg win 0.92R / loss 1.02R" adalah
+ * ARSIP sistem sebelum engine ini, bukan statistik berjalan. 0.92R = campuran
+ * exit TP1 ~0.48R + TP2 ~1.48R, BUKAN bukti target 1:1. Definisi win di engine
+ * ini: r > 0 setelah biaya sudah masuk di entry (r === 0 = FLAT).
+ *
+ * Perubahan utama vs versi lama:
  *  1. Tidak ada entry MARKET pra-rilis (Forecast vs Previous tidak punya edge).
  *  2. Gerbang kualitas: impact 3, reaksi >= 1x ATR(5m), surprise bermakna,
  *     Actual & harga HARUS searah (konflik = fakeout -> NO TRADE).
@@ -365,13 +370,17 @@
   /* ------------------------------------------------------------------ */
   function summarize(trades) {
     const t = trades.filter(x => x.filled);
+    // Satu definisi win: r > 0 (biaya sudah termasuk di entry). r === 0 = FLAT,
+    // tidak ikut win maupun loss — konsisten dengan index.html dan grid_core.py.
     const wins = t.filter(x => x.r > 0), loss = t.filter(x => x.r < 0);
+    const flat = t.length - wins.length - loss.length;
     const gw = wins.reduce((a, x) => a + x.r, 0), gl = -loss.reduce((a, x) => a + x.r, 0);
     const n = t.length;
     const avgW = wins.length ? gw / wins.length : 0, avgL = loss.length ? gl / loss.length : 0;
     const wr = n ? wins.length / n : 0;
     return {
       closed: n,
+      flat,
       winrate: +(wr * 100).toFixed(1),
       profitFactor: gl ? +(gw / gl).toFixed(2) : null,
       netR: +(gw - gl).toFixed(2),

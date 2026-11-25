@@ -203,6 +203,7 @@ function buildTpSl(livePrice, forexRates, cryptoRates, store, preNews = {}, inde
     ${signalDirectionCoreFn}
     ${volRegimeOkFn}
     ${inActiveUtcSessionFn}
+    inActiveUtcSession = () => true; // unit test arah: jam CI tidak boleh menentukan hasil
     ${applyMarketContextFn}
     ${signalDirectionFn}
     ${signalLockKeyFn}
@@ -255,9 +256,12 @@ const baseSnapshot = {
 
 // Actual terisi = impact terkonfirmasi (syarat arah pasca-rilis sejak d3f291b).
 // pastUsdUnconfirmed memakai Actual kosong untuk jalur 'No trade Final'.
-const pastUsd = { Date: new Date(Date.now() - 60 * 60 * 1000).toISOString(), Event: 'CPI', Country: 'USD', Importance: 3, Forecast: '3.0%', Actual: '3.0%' };
+// Actual harus membawa surprise nyata: 3.0 vs 3.0 = FLAT => engine strict NO TRADE.
+// CPI 2.6 vs 3.0 = USD lemah, searah reaksi emas +1.30% (BUY).
+const pastUsd = { Date: new Date(Date.now() - 60 * 60 * 1000).toISOString(), Event: 'CPI', Country: 'USD', Importance: 3, Forecast: '3.0%', Actual: '2.6%' };
 const pastUsdUnconfirmed = { ...pastUsd, Actual: '' };
-const pastAud = { ...pastUsd, Event: 'CPI m/m', Country: 'AUD' };
+// CPI AUD panas (3.4 vs 3.0) = AUD kuat, searah reaksi AUD/USD +1.54% (BUY).
+const pastAud = { ...pastUsd, Event: 'CPI m/m', Country: 'AUD', Forecast: '3.0%', Actual: '3.4%' };
 const futureUsd = { Date: new Date(Date.now() + 60 * 60 * 1000).toISOString(), Event: 'Nonfarm Payrolls', Country: 'USD', Importance: 3, Forecast: '200K', Actual: '' };
 
 // Reaksi harga 1-menit (reaksi.json): arah pasca-rilis datang dari konfirmasi
@@ -347,7 +351,8 @@ const repoSnapshots = { [`${pastUsd.Date}|CPI`]: { price: 3950, capturedAt: new 
 const repoHtml = buildTpSl(4000, forexRates, cryptoRates, noStore, repoSnapshots, {}, null, 'loose')({ dir: 'wait', score: 40 }, pastUsd);
 assert.match(repoHtml, /XAU\/USD \(Gold\) — BUY/);
 assert.match(repoHtml, /dari harga (tepat )?sebelum rilis|dari harga pra-rilis/);
-assert.match(repoHtml, /EUR\/USD <b style="color:var\(--amber\)">BREAKOUT<\/b>/);
+// Dengan Actual ber-surprise, EUR/USD memakai jalur BUY (bukan BREAKOUT netral).
+assert.match(repoHtml, /EUR\/USD <b>BUY<\/b>/);
 
 const straddleHtml = buildTpSl(4000, forexRates, cryptoRates, noStore)({ dir: 'wait', score: 40 }, futureUsd);
 assert.match(straddleHtml, /STRADDLE/);
@@ -582,6 +587,7 @@ function buildCatalyst(eventList, reaction) {
     ${signalDirectionCoreFn}
     ${volRegimeOkFn}
     ${inActiveUtcSessionFn}
+    inActiveUtcSession = () => true; // unit test arah: jam CI tidak boleh menentukan hasil
     ${applyMarketContextFn}
     ${signalDirectionFn}
     ${pairCurrenciesFn}
@@ -746,6 +752,7 @@ function buildCryptoState(evts, now, rates, change, reaction = null) {
     ${signalDirectionCoreFn}
     ${volRegimeOkFn}
     ${inActiveUtcSessionFn}
+    inActiveUtcSession = () => true; // unit test arah: jam CI tidak boleh menentukan hasil
     ${applyMarketContextFn}
     ${signalDirectionFn}
     ${signalLockKeyFn}
@@ -1020,6 +1027,7 @@ function buildIndicesState(evts, idxRates, now, analyzeBody = "() => ({ dir: 'wa
     ${signalDirectionCoreFn}
     ${volRegimeOkFn}
     ${inActiveUtcSessionFn}
+    inActiveUtcSession = () => true; // unit test arah: jam CI tidak boleh menentukan hasil
     ${applyMarketContextFn}
     ${signalDirectionFn}
     ${signalLockKeyFn}
@@ -1220,6 +1228,7 @@ function buildGoldState(evts, price, now, analyzeBody = "() => ({ dir: 'wait' })
     ${signalDirectionCoreFn}
     ${volRegimeOkFn}
     ${inActiveUtcSessionFn}
+    inActiveUtcSession = () => true; // unit test arah: jam CI tidak boleh menentukan hasil
     ${applyMarketContextFn}
     ${signalDirectionFn}
     ${signalLockKeyFn}
@@ -1539,6 +1548,7 @@ function buildEngine(price, { reaction = null, preNews = {}, indexRates = {}, st
     ${signalDirectionCoreFn}
     ${volRegimeOkFn}
     ${inActiveUtcSessionFn}
+    inActiveUtcSession = () => true; // unit test arah: jam CI tidak boleh menentukan hasil
     ${applyMarketContextFn}
     ${signalDirectionFn}
     ${signalLockKeyFn}

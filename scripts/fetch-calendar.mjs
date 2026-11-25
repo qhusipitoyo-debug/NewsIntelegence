@@ -580,8 +580,11 @@ export function parseTradingViewEvents(tvRows) {
     const imp = Number(r.importance);
     if (imp < 0 && !keywords.test(title)) continue;
     const rank = imp === 1 ? 3 : (imp === 0 ? 2 : 1);
-    const date = r.date;
-    if (!date || isNaN(Date.parse(date))) continue;
+    // Wajib RFC3339 dengan offset/Z. Tanpa zone, Date.parse memakai TZ lokal
+    // mesin CI dan bisa menggeser rilis satu jam saat DST AS/UK berubah.
+    const date = String(r.date || '').trim();
+    const hasZone = /(Z|[+-]\d{2}:?\d{2})$/i.test(date);
+    if (!date || !hasZone || isNaN(Date.parse(date))) continue;
 
     const dedupeKey = `${date}|${cur}|${title.toLowerCase()}`;
     if (seen.has(dedupeKey)) continue;
