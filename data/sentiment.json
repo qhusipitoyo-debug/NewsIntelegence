@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-25T03:53:38.182Z",
+  "generatedAt": "2026-11-25T13:42:43.849Z",
   "cnn": null,
   "crypto": {
     "score": 13,
@@ -7,9 +7,9 @@
   },
   "drivers": {
     "yield": {
-      "tenYr": 4.904000282287598,
-      "tenYrChange1d": -0.2847,
-      "zNominal": -0.792,
+      "tenYr": 4.8480000495910645,
+      "tenYrChange1d": -1.1419,
+      "zNominal": -1.243,
       "realTenYr": 2.79,
       "realChange1d": 0,
       "zReal": 0.432,
@@ -17,17 +17,17 @@
       "source": "US Treasury (yield riil) · Yahoo ^TNX (nominal)"
     },
     "dxy": {
-      "price": 103.96700286865234,
-      "change1d": 0.1512,
-      "change5d": 0.103,
-      "z": 1.176,
+      "price": 103.90399932861328,
+      "change1d": 0.0906,
+      "change5d": 0.0424,
+      "z": 1.118,
       "date": "2026-11-25",
       "source": "Yahoo DX-Y.NYB"
     },
     "fed": {
-      "impliedRate": 4.29,
-      "change1d": 0.021,
-      "z": 1.376,
+      "impliedRate": 4.27,
+      "change1d": -0.018,
+      "z": 1.007,
       "inflation": {
         "cpi": {
           "event": "Core CPI m/m",
@@ -38,17 +38,17 @@
         },
         "pce": {
           "event": "PCE Price Index MoM",
-          "date": "2026-10-29T12:30:00.000Z",
-          "actual": 0.5,
-          "forecast": 0.5,
+          "date": "2026-11-25T13:30:00.000Z",
+          "actual": 0.3,
+          "forecast": 0.3,
           "surprise": 0
         },
         "latest": {
-          "event": "Core CPI m/m",
-          "date": "2026-11-10T13:30:00.000Z",
+          "event": "PCE Price Index MoM",
+          "date": "2026-11-25T13:30:00.000Z",
           "actual": 0.3,
-          "forecast": 0.2,
-          "surprise": 0.1
+          "forecast": 0.3,
+          "surprise": 0
         }
       },
       "date": "2026-11-25",
@@ -57,8 +57,8 @@
     "flows": {
       "etfChange1d": -2.2931,
       "etfChange5d": -7.6671,
-      "spotChange5d": -5.1418,
-      "basis5d": -2.5253,
+      "spotChange5d": -5.6469,
+      "basis5d": -2.0202,
       "volumeRatio": 1.183,
       "sharesOutstanding": 1157550000,
       "sharesAsOf": "Nov 24, 2026",
@@ -70,12 +70,12 @@
     }
   },
   "goldDrivers": {
-    "score": -31,
+    "score": -25,
     "label": "Bearish",
     "parts": {
-      "yield": 6,
-      "dxy": -40,
-      "fed": -47,
+      "yield": 14,
+      "dxy": -38,
+      "fed": -34,
       "flows": -55
     },
     "weights": {

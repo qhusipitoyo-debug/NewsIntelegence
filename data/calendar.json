@@ -14082,7 +14082,7 @@
     "Importance": 1,
     "Forecast": "1.2%",
     "Previous": "1%",
-    "Actual": ""
+    "Actual": "1.1%"
   },
   {
     "Date": "2026-11-25T07:00:00.000Z",
@@ -14091,7 +14091,7 @@
     "Importance": 1,
     "Forecast": "0.2%",
     "Previous": "0.3%",
-    "Actual": ""
+    "Actual": "0.1%"
   },
   {
     "Date": "2026-11-25T02:00:00-05:00",
@@ -14109,7 +14109,7 @@
     "Importance": 2,
     "Forecast": "82",
     "Previous": "80",
-    "Actual": ""
+    "Actual": "82"
   },
   {
     "Date": "2026-11-25T12:00:00.000Z",
@@ -14118,7 +14118,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "6.38%",
-    "Actual": ""
+    "Actual": "6.39%"
   },
   {
     "Date": "2026-11-25T12:00:00.000Z",
@@ -14127,7 +14127,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "6.64%",
-    "Actual": ""
+    "Actual": "6.79%"
   },
   {
     "Date": "2026-11-25T07:25:00-05:00",
@@ -14145,7 +14145,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "1.4",
-    "Actual": ""
+    "Actual": "1.3"
   },
   {
     "Date": "2026-11-25T13:00:00.000Z",
@@ -14154,7 +14154,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "-0.4%",
-    "Actual": ""
+    "Actual": "-7.2%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14163,7 +14163,7 @@
     "Importance": 3,
     "Forecast": "0.4%",
     "Previous": "0.5%",
-    "Actual": ""
+    "Actual": "0.3%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14172,7 +14172,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "0.4%",
-    "Actual": ""
+    "Actual": "0.3%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14181,7 +14181,7 @@
     "Importance": 1,
     "Forecast": "3.2%",
     "Previous": "3.1%",
-    "Actual": ""
+    "Actual": "3.3%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14190,7 +14190,7 @@
     "Importance": 2,
     "Forecast": "0.3%",
     "Previous": "0.5%",
-    "Actual": ""
+    "Actual": "0.3%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14199,7 +14199,7 @@
     "Importance": 1,
     "Forecast": "2.5%",
     "Previous": "3.6%",
-    "Actual": ""
+    "Actual": "2.5%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14208,7 +14208,7 @@
     "Importance": 2,
     "Forecast": "3.4%",
     "Previous": "6.4%",
-    "Actual": ""
+    "Actual": "1.8%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14217,7 +14217,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "3.4%",
-    "Actual": ""
+    "Actual": "2.4%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14226,7 +14226,7 @@
     "Importance": 1,
     "Forecast": "0%",
     "Previous": "2.2%",
-    "Actual": ""
+    "Actual": "0.4%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14235,7 +14235,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "8.2%",
-    "Actual": ""
+    "Actual": "3.8%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14244,7 +14244,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "197.75K",
-    "Actual": ""
+    "Actual": "196K"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14253,7 +14253,7 @@
     "Importance": 1,
     "Forecast": "201K",
     "Previous": "203K",
-    "Actual": ""
+    "Actual": "189K"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14262,7 +14262,7 @@
     "Importance": 3,
     "Forecast": "0.4%",
     "Previous": "0.2%",
-    "Actual": ""
+    "Actual": "0.7%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14271,7 +14271,7 @@
     "Importance": 3,
     "Forecast": "3.4%",
     "Previous": "1.5%",
-    "Actual": ""
+    "Actual": "4.3%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14280,7 +14280,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "2.2%",
-    "Actual": ""
+    "Actual": "2.6%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14289,7 +14289,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "5.3%",
-    "Actual": ""
+    "Actual": "2.1%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14298,7 +14298,7 @@
     "Importance": 1,
     "Forecast": "0.7%",
     "Previous": "1.8%",
-    "Actual": ""
+    "Actual": "0.2%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14307,7 +14307,7 @@
     "Importance": 2,
     "Forecast": "0.5%",
     "Previous": "0.5%",
-    "Actual": ""
+    "Actual": "0.5%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14316,7 +14316,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "0.3%",
-    "Actual": ""
+    "Actual": "0.3%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14325,7 +14325,7 @@
     "Importance": 3,
     "Forecast": "0.3%",
     "Previous": "0.3%",
-    "Actual": ""
+    "Actual": "0.3%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14334,7 +14334,7 @@
     "Importance": 2,
     "Forecast": "3.8%",
     "Previous": "3.6%",
-    "Actual": ""
+    "Actual": "3.8%"
   },
   {
     "Date": "2026-11-25T13:30:00.000Z",
@@ -14343,7 +14343,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "3.7%",
-    "Actual": ""
+    "Actual": "3%"
   },
   {
     "Date": "2026-11-25T08:30:00-05:00",
@@ -16295,7 +16295,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "6.39%",
     "Actual": ""
   },
   {
@@ -16304,7 +16304,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "6.79%",
     "Actual": ""
   },
   {
@@ -16628,7 +16628,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "196K",
     "Actual": ""
   },
   {
@@ -16637,7 +16637,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "189K",
     "Actual": ""
   },
   {
@@ -21056,7 +21056,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "1.3",
     "Actual": ""
   },
   {
@@ -21065,7 +21065,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-7.2%",
     "Actual": ""
   },
   {
@@ -21074,7 +21074,7 @@
     "Country": "USD",
     "Importance": 3,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.3%",
     "Actual": ""
   },
   {
@@ -21083,7 +21083,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.3%",
     "Actual": ""
   },
   {
@@ -21092,7 +21092,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.3%",
     "Actual": ""
   },
   {
@@ -21101,7 +21101,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "3.3%",
     "Actual": ""
   },
   {
@@ -21110,7 +21110,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.3%",
     "Actual": ""
   },
   {
@@ -21119,7 +21119,7 @@
     "Country": "USD",
     "Importance": 3,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.3%",
     "Actual": ""
   },
   {
@@ -21128,7 +21128,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "3.8%",
     "Actual": ""
   },
   {
@@ -21137,7 +21137,7 @@
     "Country": "USD",
     "Importance": 3,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.7%",
     "Actual": ""
   },
   {
@@ -21218,7 +21218,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.4%",
     "Actual": ""
   },
   {
@@ -21227,7 +21227,7 @@
     "Country": "USD",
     "Importance": 3,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.2%",
     "Actual": ""
   },
   {
@@ -21236,7 +21236,7 @@
     "Country": "USD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0.5%",
     "Actual": ""
   },
   {
