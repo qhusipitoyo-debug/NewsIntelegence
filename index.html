@@ -1422,10 +1422,19 @@ function evaluateSignalHistory({
             const prevDayBar = bars[Math.max(0, i - (bars.length > 350 ? 288 : 60))];
             const rollChg = prevDayBar && prevDayBar.c > 0 ? ((px - prevDayBar.c) / prevDayBar.c) * 100 : null;
             const recentWindow = (now - tMs) <= 6 * 3600000;
+            const curList = kind === 'forex' ? pairCurrencies(asset) : ['USD'];
+            const relevantEv = Array.isArray(eventList) ? eventList.find(ev => {
+                if ((+ev.Importance || 1) < 2) return false;
+                const rMs = Date.parse(ev.Date);
+                if (!Number.isFinite(rMs)) return false;
+                const c = countryCode(ev.Country);
+                if (!curList.includes(c)) return false;
+                return tMs >= rMs - 15 * 60000 && tMs <= rMs + 30 * 60000;
+            }) : null;
             const sig = typeof calibratedWatchSignal === 'function' ? calibratedWatchSignal({
                 kind,
                 asset,
-                event: null,
+                event: relevantEv || null,
                 now: tMs,
                 price: px,
                 changePct: rollChg,
@@ -2154,7 +2163,8 @@ function goldBoardState(now = Date.now()) {
 
     // NO TRADE dari engine: jangan biarkan sinyal Watch kalibrasi menimpa
     // keputusan menahan entry (fakeout / reaksi di bawah 1.5x ATR5m).
-    if (data.basis !== 'engine-no-trade' && typeof calibratedWatchSignal === 'function' && typeof resolveSignalLevels === 'function') {
+    const goldConflict = Boolean(data.conflict || (data.note && (data.note.includes('konflik') || data.note.includes('fakeout'))));
+    if (!goldConflict && typeof calibratedWatchSignal === 'function' && typeof resolveSignalLevels === 'function') {
         const watch = calibratedWatchSignal({ kind: 'gold', asset: 'XAU/USD', event: pick.e, now, price });
         if (watch.dir) {
             const lvl = resolveSignalLevels(pick.e, 'XAU/USD', 'gold', { ...watch, phase: 'watch' }, now);
@@ -2291,7 +2301,8 @@ function cryptoBoardState(now = Date.now()) {
             ? detectPriceSpike(assetBars(it.pair), it.price)
             : null;
         it.spike = spike;
-        if (!it.dir && it.basis !== 'engine-no-trade' && typeof calibratedWatchSignal === 'function') {
+        const cryptoConflict = Boolean(it.conflict || (it.note && (it.note.includes('konflik') || it.note.includes('fakeout'))));
+        if (!it.dir && !cryptoConflict && typeof calibratedWatchSignal === 'function') {
             const watch = calibratedWatchSignal({
                 kind: 'crypto', asset: it.pair, event: pick ? pick.e : null,
                 now, price: it.price, changePct: it.changePct
@@ -2494,7 +2505,8 @@ function forexBoardState(now = Date.now()) {
         let spike = typeof detectPriceSpike === 'function' && typeof assetBars === 'function'
             ? detectPriceSpike(assetBars(pair), rate)
             : null;
-        if (phase !== 'live' && !dir && basis !== 'engine-no-trade' && typeof calibratedWatchSignal === 'function') {
+        const fxConflict = Boolean(conflict || (note && (note.includes('konflik') || note.includes('fakeout'))));
+        if (phase !== 'live' && !dir && !fxConflict && typeof calibratedWatchSignal === 'function') {
             const watch = calibratedWatchSignal({
                 kind: 'forex', asset: pair, event: next ? next.e : null,
                 now, price: rate, changePct: quote && quote.changePct
@@ -2704,7 +2716,8 @@ function indicesBoardState(now = Date.now()) {
             ? detectPriceSpike(assetBars(it.symbol), it.price)
             : null;
         it.spike = spike;
-        if (!it.dir && it.basis !== 'engine-no-trade' && typeof calibratedWatchSignal === 'function') {
+        const idxConflict = Boolean(it.conflict || (it.note && (it.note.includes('konflik') || it.note.includes('fakeout'))));
+        if (!it.dir && !idxConflict && typeof calibratedWatchSignal === 'function') {
             const watch = calibratedWatchSignal({
                 kind: 'index', asset: it.symbol, event: pick ? pick.e : null,
                 now, price: it.price, changePct: it.changePct

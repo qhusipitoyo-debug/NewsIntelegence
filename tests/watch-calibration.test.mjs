@@ -77,6 +77,7 @@ function createDashboardSandbox() {
 
   const ctx = vm.createContext(sandbox);
   vm.runInContext(match[1], ctx);
+  vm.runInContext(readFileSync(join(ROOT, "signal-engine.js"), "utf8"), ctx);
 
   function loadRealFixtures() {
     const calendar = loadDataJson('calendar.json');
@@ -274,6 +275,18 @@ test('End-to-end watch boards and HTML render cleanly on real data/* fixtures', 
       btcBars.push({ k: 60, o: 68000, h: 68500, l: 67000, c: 66500 });
       MARKETS.pairs['BTC/USD'].bars = btcBars;
     }
+    {
+      const usBars = [];
+      for (let i = 0; i < 60; i++) { const px = 5950 - i * 0.8; usBars.push({ k: i, o: px - 0.5, h: px + 2, l: px - 2, c: px }); }
+      usBars.push({ k: 60, o: 5950, h: 5960, l: 5890, c: 5900 });
+      MARKETS.pairs['US500'].bars = usBars;
+    }
+    {
+      const jpyBars = [];
+      for (let i = 0; i < 60; i++) { const px = 154 + i * 0.02; jpyBars.push({ k: i, o: px - 0.01, h: px + 0.05, l: px - 0.05, c: px }); }
+      jpyBars.push({ k: 60, o: 155.1, h: 155.3, l: 155.05, c: 155.25 });
+      MARKETS.pairs['USD/JPY'].bars = jpyBars;
+    }
     SENTIMENT = { score: 24, rating: 'Extreme Fear', source: 'CNN Fear & Greed' };
     SENTIMENT_CRYPTO = { score: 85, rating: 'Extreme Greed', source: 'Alternative.me' };
     // Kalender ter-refresh menyasarkan katalis MBA (tanpa Forecast → surprise
@@ -281,7 +294,7 @@ test('End-to-end watch boards and HTML render cleanly on real data/* fixtures', 
     // Actual = Forecast (tanpa kejutan) supaya arah benar-benar datang dari momentum
     // teknikal mikro, sesuai jalur kalibrasi WATCH yang diuji.
     events = [normalize({ Date: '2026-11-11T12:30:00Z', Country: 'United States', Event: 'Core CPI m/m', Importance: 3, Actual: '0.2%', Forecast: '0.2%' })];
-    if (FOREX_QUOTES['USD/JPY']) FOREX_QUOTES['USD/JPY'].changePct = 0.35;
+    if (FOREX_QUOTES['USD/JPY']) { FOREX_QUOTES['USD/JPY'].changePct = 0.35; FOREX_QUOTES['USD/JPY'].price = 155.25; }
     if (FOREX_QUOTES['EUR/USD']) FOREX_QUOTES['EUR/USD'].changePct = -0.32;
     FOREX_QUOTES['USD/CHF'] = { price: Number(FOREX_RATES.CHF) || 0.88, changePct: 0.25 };
     if (FOREX_META && FOREX_META.rates) FOREX_META.rates.USD_CHG = 0.30;
