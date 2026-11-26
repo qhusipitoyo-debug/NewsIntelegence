@@ -21715,5 +21715,14 @@
     "Forecast": "",
     "Previous": "",
     "Actual": ""
+  },
+  {
+    "Date": "2026-12-31T21:30:00.000Z",
+    "Event": "Fed Balance Sheet",
+    "Country": "USD",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "6.74",
+    "Actual": ""
   }
 ]
