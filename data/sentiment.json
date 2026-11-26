@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-25T22:46:23.278Z",
+  "generatedAt": "2026-11-26T04:35:39.267Z",
   "cnn": null,
   "crypto": {
-    "score": 13,
+    "score": 11,
     "rating": "Extreme Fear"
   },
   "drivers": {
@@ -17,15 +17,15 @@
       "source": "US Treasury (yield riil) · Yahoo ^TNX (nominal)"
     },
     "dxy": {
-      "price": 103.697998046875,
-      "change1d": -0.1079,
-      "change5d": -0.156,
-      "z": 0.921,
-      "date": "2026-11-25",
+      "price": 103.79900360107422,
+      "change1d": 0.1244,
+      "change5d": -0.0972,
+      "z": 0.934,
+      "date": "2026-11-26",
       "source": "Yahoo DX-Y.NYB"
     },
     "fed": {
-      "impliedRate": 4.14,
+      "impliedRate": 4.15,
       "change1d": -0.013,
       "z": 1.073,
       "inflation": {
@@ -51,17 +51,17 @@
           "surprise": 0
         }
       },
-      "date": "2026-11-25",
+      "date": "2026-11-26",
       "source": "Yahoo ZQ=F (Fed funds futures) · Yahoo ^IRX (T-bill) · kalender CPI/PCE"
     },
     "flows": {
       "etfChange1d": 0.6295,
       "etfChange5d": -4.0147,
-      "spotChange5d": -3.3165,
-      "basis5d": -0.6982,
-      "volumeRatio": 1.9705,
-      "sharesOutstanding": 1157550000,
-      "sharesAsOf": "Nov 24, 2026",
+      "spotChange5d": -1.8668,
+      "basis5d": -2.1479,
+      "volumeRatio": 1.9775,
+      "sharesOutstanding": 1157650000,
+      "sharesAsOf": "Nov 25, 2026",
       "sharesChange": null,
       "flowPct": null,
       "flowScore": null,
@@ -70,13 +70,13 @@
     }
   },
   "goldDrivers": {
-    "score": -9,
-    "label": "Netral",
+    "score": -15,
+    "label": "Bearish",
     "parts": {
       "yield": 23,
-      "dxy": -31,
+      "dxy": -32,
       "fed": -36,
-      "flows": 3
+      "flows": -26
     },
     "weights": {
       "yield": 0.3,
