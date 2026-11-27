@@ -1,14 +1,5 @@
 [
   {
-    "Date": "2026-09-27T23:50:00.000Z",
-    "Event": "Services PPI YoY",
-    "Country": "JPY",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "3.6%",
-    "Actual": "3.5%"
-  },
-  {
     "Date": "2026-09-28T05:00:00.000Z",
     "Event": "Consumer Confidence",
     "Country": "EUR",
@@ -14712,7 +14703,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "0.6%",
-    "Actual": ""
+    "Actual": "0%"
   },
   {
     "Date": "2026-11-26T23:30:00.000Z",
@@ -14721,7 +14712,7 @@
     "Importance": 2,
     "Forecast": "3.0%",
     "Previous": "2.6%",
-    "Actual": ""
+    "Actual": "2.9%"
   },
   {
     "Date": "2026-11-26T23:30:00.000Z",
@@ -14730,7 +14721,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "2.8%",
-    "Actual": ""
+    "Actual": "2.8%"
   },
   {
     "Date": "2026-11-26T23:30:00.000Z",
@@ -14739,7 +14730,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "2.4%",
-    "Actual": ""
+    "Actual": "2.3%"
   },
   {
     "Date": "2026-11-26T23:50:00.000Z",
@@ -14748,7 +14739,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "650.1",
-    "Actual": ""
+    "Actual": "208.5"
   },
   {
     "Date": "2026-11-26T23:50:00.000Z",
@@ -14757,7 +14748,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "363.1",
-    "Actual": ""
+    "Actual": "-350.8"
   },
   {
     "Date": "2026-11-27T06:00:00.000Z",
@@ -15250,7 +15241,7 @@
     "Event": "Retail Sales YoY",
     "Country": "JPY",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "2.7%",
     "Previous": "2.3%",
     "Actual": ""
   },
@@ -15259,7 +15250,7 @@
     "Event": "Industrial Production MoM Prel",
     "Country": "JPY",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "2.2%",
     "Previous": "2.2%",
     "Actual": ""
   },
@@ -15313,7 +15304,7 @@
     "Event": "Housing Starts YoY",
     "Country": "JPY",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "-6.9%",
     "Previous": "-2.7%",
     "Actual": ""
   },
@@ -15790,7 +15781,7 @@
     "Event": "Unemployment Rate",
     "Country": "JPY",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "2.4%",
     "Previous": "2.4%",
     "Actual": ""
   },
@@ -16430,7 +16421,7 @@
     "Country": "JPY",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "208.5",
     "Actual": ""
   },
   {
@@ -16439,7 +16430,7 @@
     "Country": "JPY",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-350.8",
     "Actual": ""
   },
   {
@@ -21677,7 +21668,7 @@
     "Country": "JPY",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "0%",
     "Actual": ""
   },
   {
@@ -21686,7 +21677,7 @@
     "Country": "JPY",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "2.9%",
     "Actual": ""
   },
   {
@@ -21695,7 +21686,7 @@
     "Country": "JPY",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "2.8%",
     "Actual": ""
   },
   {
@@ -21711,6 +21702,51 @@
     "Date": "2026-12-25T09:00:00.000Z",
     "Event": "UniCredit Bank Manufacturing PMI",
     "Country": "EUR",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-27T23:50:00.000Z",
+    "Event": "Industrial Production Forecast 1 Month Ahead",
+    "Country": "JPY",
+    "Importance": 1,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-27T23:50:00.000Z",
+    "Event": "Large Retailers Sales YoY",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-27T23:50:00.000Z",
+    "Event": "Retail Sales YoY",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-27T23:50:00.000Z",
+    "Event": "Industrial Production MoM Prel",
+    "Country": "JPY",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-27T23:50:00.000Z",
+    "Event": "Industrial Production YoY Prel",
+    "Country": "JPY",
     "Importance": 1,
     "Forecast": "",
     "Previous": "",

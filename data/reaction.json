@@ -1,4 +1,143 @@
 {
-  "generatedAt": "2026-11-26T23:10:02.295Z",
-  "events": {}
+  "generatedAt": "2026-11-27T04:58:53.884Z",
+  "events": {
+    "2026-11-26T23:30:00.000Z|Tokyo CPI ex All Food and Energy MoM": {
+      "releasedAt": "2026-11-26T23:30:00.000Z",
+      "pairs": {
+        "AUD/USD": {
+          "baseClose": 0.6634819507598877,
+          "lastClose": 0.6634819507598877,
+          "movePct": 0,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": 0.013,
+          "faded": false
+        },
+        "NZD/USD": {
+          "baseClose": 0.5471357107162476,
+          "lastClose": 0.5468365550041199,
+          "movePct": -0.055,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": 0.011,
+          "faded": false
+        }
+      }
+    },
+    "2026-11-26T23:30:00.000Z|Tokyo Core CPI y/y": {
+      "releasedAt": "2026-11-26T23:30:00.000Z",
+      "pairs": {
+        "AUD/USD": {
+          "baseClose": 0.6634819507598877,
+          "lastClose": 0.6634819507598877,
+          "movePct": 0,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": 0.013,
+          "faded": false
+        },
+        "NZD/USD": {
+          "baseClose": 0.5471357107162476,
+          "lastClose": 0.5468365550041199,
+          "movePct": -0.055,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": 0.011,
+          "faded": false
+        }
+      }
+    },
+    "2026-11-26T23:30:00.000Z|Tokyo CPI YoY": {
+      "releasedAt": "2026-11-26T23:30:00.000Z",
+      "pairs": {
+        "AUD/USD": {
+          "baseClose": 0.6634819507598877,
+          "lastClose": 0.6634819507598877,
+          "movePct": 0,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": 0.013,
+          "faded": false
+        },
+        "NZD/USD": {
+          "baseClose": 0.5471357107162476,
+          "lastClose": 0.5468365550041199,
+          "movePct": -0.055,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": 0.011,
+          "faded": false
+        }
+      }
+    },
+    "2026-11-26T23:30:00.000Z|Tokyo CPI ex All Food and Energy YoY": {
+      "releasedAt": "2026-11-26T23:30:00.000Z",
+      "pairs": {
+        "AUD/USD": {
+          "baseClose": 0.6634819507598877,
+          "lastClose": 0.6634819507598877,
+          "movePct": 0,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": 0.013,
+          "faded": false
+        },
+        "NZD/USD": {
+          "baseClose": 0.5471357107162476,
+          "lastClose": 0.5468365550041199,
+          "movePct": -0.055,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": 0.011,
+          "faded": false
+        }
+      }
+    },
+    "2026-11-26T23:50:00.000Z|Bond Investment by Foreigners": {
+      "releasedAt": "2026-11-26T23:50:00.000Z",
+      "pairs": {
+        "AUD/USD": {
+          "baseClose": 0.663658082485199,
+          "lastClose": 0.6634819507598877,
+          "movePct": -0.027,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": 0,
+          "faded": false
+        },
+        "NZD/USD": {
+          "baseClose": 0.5470758676528931,
+          "lastClose": 0.5466870665550232,
+          "movePct": -0.071,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": 0.005,
+          "faded": false
+        }
+      }
+    },
+    "2026-11-26T23:50:00.000Z|Foreign Stock Investment": {
+      "releasedAt": "2026-11-26T23:50:00.000Z",
+      "pairs": {
+        "AUD/USD": {
+          "baseClose": 0.663658082485199,
+          "lastClose": 0.6634819507598877,
+          "movePct": -0.027,
+          "dir": null,
+          "minutes": 45,
+          "spikePct": 0,
+          "faded": false
+        },
+        "NZD/USD": {
+          "baseClose": 0.5470758676528931,
+          "lastClose": 0.5466870665550232,
+          "movePct": -0.071,
+          "dir": "short",
+          "minutes": 45,
+          "spikePct": 0.005,
+          "faded": false
+        }
+      }
+    }
+  }
 }
