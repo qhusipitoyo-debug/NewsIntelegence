@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T14:43:36.521Z",
+  "generatedAt": "2026-11-27T22:57:44.359Z",
   "cnn": null,
   "crypto": {
     "score": 12,
@@ -7,27 +7,27 @@
   },
   "drivers": {
     "yield": {
-      "tenYr": 4.900000095367432,
-      "tenYrChange1d": 1.0726,
-      "zNominal": -0.657,
-      "realTenYr": 2.73,
-      "realChange1d": -0.06,
-      "zReal": -0.134,
-      "date": "2026-11-25",
+      "tenYr": 4.935999870300293,
+      "tenYrChange1d": 1.8152,
+      "zNominal": -0.311,
+      "realTenYr": 2.79,
+      "realChange1d": 0.06,
+      "zReal": 0.351,
+      "date": "2026-11-27",
       "source": "US Treasury (yield riil) · Yahoo ^TNX (nominal)"
     },
     "dxy": {
-      "price": 103.89900207519531,
-      "change1d": 0.2209,
-      "change5d": -0.001,
-      "z": 1.03,
+      "price": 104.01399993896484,
+      "change1d": 0.3318,
+      "change5d": 0.1097,
+      "z": 1.138,
       "date": "2026-11-27",
       "source": "Yahoo DX-Y.NYB"
     },
     "fed": {
       "impliedRate": 4.145,
-      "change1d": 0.007,
-      "z": 1.068,
+      "change1d": -0.002,
+      "z": 0.947,
       "inflation": {
         "cpi": {
           "event": "Core CPI m/m",
@@ -55,11 +55,11 @@
       "source": "Yahoo ZQ=F (Fed funds futures) · Yahoo ^IRX (T-bill) · kalender CPI/PCE"
     },
     "flows": {
-      "etfChange1d": 1.7129,
-      "etfChange5d": -0.6144,
-      "spotChange5d": -0.54,
-      "basis5d": -0.0744,
-      "volumeRatio": 0.124,
+      "etfChange1d": 2.0887,
+      "etfChange5d": -0.2473,
+      "spotChange5d": -0.4613,
+      "basis5d": 0.214,
+      "volumeRatio": 0.5655,
       "sharesOutstanding": 1157650000,
       "sharesAsOf": "Nov 25, 2026",
       "sharesChange": null,
@@ -73,10 +73,10 @@
     "score": -19,
     "label": "Bearish",
     "parts": {
-      "yield": 13,
-      "dxy": -35,
-      "fed": -36,
-      "flows": -24
+      "yield": -1,
+      "dxy": -39,
+      "fed": -32,
+      "flows": -4
     },
     "weights": {
       "yield": 0.3,

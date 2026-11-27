@@ -1,32 +1,5 @@
 [
   {
-    "Date": "2026-09-28T15:30:00.000Z",
-    "Event": "3-Month Bill Auction Allotted at High",
-    "Country": "USD",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "36.66%",
-    "Actual": "61.14%"
-  },
-  {
-    "Date": "2026-09-28T15:30:00.000Z",
-    "Event": "3-Month Bill Auction Bid-to-Cover",
-    "Country": "USD",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "2.77",
-    "Actual": "2.99"
-  },
-  {
-    "Date": "2026-09-28T15:30:00.000Z",
-    "Event": "3-Month Bill Auction Total Accepted",
-    "Country": "USD",
-    "Importance": 2,
-    "Forecast": "",
-    "Previous": "84.34",
-    "Actual": "89.85"
-  },
-  {
     "Date": "2026-09-29T04:30:00.000Z",
     "Event": "RBA Interest Rate Decision",
     "Country": "AUD",
@@ -15153,7 +15126,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "2.8%",
-    "Actual": ""
+    "Actual": "2.8%"
   },
   {
     "Date": "2026-11-27T16:00:00.000Z",
@@ -15162,7 +15135,7 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "-5.36",
-    "Actual": ""
+    "Actual": "-10.5"
   },
   {
     "Date": "2026-11-27T19:00:00.000Z",
@@ -15189,7 +15162,7 @@
     "Importance": 1,
     "Forecast": "",
     "Previous": "6.76",
-    "Actual": ""
+    "Actual": "6.73"
   },
   {
     "Date": "2026-11-29T23:50:00.000Z",
@@ -15313,7 +15286,7 @@
     "Event": "Retail Sales YoY",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "-1.5%",
     "Previous": "-2.3%",
     "Actual": ""
   },
@@ -15403,7 +15376,7 @@
     "Event": "Business Confidence",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "91.5",
     "Previous": "91.9",
     "Actual": ""
   },
@@ -15412,7 +15385,7 @@
     "Event": "Consumer Confidence",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "90.8",
     "Previous": "90.3",
     "Actual": ""
   },
@@ -15466,7 +15439,7 @@
     "Event": "Mortgage Lending",
     "Country": "GBP",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "3.6",
     "Previous": "3.87",
     "Actual": ""
   },
@@ -15529,7 +15502,7 @@
     "Event": "Inflation Rate MoM Prel",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "-0.3%",
     "Previous": "0.9%",
     "Actual": ""
   },
@@ -15547,7 +15520,7 @@
     "Event": "Inflation Rate YoY Prel",
     "Country": "EUR",
     "Importance": 3,
-    "Forecast": "",
+    "Forecast": "5.6%",
     "Previous": "5.4%",
     "Actual": ""
   },
@@ -15700,7 +15673,7 @@
     "Event": "Chicago PMI",
     "Country": "USD",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "55",
     "Previous": "55.3",
     "Actual": ""
   },
@@ -15889,7 +15862,7 @@
     "Event": "S&P Global Manufacturing PMI",
     "Country": "EUR",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "52.7",
     "Previous": "",
     "Actual": ""
   },
@@ -15898,7 +15871,7 @@
     "Event": "S&P Global Manufacturing PMI",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "49.8",
     "Previous": "",
     "Actual": ""
   },
@@ -15907,7 +15880,7 @@
     "Event": "S&P Global Manufacturing PMI Final",
     "Country": "EUR",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "47.9",
     "Previous": "",
     "Actual": ""
   },
@@ -15997,7 +15970,7 @@
     "Event": "HICP ex Food & Energy YoY Flash",
     "Country": "EUR",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "2.3%",
     "Previous": "2.2%",
     "Actual": ""
   },
@@ -16276,7 +16249,7 @@
     "Event": "Unemployment Rate",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "6.3%",
     "Previous": "6.3%",
     "Actual": ""
   },
@@ -16492,7 +16465,7 @@
     "Event": "S&P Global Services PMI",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "56.3",
     "Previous": "",
     "Actual": ""
   },
@@ -16501,7 +16474,7 @@
     "Event": "S&P Global Services PMI",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "51.6",
     "Previous": "",
     "Actual": ""
   },
@@ -16519,7 +16492,7 @@
     "Event": "S&P Global Composite PMI Final",
     "Country": "EUR",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "46.2",
     "Previous": "",
     "Actual": ""
   },
@@ -16528,7 +16501,7 @@
     "Event": "S&P Global Services PMI Final",
     "Country": "EUR",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "46.6",
     "Previous": "",
     "Actual": ""
   },
@@ -16591,7 +16564,7 @@
     "Event": "PPI MoM",
     "Country": "EUR",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "1.5%",
     "Previous": "2.5%",
     "Actual": ""
   },
@@ -16600,7 +16573,7 @@
     "Event": "PPI YoY",
     "Country": "EUR",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "12.6%",
     "Previous": "11.1%",
     "Actual": ""
   },
@@ -16834,7 +16807,7 @@
     "Event": "Industrial Production MoM",
     "Country": "EUR",
     "Importance": 2,
-    "Forecast": "",
+    "Forecast": "0.2%",
     "Previous": "-0.5%",
     "Actual": ""
   },
@@ -16987,7 +16960,7 @@
     "Event": "Manufacturing Payrolls",
     "Country": "USD",
     "Importance": 1,
-    "Forecast": "",
+    "Forecast": "15K",
     "Previous": "19K",
     "Actual": ""
   },
@@ -21281,7 +21254,7 @@
     "Country": "USD",
     "Importance": 1,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "2.8%",
     "Actual": ""
   },
   {
@@ -21659,7 +21632,7 @@
     "Country": "CAD",
     "Importance": 2,
     "Forecast": "",
-    "Previous": "",
+    "Previous": "-10.5",
     "Actual": ""
   },
   {
@@ -21849,6 +21822,69 @@
     "Importance": 2,
     "Forecast": "",
     "Previous": "-149.5",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-28T15:30:00.000Z",
+    "Event": "Dallas Fed Manufacturing Index",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-28T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-28T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-28T16:30:00.000Z",
+    "Event": "3-Month Bill Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-28T18:00:00.000Z",
+    "Event": "2-Year Note Auction Allotted at High",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-28T18:00:00.000Z",
+    "Event": "2-Year Note Auction Bid-to-Cover",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
+    "Actual": ""
+  },
+  {
+    "Date": "2026-12-28T18:00:00.000Z",
+    "Event": "2-Year Note Auction Total Accepted",
+    "Country": "USD",
+    "Importance": 2,
+    "Forecast": "",
+    "Previous": "",
     "Actual": ""
   },
   {
