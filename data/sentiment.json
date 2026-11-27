@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T04:58:52.559Z",
+  "generatedAt": "2026-11-27T14:43:36.521Z",
   "cnn": null,
   "crypto": {
     "score": 12,
@@ -7,9 +7,9 @@
   },
   "drivers": {
     "yield": {
-      "tenYr": 4.8480000495910645,
-      "tenYrChange1d": -1.1419,
-      "zNominal": -1.243,
+      "tenYr": 4.900000095367432,
+      "tenYrChange1d": 1.0726,
+      "zNominal": -0.657,
       "realTenYr": 2.73,
       "realChange1d": -0.06,
       "zReal": -0.134,
@@ -17,17 +17,17 @@
       "source": "US Treasury (yield riil) · Yahoo ^TNX (nominal)"
     },
     "dxy": {
-      "price": 103.75599670410156,
-      "change1d": 0.083,
-      "change5d": -0.1386,
-      "z": 0.892,
+      "price": 103.89900207519531,
+      "change1d": 0.2209,
+      "change5d": -0.001,
+      "z": 1.03,
       "date": "2026-11-27",
       "source": "Yahoo DX-Y.NYB"
     },
     "fed": {
-      "impliedRate": 4.15,
-      "change1d": -0.013,
-      "z": 1.073,
+      "impliedRate": 4.145,
+      "change1d": 0.007,
+      "z": 1.068,
       "inflation": {
         "cpi": {
           "event": "Core CPI m/m",
@@ -55,11 +55,11 @@
       "source": "Yahoo ZQ=F (Fed funds futures) · Yahoo ^IRX (T-bill) · kalender CPI/PCE"
     },
     "flows": {
-      "etfChange1d": 0.6295,
-      "etfChange5d": -4.0147,
-      "spotChange5d": -0.5725,
-      "basis5d": -3.4422,
-      "volumeRatio": 1.9815,
+      "etfChange1d": 1.7129,
+      "etfChange5d": -0.6144,
+      "spotChange5d": -0.54,
+      "basis5d": -0.0744,
+      "volumeRatio": 0.124,
       "sharesOutstanding": 1157650000,
       "sharesAsOf": "Nov 25, 2026",
       "sharesChange": null,
@@ -70,13 +70,13 @@
     }
   },
   "goldDrivers": {
-    "score": -15,
+    "score": -19,
     "label": "Bearish",
     "parts": {
-      "yield": 23,
-      "dxy": -30,
+      "yield": 13,
+      "dxy": -35,
       "fed": -36,
-      "flows": -25
+      "flows": -24
     },
     "weights": {
       "yield": 0.3,
