@@ -42,15 +42,20 @@
     reactMaxMin: 45,            // jendela pengukuran reaksi
     planUntilMin: 90,           // setelah ini tidak membuat order baru
     minReactAtr: 1.5,           // reaksi >= 1.5 x ATR(5m): gerak kecil dianggap noise/fakeout
+                                // (1.25 diuji pada kalibrasi 60h: identik — reaksi yang lolos
+                                //  kategori whitelist hampir selalu > 1.5 ATR, jadi tetap 1.5)
     atrPeriod: 14,
-    retrace: 0.5,               // 0.382–0.618 (zona OTE)
+    retrace: 0.382,             // OTE 38.2% (kalibrasi 60h walk-forward: avg skor 0.279 vs 0.225
+                                // untuk 0.50; retrace dangkal terisi lebih cepat & tak kejar harga)
     slBufferAtr: 0.25,          // buffer SL di balik asal impuls
     minRiskAtr: 1.0,            // risiko minimal (x ATR5m) agar tidak kena noise
     maxRiskAtr: 20,             // risiko maksimal; di atas ini RR tidak layak
     tp1R: 1.0, tp1Share: 0.5,   // TP1 1R tutup 50% lalu SL ke BE
     tp2R: 2.0,
     trailBars: 15,              // trailing (menit) setelah TP1; 0 = mati
-    orderTtlMin: 30,            // order limit dibatalkan bila tak terisi
+    orderTtlMin: 60,            // order limit hangus bila tak terisi (30 menit -> 60 menit:
+                                // kalibrasi 60h menunjukkan retrace 38.2% butuh jendela lebih
+                                // panjang; TTL 60m + retrace 0.382 = WR 66.7% train & test)
     holdMin: 240,               // posisi ditutup paksa (mark-to-market)
     cancelOnNewExtreme: true,   // harga lari melewati ujung impuls tanpa pullback
     maxAssetsPerEvent: 3,       // klaster korelasi

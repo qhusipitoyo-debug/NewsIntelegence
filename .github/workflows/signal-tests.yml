@@ -24,6 +24,10 @@ jobs:
           node tests/htf-recalibration.test.mjs
       - name: Run statistics / calibration integrity tests
         run: node tests/stats-calibration.test.mjs
+      - name: Run signal history (backtest + live tracker) tests
+        run: |
+          node tests/signal-history.test.mjs
+          node tests/watch-calibration.test.mjs
       - name: Run timezone, DXY sign & event-direction tests
         run: node tests/time-and-dxy.test.mjs
       - name: Check calendar fetcher syntax

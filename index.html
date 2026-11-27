@@ -441,6 +441,9 @@ let HISTORY_BARS = { generatedAt: null, intervalMin: 5, pairs: {} };
 let LIVE_BARS = {};
 let LIVE_TICKS = {};
 let TRADE_STATS = { generatedAt: null, source: '', totals: { total: 0, wins: 0, losses: 0, win_rate: 0, profit_factor: null, gross_win: 0, gross_loss: 0, net_pnl: 0, avg_win: 0, avg_loss: 0, expectancy: 0 }, byPair: [] };
+// Backtest jangka panjang dihitung offline (CI harian) karena evaluasi 60 hari di
+// browser butuh ~10 menit. File ini ringan dan dipakai sebagai headline winrate.
+let BACKTEST_STATS = null;
 const SIGNAL_HISTORY_KEY = 'feriha:sighist:v3';
 const REACTION_MAX_AGE_MS = 6 * 60 * 60 * 1000;
 // Entry/SL/TP yang sudah dikonfirmasi disimpan per event+aset supaya tidak berubah
@@ -481,10 +484,13 @@ const WINRATE_PARAMS = {
     // Sinyal pasca-rilis (engine maupun jalur lama) hanya lolos bila skor pair
     // multi-faktor (Makro + DXY + Risk + Mikro EMA/RSI/ICT + F&G + Spike) SEARAH
     // dan cukup kuat. Skor melawan / lemah / spike berbalik -> NO TRADE.
-    // minNetSupport: skor bersih minimum searah sinyal. minAligned: jumlah
-    // kelompok faktor (makro, F&G, mikro, spike) yang searah. Titik awal —
-    // kalibrasi ulang dari panel statistik setelah ada sampel closed.
-    pairGate: { enabled: true, minNetSupport: 1.0, minAligned: 2 },
+    // Kalibrasi ulang 60 hari bar 5m (walk-forward train/test, 5.678 pasangan
+    // aset×event): konfigurasi DENGAN pairGate rata-rata skor 0.096 vs TANPA
+    // pairGate 0.409 — 10 konfigurasi terburuk semuanya pairGate=ON. Skor pair
+    // tinggi = mengejar momentum yang sudah jalan (justru lebih sering fakeout),
+    // jadi gerbang ini DIMATIKAN untuk entry pasca-rilis. Hook tetap tersedia
+    // (enabled: false) bila kelak ada sampel yang mendukung.
+    pairGate: { enabled: false, minNetSupport: 1.0, minAligned: 2 },
     // Confidence minimum sinyal pasca-rilis SETELAH penalti/bonus konteks & tren.
     minConfidencePost: 70,
     // Jalur arah lama (dipakai bila SignalEngine tidak mengembalikan setup):
@@ -1046,6 +1052,15 @@ async function loadHistoryBars() {
     } catch (e) { console.log('History bars unavailable', e); }
 }
 
+async function loadBacktestStats() {
+    try {
+        const r = await fetch(`data/backtest-stats.json?v=${Date.now()}`, { cache: 'no-store' });
+        if (!r.ok) return;
+        const j = await r.json();
+        if (j && j.overall) { BACKTEST_STATS = j; renderSignalHistory(); }
+    } catch (e) { console.log('Backtest stats unavailable', e); }
+}
+
 function readLiveSignalHistory() {
     try {
         const raw = localStorage.getItem(SIGNAL_HISTORY_KEY);
@@ -1058,7 +1073,15 @@ function writeLiveSignalHistory(list) {
     try { localStorage.setItem(SIGNAL_HISTORY_KEY, JSON.stringify(list.slice(-120))); } catch {}
 }
 
-function simulateTradeOnBars(dir, entry, sl, tp1, tp2, forwardBars, kind = '', maxFillBars = Infinity, extraCostR = 0) {
+// fillMode:
+//   'market' — entry pada harga berjalan (board/watch/lock market), terisi pada
+//              bar pertama (asumsi market order).
+//   'limit'  — order LIMIT di retrace: hanya terisi bila harga BENAR-BENAR
+//              MENYENTUH level (BUY: low bar <= entry, SELL: high bar >= entry).
+//              Kondisi lama terbalik (BUY terisi saat high >= entry) sehingga
+//              BUY selalu terisi instan pada harga yang menguntungkan -> backtest
+//              terlihat 100% win padahal order tak pernah tersentuh.
+function simulateTradeOnBars(dir, entry, sl, tp1, tp2, forwardBars, kind = '', maxFillBars = Infinity, extraCostR = 0, fillMode = 'market') {
     const isBuy = dir === 'long';
     const risk = Math.abs(entry - sl);
     if (!(risk > 0) || !Array.isArray(forwardBars) || !forwardBars.length) {
@@ -1088,12 +1111,14 @@ function simulateTradeOnBars(dir, entry, sl, tp1, tp2, forwardBars, kind = '', m
         if (!(h > 0 && l > 0)) continue;
         if (!entryFilled) {
             // Order LIMIT hangus setelah maxFillBars bar tanpa terisi (dunia nyata:
-            // orderTtlMin 30 menit) — jangan hitung fill basi sebagai trade.
+            // orderTtlMin menit) — jangan hitung fill basi sebagai trade.
             if (j >= maxFillBars) {
                 return { outcome: 'NOFILL', closed: false, r: 0, tp1Hit: false, exitBarIdx: -1, exitPrice: entry };
             }
-            const filled = isBuy ? h >= entry : l <= entry;
-            if (!filled) continue;
+            const touched = fillMode === 'limit'
+                ? (isBuy ? l <= entry : h >= entry)
+                : true;
+            if (!touched) continue;
             entryFilled = true;
         }
         if (!tp1Hit) {
@@ -1237,7 +1262,7 @@ window.sweepWinrateParams = function (grid = {}) {
 function syncLiveSignalHistory(now = Date.now()) {
     const list = readLiveSignalHistory();
     const byId = new Map(list.map(x => [x.id, x]));
-    const trackSetup = (id, kind, asset, mode, dir, levels, atMs) => {
+    const trackSetup = (id, kind, asset, mode, dir, levels, atMs, fill = 'market') => {
         if (!id || !levels || !(levels.entry > 0) || !(levels.sl > 0) || !(levels.tp > 0)) return;
         if (!byId.has(id)) {
             byId.set(id, {
@@ -1246,6 +1271,7 @@ function syncLiveSignalHistory(now = Date.now()) {
                 asset,
                 mode: mode || 'WATCH',
                 dir,
+                fill,
                 entry: Number(levels.entry),
                 sl: Number(levels.sl),
                 tp1: Number(levels.tp1 || 0) || null,
@@ -1268,19 +1294,24 @@ function syncLiveSignalHistory(now = Date.now()) {
             if (WINRATE_PARAMS.legacyLadder !== 'loose' && ((lock.phase && lock.phase !== 'post') || !['engine', 'reaction'].includes(lock.basis))) continue;
             const asset = k.split('|').pop();
             const kind = asset === 'XAU/USD' ? 'gold' : FOREX_PAIRS.includes(asset) ? 'forex' : CRYPTO_PAIRS.some(c => c.pair === asset) ? 'crypto' : 'index';
-            trackSetup(`lock:${k}`, kind, asset, (lock.phase || 'post').toUpperCase(), lock.dir, lock, lock.at || now);
+            // Setup pasca-rilis = order LIMIT di retrace: wajib disentuh harga (bukan fill instan).
+            trackSetup(`lock:${k}`, kind, asset, (lock.phase || 'post').toUpperCase(), lock.dir, lock, lock.at || now, 'limit');
         }
     } catch {}
 
+    // Rekam sinyal board yang benar-benar bisa dieksekusi. Sinyal PRE-NEWS
+    // (pra-rilis, basis forecast) sengaja TIDAK direkam: entry tanpa konfirmasi
+    // harga adalah sumber loss terbanyak dan bukan bagian dari setup pasca-rilis
+    // yang diklaim diukur panel ini.
     const boards = [
         () => {
             if (typeof goldBoardState !== 'function') return [];
             const g = goldBoardState(now);
-            return g && g.dir && g.levels ? [{ kind: 'gold', asset: 'XAU/USD', mode: g.modeLabel || g.status.toUpperCase(), dir: g.dir, levels: g.levels }] : [];
+            return g && g.dir && g.levels && !String(g.modeLabel || '').toUpperCase().includes('PRE') ? [{ kind: 'gold', asset: 'XAU/USD', mode: g.modeLabel || g.status.toUpperCase(), dir: g.dir, levels: g.levels }] : [];
         },
-        () => (typeof cryptoBoardState === 'function' ? cryptoBoardState(now).items.filter(x => x.dir && x.levels).map(x => ({ kind: 'crypto', asset: x.pair, mode: x.modeLabel || 'WATCH', dir: x.dir, levels: x.levels })) : []),
-        () => (typeof forexBoardState === 'function' ? forexBoardState(now).items.filter(x => x.dir && x.levels).map(x => ({ kind: 'forex', asset: x.pair, mode: x.modeLabel || 'WATCH', dir: x.dir, levels: x.levels })) : []),
-        () => (typeof indicesBoardState === 'function' ? indicesBoardState(now).items.filter(x => x.dir && x.levels).map(x => ({ kind: 'index', asset: x.symbol, mode: x.modeLabel || 'WATCH', dir: x.dir, levels: x.levels })) : [])
+        () => (typeof cryptoBoardState === 'function' ? cryptoBoardState(now).items.filter(x => x.dir && x.levels && !String(x.modeLabel || '').toUpperCase().includes('PRE')).map(x => ({ kind: 'crypto', asset: x.pair, mode: x.modeLabel || 'WATCH', dir: x.dir, levels: x.levels })) : []),
+        () => (typeof forexBoardState === 'function' ? forexBoardState(now).items.filter(x => x.dir && x.levels && !String(x.modeLabel || '').toUpperCase().includes('PRE')).map(x => ({ kind: 'forex', asset: x.pair, mode: x.modeLabel || 'WATCH', dir: x.dir, levels: x.levels })) : []),
+        () => (typeof indicesBoardState === 'function' ? indicesBoardState(now).items.filter(x => x.dir && x.levels && !String(x.modeLabel || '').toUpperCase().includes('PRE')).map(x => ({ kind: 'index', asset: x.symbol, mode: x.modeLabel || 'WATCH', dir: x.dir, levels: x.levels })) : [])
     ];
     const hourBucket = Math.floor(now / (4 * 60 * 60 * 1000));
     boards.forEach(fn => {
@@ -1295,7 +1326,13 @@ function syncLiveSignalHistory(now = Date.now()) {
         const bars = (typeof barsOf === 'function' ? barsOf(item.asset) : []).filter(b => Number(b.k) * 60000 >= item.at - 60000);
         const probeBars = px > 0 ? bars.concat([{ k: Math.floor(now / 60000), o: px, h: px, l: px, c: px }]) : bars;
         if (!probeBars.length) return item;
-        const sim = simulateTradeOnBars(item.dir, item.entry, item.sl, item.tp1, item.tp, probeBars, item.kind);
+        // Setup LIMIT (pasca-rilis) wajib disentuh harga sebelum hangus sesuai orderTtlMin;
+        // bar live berinterval 1 menit jadi maxFillBars = orderTtlMin.
+        const fillMode = item.fill === 'limit' ? 'limit' : 'market';
+        const SEcfg = (typeof engineOf === 'function' && engineOf() && engineOf().CONFIG) || null;
+        const ttlMin = SEcfg && Number(SEcfg.orderTtlMin) > 0 ? Number(SEcfg.orderTtlMin) : 60;
+        const maxFill = fillMode === 'limit' ? Math.max(1, Math.round(ttlMin)) : Infinity;
+        const sim = simulateTradeOnBars(item.dir, item.entry, item.sl, item.tp1, item.tp, probeBars, item.kind, maxFill, 0, fillMode);
         return { ...item, outcome: sim.outcome, closed: sim.closed, tp1Hit: sim.tp1Hit || item.tp1Hit, r: sim.r };
     });
 
@@ -1318,7 +1355,12 @@ function evaluateSignalHistory({
         ...CRYPTO_PAIRS.map(c => ['crypto', c.pair]),
         ...INDICES.map(i => ['index', i.symbol])
     ];
+    // trades      = setup pasca-rilis (engine) yang benar-benar bisa dieksekusi.
+    // watchTrades = replay jalur Watch/tanpa-rilis — DILAPORKAN TERPISAH sebagai
+    //               diagnostik, jangan dicampur ke headline winrate (sinyal Watch
+    //               bukan order; mencampurnya membuat angka tak sebanding).
     const trades = [];
+    const watchTrades = [];
     let sourceLabel = 'Belum ada bar OHLC historis';
     let minBarMs = Infinity, maxBarMs = 0, usedHistory5d = false, usedMarkets1m = false;
     const macroCache = new Map();
@@ -1411,9 +1453,13 @@ function evaluateSignalHistory({
                 // Pakai level asli engine: LIMIT di retrace impuls + SL struktural + TP1/TP2.
                 const lvl = sig.engineLevels ? { ...sig.engineLevels } : null;
                 if (!lvl || !lvl.sl || !lvl.tp) continue;
-                // Order LIMIT engine hangus 30 menit: 6 bar @5m, 30 bar @1m.
-                const ttlBars = usedHistory5d ? 6 : 30;
-                const sim = simulateTradeOnBars(rawDir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(entryIdx + 1), kind, ttlBars);
+                // Order engine = LIMIT di retrace: wajib disentuh harga sebelum hangus
+                // (fillMode 'limit'), bukan dianggap terisi instan. TTL = orderTtlMin engine.
+                const SEcfg = (typeof engineOf === 'function' && engineOf() && engineOf().CONFIG) || null;
+                const orderTtlMin = SEcfg && Number(SEcfg.orderTtlMin) > 0 ? Number(SEcfg.orderTtlMin) : 60;
+                const barMin = usedHistory5d ? (Number(HISTORY_BARS && HISTORY_BARS.intervalMin) || 5) : 1;
+                const ttlBars = Math.max(1, Math.ceil(orderTtlMin / barMin));
+                const sim = simulateTradeOnBars(rawDir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(entryIdx + 1), kind, ttlBars, 0, 'limit');
                 tradedRel.push(relMs);
                 calendarTradesAt.push(entryMs);
                 trades.push({
@@ -1436,7 +1482,8 @@ function evaluateSignalHistory({
             }
         }
 
-        // 2. Walk-forward replay sinyal Watch / Kalibrasi tanpa lookahead
+        // 2. Walk-forward replay sinyal Watch / Kalibrasi tanpa lookahead.
+        //    Hasilnya masuk watchTrades (diagnostik terpisah, bukan headline winrate).
         const warmup = Math.min(60, Math.floor(bars.length / 3));
         const horizonBars = usedHistory5d ? 96 : bars.length; // ~8 jam di bar 5m atau sisa sesi di bar 1m
         let i = warmup;
@@ -1492,7 +1539,7 @@ function evaluateSignalHistory({
             if (!lvl || !lvl.sl || !lvl.tp) { i += 3; continue; }
             const fwdEnd = Math.min(bars.length, i + 1 + horizonBars);
             const sim = simulateTradeOnBars(sig.dir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(i + 1, fwdEnd), kind);
-            trades.push({
+            watchTrades.push({
                 origin: 'replay',
                 kind,
                 asset,
@@ -1512,7 +1559,10 @@ function evaluateSignalHistory({
         }
     }
 
-    if (usedHistory5d) sourceLabel = 'Backtest 5 Hari (5m OHLC + Kalender Rilis)';
+    const spanDays = minBarMs < Infinity && maxBarMs > minBarMs ? Math.round((maxBarMs - minBarMs) / 86400000) : 0;
+    if (usedHistory5d) sourceLabel = spanDays >= 20
+        ? 'Backtest Yahoo 60d (5m OHLC + Kalender Rilis)'
+        : `Backtest ${spanDays || 5} Hari (5m OHLC + Kalender Rilis)`;
     else if (usedMarkets1m) sourceLabel = 'Replay Sesi Terakhir (1m OHLC markets.json)';
     else if (minBarMs < Infinity) sourceLabel = 'Replay Live Bars Browser';
 
@@ -1528,6 +1578,7 @@ function evaluateSignalHistory({
 
     const tracked = Array.isArray(liveHistory) ? liveHistory : readLiveSignalHistory();
     const sortedTrades = trades.slice().sort((a, b) => (b.closed - a.closed) || (b.at - a.at));
+    const sortedWatch = watchTrades.slice().sort((a, b) => (b.closed - a.closed) || (b.at - a.at));
 
     return {
         sourceLabel,
@@ -1537,8 +1588,11 @@ function evaluateSignalHistory({
         overall: summarizeTradeSet(trades),
         byKind,
         byAsset,
+        // Diagnostik jalur Watch (tanpa rilis): dilaporkan terpisah dari headline.
+        watchSummary: summarizeTradeSet(watchTrades),
         liveSummary: summarizeTradeSet(tracked),
         recentTrades: sortedTrades.slice(0, 14),
+        recentWatch: sortedWatch.slice(0, 6),
         recentLive: tracked.slice().sort((a, b) => b.at - a.at).slice(0, 8)
     };
 }
@@ -1593,6 +1647,10 @@ function signalHistoryHtml(res) {
     const liveNote = live && live.total > 0
         ? `Live Browser Tracker: <b>${live.total}</b> sinyal tercatat (<b>${live.winsCount}W / ${live.lossesCount}L / ${live.openCount} Open</b>${live.closedCount ? ` • Net <b>${live.netR >= 0 ? '+' : ''}${live.netR.toFixed(2)}R</b>` : ''}).`
         : 'Live Browser Tracker akan otomatis merekam hasil TP/SL sinyal yang aktif selama sesi berjalan.';
+    const ws = res.watchSummary || {};
+    const watchNote = ws.total > 0
+        ? `Diagnostik jalur <b>Watch (tanpa rilis)</b>: <b>${ws.total}</b> sinyal • ${ws.closedCount} closed • WR <b>${ws.winRatePct == null ? '—' : ws.winRatePct.toFixed(1) + '%'}</b> • Net <b>${ws.netR >= 0 ? '+' : ''}${ws.netR.toFixed(2)}R</b> — tidak dicampur ke winrate utama karena bukan order pasca-rilis.`
+        : '';
     const rangeTxt = res.rangeStart && res.rangeEnd
         ? `${fmtDate(new Date(res.rangeStart))} ${fmtTime(new Date(res.rangeStart))} – ${fmtDate(new Date(res.rangeEnd))} ${fmtTime(new Date(res.rangeEnd))}`
         : 'Menunggu data bar…';
@@ -1603,7 +1661,8 @@ function signalHistoryHtml(res) {
         ? `<div style="font-size:11px;color:var(--amber);margin-bottom:10px;">⚠️ Panel ini sekarang <b>hanya mengukur setup pasca-rilis yang lolos SignalEngine</b>. Sampel closed baru <b>${ov.closedCount}</b> trade — terlalu kecil untuk disebut winrate. Penyebabnya: dari ratusan event kalender, hanya segeligit yang punya <b>Actual + Forecast</b> dan berada di dalam rentang <b>data/history-bars.json</b>. NO TRADE / angka kosong adalah hasil yang benar, bukan sinyal Watch yang disembunyikan. Perbanyak Actual pada kalender & bar historis untuk evaluasi yang signifikan.</div>`
         : '';
 
-    return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;color:var(--aqua);">📈 Evaluasi Winrate &amp; Profit/Loss History Sinyal (Model TP1 1:1 BE-Lock + TP2 1:2)</div>
+    const scopeLabel = BACKTEST_STATS ? ' <span style="font-size:10.5px;color:var(--amber);font-weight:500;">· sampel cepat 5d, bukan headline</span>' : '';
+    return `<div style="font-weight:700;font-size:13px;margin-bottom:8px;color:var(--aqua);">📈 Evaluasi Winrate &amp; Profit/Loss History Sinyal (Model TP1 1:1 BE-Lock + TP2 1:2)${scopeLabel}</div>
         <div class="hist-verdict ${verdictCls}">
             <div>
                 <span class="hist-pill ${pillCls}">${verdictLabel}</span>
@@ -1624,6 +1683,7 @@ function signalHistoryHtml(res) {
         </div>
         <div class="hist-classes">${classCards}</div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">${liveNote}</div>
+        ${watchNote ? `<div style="font-size:11px;color:var(--muted);margin-bottom:8px;">${watchNote}</div>` : ''}
         ${rows ? `<div style="overflow-x:auto;"><table class="hist-table"><thead><tr><th>Aset</th><th>Arah &amp; Basis</th><th>Entry</th><th>SL / TP2</th><th>Hasil</th><th>Return</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}`;
 }
 
@@ -1749,6 +1809,50 @@ function renderValidationPanel(res) {
     </div>`;
 }
 
+function backtestStatsHtml(s) {
+    if (!s || !s.overall) return '';
+    const o = s.overall;
+    const verdictCls = o.verdict === 'PROFIT' ? 'profit' : o.verdict === 'LOSS' ? 'loss' : '';
+    const pillCls = o.verdict === 'PROFIT' ? 'profit' : o.verdict === 'LOSS' ? 'loss' : 'neutral';
+    const verdictLabel = o.verdict === 'PROFIT'
+        ? `✅ PROFIT (${o.netR >= 0 ? '+' : ''}${Number(o.netR).toFixed(2)} R)`
+        : o.verdict === 'LOSS'
+            ? `⚠️ LOSS (${Number(o.netR).toFixed(2)} R)`
+            : o.verdict === 'BREAKEVEN'
+                ? `⚖️ BREAKEVEN (${Number(o.netR).toFixed(2)} R)`
+                : `⏳ BELUM ADA SINYAL CLOSED (${o.openCount} Open)`;
+    const pf = o.profitFactor == null ? '—' : (o.profitFactor === Infinity ? '∞' : Number(o.profitFactor).toFixed(2));
+    const wr = o.winRatePct == null ? '—' : `${Number(o.winRatePct).toFixed(1)}%`;
+    const ci = o.winRateCiLow != null && o.winRateCiHigh != null ? `<small> (CI95 ${o.winRateCiLow}–${o.winRateCiHigh}%)</small>` : '';
+    const rangeLabel = s.range ? String(s.range) : `${Number(s.windowDays) || 60}d`;
+    const gen = s.generatedAt ? String(s.generatedAt).slice(0, 16).replace('T', ' ') + ' UTC' : '—';
+    const btRange = s.rangeStart && s.rangeEnd
+        ? `${new Date(s.rangeStart).toISOString().slice(0, 10)} – ${new Date(s.rangeEnd).toISOString().slice(0, 10)}`
+        : '—';
+    const ws = s.watchSummary || {};
+    const watchNote = ws.total > 0
+        ? `<div style="font-size:10.5px;color:var(--muted);margin-top:7px;">Jalur Watch (bukan order pasca-rilis, diagnostik terpisah): <b>${ws.total}</b> sinyal · <b>${ws.closedCount}</b> closed · WR <b>${ws.winRatePct == null ? '—' : Number(ws.winRatePct).toFixed(1) + '%'}</b> · Net <b>${ws.netR >= 0 ? '+' : ''}${Number(ws.netR).toFixed(2)}R</b>.</div>`
+        : '';
+    return `<div style="margin-bottom:18px;border:1px solid var(--line);border-radius:12px;padding:12px;background:rgba(4,15,23,.55);">
+        <div style="font-weight:700;font-size:13px;margin-bottom:8px;color:var(--aqua);">🏆 Headline Winrate — Backtest Yahoo ${esc(rangeLabel)} (dihitung offline)</div>
+        <div class="hist-verdict ${verdictCls}">
+            <div>
+                <span class="hist-pill ${pillCls}">${verdictLabel}</span>
+                <div style="font-size:11px;color:var(--muted);margin-top:4px;">Hanya setup pasca-rilis yang lolos <b>SignalEngine</b> · Sumber: <b>${esc(s.sourceLabel || 'backtest offline')}</b></div>
+            </div>
+            <div style="font-size:11px;color:var(--muted);text-align:right;">Closed: <b>${o.closedCount}</b> · Open: <b>${o.openCount}</b><br>${o.winsCount}W / ${o.lossesCount}L</div>
+        </div>
+        <div class="hist-grid" style="margin-top:10px;">
+            <div class="hist-kpi"><small>Winrate (Closed)</small><b style="color:${o.winRatePct >= 50 ? 'var(--green)' : o.winRatePct != null ? 'var(--red)' : 'var(--muted)'};">${wr}${ci}</b></div>
+            <div class="hist-kpi"><small>Profit Factor</small><b>${pf}</b></div>
+            <div class="hist-kpi"><small>Net Return</small><b style="color:${o.netR > 0 ? 'var(--green)' : o.netR < 0 ? 'var(--red)' : 'var(--text)'};">${o.netR >= 0 ? '+' : ''}${Number(o.netR).toFixed(2)} R</b></div>
+            <div class="hist-kpi"><small>Expectancy</small><b>${o.expectancyR == null ? '—' : (o.expectancyR >= 0 ? '+' : '') + Number(o.expectancyR).toFixed(2) + ' R'}</b></div>
+        </div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:7px;">Rentang bar: <b>${esc(btRange)}</b> · Diperbarui ${esc(gen)} · order LIMIT diuji saat harga benar-benar menyentuh level (TTL 60 menit), tanpa pairGate yang terbukti merugikan pada walk-forward. Sampel 5 hari di bawah hanya diagnostik: terlalu kecil untuk disebut winrate.</div>
+        ${watchNote}
+    </div>`;
+}
+
 function renderSignalHistory(now = Date.now()) {
     const el = document.querySelector('#signalHistoryStats');
     if (!el) return;
@@ -1767,7 +1871,9 @@ function renderSignalHistory(now = Date.now()) {
     } else {
         SIGNAL_HISTORY_CACHE.data.liveSummary = summarizeTradeSet(live);
     }
-    el.innerHTML = signalHistoryHtml(SIGNAL_HISTORY_CACHE.data) + renderValidationPanel(SIGNAL_HISTORY_CACHE.data);
+    el.innerHTML = backtestStatsHtml(BACKTEST_STATS)
+        + signalHistoryHtml(SIGNAL_HISTORY_CACHE.data)
+        + renderValidationPanel(SIGNAL_HISTORY_CACHE.data);
 }
 
 // Tarik harga tiap pair ke arah harga broker FBS (mid bid/ask dari
@@ -4654,9 +4760,9 @@ function mapActualBias(kind, asset, dir, e) {
 //  • reaksi harga wajib >= 1.0x ATR(5m) PRA-rilis — bukan ambang % kaku;
 //  • arah fundamental (analyze + mapActualBias halaman ini) HARUS searah
 //    dengan reaksi harga — konflik = fakeout = NO TRADE;
-//  • entry LIMIT di retrace 50% impuls, SL struktural di balik asal impuls
+//  • entry LIMIT di retrace 38.2% impuls (kanal OTE), SL struktural di balik asal impuls
 //    + 0.25 ATR(5m), TP1 1R (tutup 50%, SL→BE), TP2 2R;
-//  • order LIMIT hangus 30 menit bila tidak terisi (tidak mengejar harga).
+//  • order LIMIT hangus sesuai orderTtlMin engine bila tidak terisi (tidak mengejar harga).
 // Bila engine tidak terpasang / data tidak cukup (return null), tangga lama
 // tetap berjalan — integrasi ini backward-compatible.
 // ═══════════════════════════════════════════════════════════════════════════
@@ -4737,7 +4843,7 @@ function signalEngineSignal(e, asset, kind, dirText, now = Date.now(), barsOverr
             rr: SE.CONFIG.tp2R / SE.CONFIG.tp1R, kind, dec, stopPips: null, riskPct: null,
             impulse: { low: rngLo, high: rngHi }
         },
-        note: `Engine: order LIMIT ${dir === 'long' ? 'BUY' : 'SELL'} di retrace 50% impuls ${o.entry.toFixed(dec)} — jangan kejar harga. SL struktural di balik asal impuls, TP1 1R (SL→BE), TP2 2R. Reaksi ${(react.movePct >= 0 ? '+' : '') + react.movePct.toFixed(2)}% dalam ${react.minutes} mnt ≥ 1.5× ATR(5m), Actual & harga searah. Order hangus ${SE.CONFIG.orderTtlMin} mnt bila tak terisi.`
+        note: `Engine: order LIMIT ${dir === 'long' ? 'BUY' : 'SELL'} di retrace ${Math.round((Number(SE.CONFIG.retrace) || 0.382) * 100)}% impuls ${o.entry.toFixed(dec)} — jangan kejar harga. SL struktural di balik asal impuls, TP1 1R (SL→BE), TP2 2R. Reaksi ${(react.movePct >= 0 ? '+' : '') + react.movePct.toFixed(2)}% dalam ${react.minutes} mnt ≥ ${SE.CONFIG.minReactAtr}× ATR(5m), Actual & harga searah. Order hangus ${SE.CONFIG.orderTtlMin} mnt bila tak terisi.`
     };
 }
 
@@ -7080,7 +7186,7 @@ document.querySelector('.filters').addEventListener('click', ev => {
     renderNow();
 });
 
-$('#refresh').onclick = () => { load(); loadBrokerForex(); loadForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadLiveBarsFallback(true); loadTradeStats(); renderTradeStats(); loadSentiment(); loadHtf(); };
+$('#refresh').onclick = () => { load(); loadBrokerForex(); loadForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadBacktestStats(); loadLiveBarsFallback(true); loadTradeStats(); renderTradeStats(); loadSentiment(); loadHtf(); };
 renderGoldBoard();
 renderCryptoBoard();
 renderForexBoard();
@@ -7093,7 +7199,7 @@ if (typeof renderIpoBoard === 'function') renderIpoBoard();
 if (typeof renderSignalHistory === 'function') renderSignalHistory();
 loadSentiment();
 loadHtf();
-load(); loadBrokerForex(); loadForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadTradeStats(); renderTradeStats();
+load(); loadBrokerForex(); loadForex(); loadCrypto(); loadIndices(); loadPreNews(); loadReaction(); loadMarkets(); loadHistoryBars(); loadBacktestStats(); loadTradeStats(); renderTradeStats();
 setInterval(() => { loadForex(); loadBrokerForex(); loadCrypto(); loadIndices(); }, 60000);
 // Sentimen Fear & Greed jarang berubah; cukup ditarik ulang tiap 10 menit.
 setInterval(loadSentiment, 600000);

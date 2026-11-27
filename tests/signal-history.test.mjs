@@ -102,6 +102,23 @@ test('simulateTradeOnBars evaluates conservative SL priority, TP1 BE-lock, TP2, 
   assert.equal(openPos.outcome, 'OPEN');
   assert.equal(openPos.closed, false);
   assert.equal(openPos.r, 0.4);
+
+  // fillMode 'limit' (regresi bug fill terbalik): order BUY hanya terisi bila
+  // harga MENYENTUH level entry (low bar <= entry). Bar yang tidak menyentuh
+  // tidak boleh dianggap terisi.
+  const noTouch = vm.runInContext(
+    `simulateTradeOnBars('long', 95, 94, 96, 97, [{ o: 100, h: 101, l: 96.5, c: 100 }, { o: 100, h: 101, l: 96.8, c: 100 }], 'gold', 1, 0, 'limit')`,
+    ctx);
+  assert.equal(noTouch.outcome, 'NOFILL');
+  assert.equal(noTouch.closed, false);
+  assert.equal(noTouch.r, 0);
+
+  const touched = vm.runInContext(
+    `simulateTradeOnBars('long', 95, 94, 96, 97, [{ o: 95.5, h: 95.8, l: 94.5, c: 94.8 }], 'gold', 6, 0, 'limit')`,
+    ctx);
+  assert.equal(touched.outcome, 'OPEN');
+  assert.equal(touched.closed, false);
+  assert.ok(touched.r < 0, 'setelah terisi, mark-to-market memakai harga bar');
 });
 
 test('summarizeTradeSet calculates PROFIT, LOSS, Winrate, Profit Factor, and excludes OPEN from Winrate', () => {
@@ -135,7 +152,8 @@ test('evaluateSignalHistory & renderSignalHistory produce multi-day backtest & l
   const { ctx, elements } = createSandbox();
 
   // 420 bar 5m XAU/USD: sesi tenang (ATR5m ~2.05) -> rilis 11:36Z -> impuls naik
-  // ~0.75% (>= 1.5x ATR5m) -> lanjut rally hingga TP2. Rilis sengaja TIDAK
+  // ~0.75% (>= 1.5x ATR5m) -> order LIMIT di retrace 38.2% impuls (~4128)
+  // DISENTUH harga dalam TTL 60 menit, lalu rally ke TP2. Rilis sengaja TIDAK
   // selaras 5m supaya bar dasar reaksi = bar pra-rilis terakhir (11:35Z).
   const baseK = Math.floor(Date.parse('2026-11-08T00:00:00Z') / 60000);
   const goldBars = [];
@@ -151,10 +169,18 @@ test('evaluateSignalHistory & renderSignalHistory produce multi-day backtest & l
   goldBars.push({ k: baseK + 705, o: 4123, h: 4139, l: 4122, c: 4137 });       // impuls +14
   goldBars.push({ k: baseK + 710, o: 4137, h: 4141, l: 4134, c: 4138 });       // puncak impuls
   goldBars.push({ k: baseK + 715, o: 4138, h: 4147, l: 4137, c: 4147 });       // bar entry (+19 mnt)
+  // Order LIMIT BUY di retrace 38.2% (~4128) baru terisi bila harga MENYENTUH
+  // level itu dalam TTL 60 menit (12 bar) — bukan fill instan.
+  const retracePath = [4139, 4131, 4127, 4124, 4128, 4134, 4142, 4152, 4165, 4180, 4196, 4214];
   px = 4147;
-  for (let i = 144; i < 420; i++) {
+  for (let j = 0; j < retracePath.length; j++) {
+    const i = 144 + j, o = px, c = retracePath[j];
+    goldBars.push({ k: baseK + i * 5, o, h: Math.max(o, c) + 0.6, l: Math.min(o, c) - 0.6, c });
+    px = c;
+  }
+  for (let i = 156; i < 420; i++) {
     const o = px;
-    const c = i <= 151 ? px + 7 : (i <= 240 ? px - 0.4 : px - 0.25);
+    const c = i <= 300 ? px + 1.2 : px - 0.3;
     goldBars.push({ k: baseK + i * 5, o, h: Math.max(o, c) + 1.5, l: Math.min(o, c) - 1.5, c });
     px = c;
   }
@@ -185,4 +211,32 @@ test('evaluateSignalHistory & renderSignalHistory produce multi-day backtest & l
   assert.ok(summary.overall.closedCount >= 1, 'Expected closed outcomes across multi-day swing');
   assert.equal(summary.liveSummary.winsCount, 1);
   assert.equal(summary.liveSummary.verdict, 'PROFIT');
+});
+
+test('offline 60-day backtest is the headline; 5-day replay stays a separate diagnostic', () => {
+  const { ctx, elements } = createSandbox();
+  const offline = {
+    generatedAt: '2026-11-27T03:17:00.000Z',
+    windowDays: 60,
+    range: '60d',
+    sourceLabel: 'Backtest Yahoo 60d offline',
+    overall: {
+      verdict: 'PROFIT', netR: 8, closedCount: 38, openCount: 15,
+      winsCount: 24, lossesCount: 14, winRatePct: 63.2,
+      winRateCiLow: 47.3, winRateCiHigh: 76.6,
+      profitFactor: 1.57, expectancyR: 0.21
+    },
+    watchSummary: { total: 75, closedCount: 75, winRatePct: 58.7, netR: 14.6 }
+  };
+  vm.runInContext(`
+    BACKTEST_STATS = ${JSON.stringify(offline)};
+    renderSignalHistory(Date.now());
+  `, ctx);
+  const html = elements.get('#signalHistoryStats').innerHTML;
+  assert.match(html, /Headline Winrate — Backtest Yahoo 60d/);
+  assert.match(html, /63\.2%/);
+  assert.match(html, /CI95 47\.3–76\.6%/);
+  assert.match(html, /sampel cepat 5d, bukan headline/);
+  assert.match(html, /Jalur Watch/);
+  assert.match(html, /Evaluasi Winrate/);
 });

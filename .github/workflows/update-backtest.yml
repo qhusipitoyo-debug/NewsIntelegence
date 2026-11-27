@@ -1,0 +1,53 @@
+name: Update 60-day backtest statistics
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "scripts/backtest-stats.mjs"
+      - "signal-engine.js"
+      - "index.html"
+      - "data/calendar.json"
+      - ".github/workflows/update-backtest.yml"
+  schedule:
+    - cron: "17 3 * * *"
+
+concurrency:
+  group: update-backtest
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Recalculate 60-day offline winrate
+        run: node scripts/backtest-stats.mjs
+
+      - name: Commit refreshed statistics
+        run: |
+          git config user.name backtest-bot
+          git config user.email actions@users.noreply.github.com
+          git add data/backtest-stats.json
+          if git diff --cached --quiet; then
+            echo "Backtest stats tidak berubah. Melewati commit."
+            exit 0
+          fi
+          git commit -m "chore: refresh 60-day backtest stats $(date -u +%Y%m%d-%H%M)"
+          for i in 1 2 3; do
+            git pull --rebase --autostash || true
+            if git push; then
+              exit 0
+            fi
+            echo "Push attempt $i failed; retrying..."
+            sleep 10
+          done
+          exit 1
