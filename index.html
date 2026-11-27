@@ -1330,6 +1330,16 @@ function evaluateSignalHistory({
         return macroCache.get(key);
     };
 
+    const parsedEvents = Array.isArray(eventList) ? eventList.map(ev => {
+        const relMs = Date.parse(ev.Date);
+        return {
+            raw: ev,
+            relMs,
+            importance: +ev.Importance || 1,
+            country: typeof countryCode === 'function' ? countryCode(ev.Country) : (ev.Country || '')
+        };
+    }).filter(e => Number.isFinite(e.relMs) && e.importance >= 2) : [];
+
     for (const [kind, asset] of assetDefs) {
         const hBars = historyBars && historyBars.pairs && Array.isArray(historyBars.pairs[asset]) ? historyBars.pairs[asset] : null;
         const mBars = markets && markets.pairs && markets.pairs[asset] && Array.isArray(markets.pairs[asset].bars) ? markets.pairs[asset].bars : null;
@@ -1344,17 +1354,31 @@ function evaluateSignalHistory({
         if (firstMs < minBarMs) minBarMs = firstMs;
         if (lastMs > maxBarMs) maxBarMs = lastMs;
 
+        const curList = kind === 'forex' ? (typeof pairCurrencies === 'function' ? pairCurrencies(asset) : ['USD']) : ['USD'];
+        const assetEvents = parsedEvents.filter(e => curList.includes(e.country));
+        const calendarTradesAt = [];
+
         // 1. Evaluasi sinyal rilis event historis (Actual vs Forecast/Previous + reaksi) dalam rentang bar
-        if (Array.isArray(eventList)) {
+        if (parsedEvents.length) {
             // Satu gerakan harga = satu sampel: event berimportance tertinggi dulu, lalu lewati event lain
             // yang jendelanya (45 menit) tumpang tindih untuk aset yang sama.
             const tradedRel = [];
-            const evSorted = [...eventList].sort((x, y) => (+y.Importance || 1) - (+x.Importance || 1));
-            for (const ev of evSorted) {
-                if ((+ev.Importance || 1) < 2) continue;
-                const relMs = Date.parse(ev.Date);
-                if (!Number.isFinite(relMs) || relMs + 15 * 60000 < firstMs || relMs + 20 * 60000 >= lastMs) continue;
+            const evSorted = parsedEvents
+                .filter(item => item.relMs + 15 * 60000 >= firstMs && item.relMs + 20 * 60000 < lastMs)
+                .sort((x, y) => y.importance - x.importance);
+            for (const item of evSorted) {
+                const ev = item.raw;
+                const relMs = item.relMs;
                 if (tradedRel.some(x => Math.abs(x - relMs) < 45 * 60000)) continue;
+
+                // Cek konflik data rilis simultan pada timestamp yang sama untuk mata uang ini:
+                // jika ada dua rilis bersamaan dengan arah kejutan berlawanan (misal MoM naik vs YoY turun), lewati agar tidak whipsaw.
+                const simultaneous = parsedEvents.filter(e => e.relMs === relMs && e.country === item.country);
+                if (simultaneous.length > 1) {
+                    const surprises = simultaneous.map(e => typeof analyze === 'function' ? analyze(e.raw) : null).filter(a => a && (a.dir === 'long' || a.dir === 'short'));
+                    if (surprises.some(s => s.dir === 'long') && surprises.some(s => s.dir === 'short')) continue;
+                }
+
                 const entryIdx = bars.findIndex(b => Number(b.k) * 60000 >= relMs + 15 * 60000);
                 if (entryIdx < 1 || entryIdx >= bars.length - 1) continue;
                 // Kirim bar historis yang sedang dievaluasi ke engine. Tanpa ini engine
@@ -1391,6 +1415,7 @@ function evaluateSignalHistory({
                 const ttlBars = usedHistory5d ? 6 : 30;
                 const sim = simulateTradeOnBars(rawDir, lvl.entry, lvl.sl, lvl.tp1, lvl.tp, bars.slice(entryIdx + 1), kind, ttlBars);
                 tradedRel.push(relMs);
+                calendarTradesAt.push(entryMs);
                 trades.push({
                     origin: 'calendar',
                     kind,
@@ -1419,22 +1444,37 @@ function evaluateSignalHistory({
             const slice = bars.slice(Math.max(0, i - 120), i + 1);
             const px = Number(bars[i].c);
             const tMs = Number(bars[i].k) * 60000;
+            // Anti-chasing: jika setup rilis berita baru saja dieksekusi di aset ini (<45m),
+            // tahan sinyal watch agar tidak mengejar ujung impulse move (bottom/top chasing).
+            if (calendarTradesAt.some(entryMs => Math.abs(tMs - entryMs) < 45 * 60000)) {
+                i += 3;
+                continue;
+            }
+
+            // Anti-overextension pada walk-forward replay: tahan entry jika harga bar saat ini sudah
+            // teregang > 2.2x ATR dari EMA20 (membeli di pucuk / menjual di lembah impuls tanpa katalis).
+            const cleanSlice = slice.filter(b => b.c > 0);
+            if (cleanSlice.length >= 25) {
+                const closes = cleanSlice.map(b => Number(b.c));
+                const ema20 = typeof emaSeries === 'function' ? emaSeries(closes, 20) : null;
+                let trSum = 0;
+                for (let k = cleanSlice.length - 15; k < cleanSlice.length; k++) {
+                    trSum += Math.max(cleanSlice[k].h - cleanSlice[k].l, Math.abs(cleanSlice[k].h - cleanSlice[k - 1].c), Math.abs(cleanSlice[k].l - cleanSlice[k - 1].c));
+                }
+                const atrVal = trSum / 14;
+                if (ema20 && atrVal > 0 && Math.abs(px - ema20) > 2.2 * atrVal) {
+                    i += 3;
+                    continue;
+                }
+            }
             const prevDayBar = bars[Math.max(0, i - (bars.length > 350 ? 288 : 60))];
             const rollChg = prevDayBar && prevDayBar.c > 0 ? ((px - prevDayBar.c) / prevDayBar.c) * 100 : null;
             const recentWindow = (now - tMs) <= 6 * 3600000;
-            const curList = kind === 'forex' ? pairCurrencies(asset) : ['USD'];
-            const relevantEv = Array.isArray(eventList) ? eventList.find(ev => {
-                if ((+ev.Importance || 1) < 2) return false;
-                const rMs = Date.parse(ev.Date);
-                if (!Number.isFinite(rMs)) return false;
-                const c = countryCode(ev.Country);
-                if (!curList.includes(c)) return false;
-                return tMs >= rMs - 15 * 60000 && tMs <= rMs + 30 * 60000;
-            }) : null;
+            const relevantEv = assetEvents.find(e => tMs >= e.relMs - 15 * 60000 && tMs <= e.relMs + 30 * 60000);
             const sig = typeof calibratedWatchSignal === 'function' ? calibratedWatchSignal({
                 kind,
                 asset,
-                event: relevantEv || null,
+                event: (relevantEv && relevantEv.raw) || null,
                 now: tMs,
                 price: px,
                 changePct: rollChg,
