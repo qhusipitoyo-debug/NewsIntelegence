@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T22:57:44.626Z",
+  "generatedAt": "2026-11-28T04:30:12.368Z",
   "source": "OANDA (TradingView live)",
   "anchor": "OANDA",
   "quotes": {
@@ -22,7 +22,7 @@
         "THINKMARKETS": 1.09317,
         "SKILLING": 1.09342
       },
-      "updatedAt": "2026-11-27T22:57:44.626Z"
+      "updatedAt": "2026-11-28T04:30:12.368Z"
     },
     "GBP/USD": {
       "price": 1.30978,
@@ -43,7 +43,7 @@
         "THINKMARKETS": 1.30932,
         "SKILLING": 1.30939
       },
-      "updatedAt": "2026-11-27T22:57:44.626Z"
+      "updatedAt": "2026-11-28T04:30:12.368Z"
     },
     "USD/JPY": {
       "price": 159.568,
@@ -64,7 +64,7 @@
         "THINKMARKETS": 159.559,
         "SKILLING": 159.525
       },
-      "updatedAt": "2026-11-27T22:57:44.626Z"
+      "updatedAt": "2026-11-28T04:30:12.368Z"
     },
     "USD/CHF": {
       "price": 0.83624,
@@ -85,7 +85,7 @@
         "THINKMARKETS": 0.83607,
         "SKILLING": 0.83603
       },
-      "updatedAt": "2026-11-27T22:57:44.626Z"
+      "updatedAt": "2026-11-28T04:30:12.368Z"
     },
     "AUD/USD": {
       "price": 0.6648,
@@ -106,7 +106,7 @@
         "THINKMARKETS": 0.66459,
         "SKILLING": 0.66465
       },
-      "updatedAt": "2026-11-27T22:57:44.626Z"
+      "updatedAt": "2026-11-28T04:30:12.368Z"
     },
     "USD/CAD": {
       "price": 1.4247,
@@ -127,7 +127,7 @@
         "THINKMARKETS": 1.42466,
         "SKILLING": 1.4243
       },
-      "updatedAt": "2026-11-27T22:57:44.626Z"
+      "updatedAt": "2026-11-28T04:30:12.368Z"
     },
     "NZD/USD": {
       "price": 0.54665,
@@ -148,7 +148,7 @@
         "THINKMARKETS": 0.54646,
         "SKILLING": 0.54625
       },
-      "updatedAt": "2026-11-27T22:57:44.626Z"
+      "updatedAt": "2026-11-28T04:30:12.368Z"
     },
     "GBP/JPY": {
       "price": 209.006,
@@ -169,7 +169,7 @@
         "THINKMARKETS": 208.949,
         "SKILLING": 208.918
       },
-      "updatedAt": "2026-11-27T22:57:44.626Z"
+      "updatedAt": "2026-11-28T04:30:12.368Z"
     },
     "EUR/JPY": {
       "price": 174.489,
@@ -190,7 +190,7 @@
         "THINKMARKETS": 174.436,
         "SKILLING": 174.449
       },
-      "updatedAt": "2026-11-27T22:57:44.626Z"
+      "updatedAt": "2026-11-28T04:30:12.368Z"
     }
   },
   "rates": {

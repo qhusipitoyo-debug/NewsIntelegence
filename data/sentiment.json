@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-27T22:57:44.359Z",
+  "generatedAt": "2026-11-28T04:30:12.182Z",
   "cnn": null,
   "crypto": {
-    "score": 12,
+    "score": 10,
     "rating": "Extreme Fear"
   },
   "drivers": {
@@ -60,8 +60,8 @@
       "spotChange5d": -0.4613,
       "basis5d": 0.214,
       "volumeRatio": 0.5655,
-      "sharesOutstanding": 1157650000,
-      "sharesAsOf": "Nov 25, 2026",
+      "sharesOutstanding": 1158450000,
+      "sharesAsOf": "Nov 27, 2026",
       "sharesChange": null,
       "flowPct": null,
       "flowScore": null,
